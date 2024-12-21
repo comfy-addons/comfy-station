@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "cli": "bunx tsx ./cli.ts",
-    "dev:next": "next dev --turbo",
+    "dev:next": "next dev",
     "dev:trpc": "bun --watch ./server/run.ts",
     "dev": "run-p dev:**",
     "build": "next build",

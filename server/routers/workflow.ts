@@ -216,7 +216,7 @@ export const workflowRouter = router({
     )
   }),
   getRawWorkflow: editorProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
-    const workflow = await ctx.em.findOneOrFail(Workflow, { id: input })
+    const workflow = await ctx.em.findOneOrFail(Workflow, { id: input }, { populate: ['rawWorkflow'] })
     const raw = JSON.parse(workflow.rawWorkflow)
     for (const key in raw) {
       delete raw[key as keyof typeof raw].info

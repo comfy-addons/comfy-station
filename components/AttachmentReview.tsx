@@ -12,6 +12,36 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { AttachmentDetail } from './AttachmentDetail'
 import LoadableImage from './LoadableImage'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
+import { TooltipPopup } from './TooltipPopup'
+
+const AttachmentTooltipPopup: IComponent<{
+  taskId?: string
+  active: boolean
+}> = ({ taskId, active }) => {
+  const { data: detail } = trpc.workflowTask.detail.useQuery(taskId!, { enabled: !!taskId && active })
+
+  return (
+    <div className='p-2 text-foreground text-sm'>
+      <code className='font-medium uppercase'>Configuration</code>
+      <div className='flex flex-col justify-between max-w-[420px] text-justify p-2'>
+        <code className='font-bold'>Workflow</code>
+        <span>{detail?.workflow.name}</span>
+      </div>
+      {!!detail?.inputValues &&
+        Object.entries(detail.inputValues).map(([key, value], idx) => (
+          <div
+            key={key}
+            className={cn('flex flex-col justify-between max-w-[420px] break-words p-2', {
+              'bg-secondary/50': idx % 2 === 0
+            })}
+          >
+            <code className='font-bold'>{key}</code>
+            <span>{value}</span>
+          </div>
+        ))}
+    </div>
+  )
+}
 
 export const AttachmentReview: IComponent<{
   shortName?: string
@@ -22,8 +52,19 @@ export const AttachmentReview: IComponent<{
   isFavorited?: boolean
   loading?: boolean
   className?: string
+  taskId?: string
   tryPreview?: boolean
-}> = ({ data, mode = 'image', shortName = 'N/A', onClick, className, isFavorited, loading, onPressFavorite }) => {
+}> = ({
+  data,
+  mode = 'image',
+  shortName = 'N/A',
+  onClick,
+  className,
+  isFavorited,
+  loading,
+  taskId,
+  onPressFavorite
+}) => {
   const enabled = !!data?.id
   const { data: image, isLoading } = trpc.attachment.get.useQuery(
     {
@@ -50,14 +91,18 @@ export const AttachmentReview: IComponent<{
         className={cn('w-16 h-16 rounded-xl cursor-pointer btn bg-secondary overflow-hidden relative group', className)}
       >
         <PhotoView src={image?.high?.url}>
-          <div className='w-full h-full flex items-center justify-center'>
+          <TooltipPopup
+            containerCls='mt-auto h-auto overflow-y-auto'
+            className='w-full h-full flex items-center justify-center'
+            tooltipContent={(active) => <AttachmentTooltipPopup taskId={taskId} active={active} />}
+          >
             <LoadableImage
               loading={loading || isLoading}
               src={image?.preview?.url}
               alt={shortName}
               className='w-full h-full object-cover'
             />
-          </div>
+          </TooltipPopup>
         </PhotoView>
         {!!onPressFavorite && (
           <div

@@ -4,7 +4,6 @@ import { LoadableButton } from '@/components/LoadableButton'
 import { TooltipPopup } from '@/components/TooltipPopup'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table'
-import { useToast } from '@/hooks/useToast'
 import { getBaseUrl, trpc } from '@/utils/trpc'
 import { Pencil, RefreshCcwDot, Trash2 } from 'lucide-react'
 import { TokenPopup } from './TokenPopup'
@@ -18,7 +17,6 @@ export default function TokenPage() {
   const tokens = trpc.token.list.useQuery()
 
   const { copy } = useClipboardCopyFn()
-  const { toast } = useToast()
   const reRoller = trpc.token.reroll.useMutation()
   const destroyer = trpc.token.destroy.useMutation()
 
@@ -75,19 +73,34 @@ export default function TokenPage() {
                 </TableCell>
                 <TableCell>
                   <TooltipPopup
+                    containerCls='mt-auto min-h-[200px]'
                     tooltipContent={
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Workflow Name</TableHead>
+                            <TableHead>Allow Workflows</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {token.grantedWorkflows?.map((workflow) => (
-                            <TableRow key={workflow.workflow.id}>
-                              <TableCell>{workflow.workflow.name}</TableCell>
+                          {token.isMaster && (
+                            <TableCell className='text-center' colSpan={1}>
+                              All workflows are allowed
+                            </TableCell>
+                          )}
+                          {!token.isMaster &&
+                            !!token.grantedWorkflows &&
+                            token.grantedWorkflows?.map((workflow) => (
+                              <TableRow key={workflow.workflow.id}>
+                                <TableCell>{workflow.workflow.name}</TableCell>
+                              </TableRow>
+                            ))}
+                          {!token.grantedWorkflows.length && !token.isMaster && (
+                            <TableRow>
+                              <TableCell className='text-center' colSpan={1}>
+                                No workflows allowed
+                              </TableCell>
                             </TableRow>
-                          ))}
+                          )}
                         </TableBody>
                       </Table>
                     }

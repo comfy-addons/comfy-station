@@ -107,6 +107,7 @@ export const ImageGallery: IComponent<{
                   <AttachmentReview
                     key={item.id}
                     isFavorited={favoriteIds?.includes(item.id)}
+                    taskId={item.task as any as string}
                     onPressFavorite={onPressFavorite}
                     className='w-full h-full object-cover'
                     tryPreview

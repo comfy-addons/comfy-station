@@ -77,7 +77,7 @@ export class Workflow {
   @Property({ type: 'string', nullable: true })
   description?: string
 
-  @Property({ type: 'string' })
+  @Property({ type: 'string', lazy: true })
   rawWorkflow: string
 
   @Property({ type: 'boolean', default: false })
