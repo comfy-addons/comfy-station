@@ -10,6 +10,7 @@ const withNextIntl = createNextIntlPlugin()
 const nextConfig = {
   reactStrictMode: true,
   experimental: {
+    reactCompiler: true,
     webpackMemoryOptimizations: true
   },
   webpack: (config, { isServer, nextRuntime, webpack }) => {

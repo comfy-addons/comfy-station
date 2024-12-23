@@ -9,7 +9,7 @@ export const generativeRouter = router({
   isEnabled: privateProcedure.query(async ({ ctx }) => {
     return !!BackendENV.OPENAI_API_KEY
   }),
-  prompt: adminProcedure
+  prompt: privateProcedure
     .input(
       z.object({
         requirement: z.string().describe('Type of prompt to generate.').optional(),

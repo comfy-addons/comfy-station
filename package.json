@@ -63,6 +63,7 @@
     "@trpc/react-query": "^11.0.0-rc.660",
     "@trpc/server": "^11.0.0-rc.660",
     "@xyflow/react": "^12.3.6",
+    "babel-plugin-react-compiler": "^19.0.0-beta-201e55d-20241215",
     "citty": "^0.1.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -73,7 +74,6 @@
     "embla-carousel-react": "^8.5.1",
     "file-saver": "^2.0.5",
     "framer-motion": "^11.14.4",
-    "fs": "^0.0.1-security",
     "httpsnippet": "^3.0.9",
     "javascript-time-ago": "^2.5.11",
     "jsonwebtoken": "^9.0.2",
@@ -83,7 +83,7 @@
     "lru-cache": "^11.0.2",
     "lucide-react": "^0.439.0",
     "mime": "^4.0.4",
-    "next": "15.1.0",
+    "next": "15.1.2",
     "next-auth": "^4.24.11",
     "next-intl": "^3.26.1",
     "npm-run-all2": "^6.2.6",
@@ -120,7 +120,7 @@
     "@types/file-saver": "^2.0.7",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/lodash": "^4.17.13",
-    "@types/react": "19.0.1",
+    "@types/react": "19.0.2",
     "@types/react-dom": "19.0.2",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@types/uuid": "^10.0.0",
@@ -128,7 +128,7 @@
     "autoprefixer": "^10.4.20",
     "babel-plugin-transform-typescript-metadata": "^0.3.2",
     "eslint": "^8.57.1",
-    "eslint-config-next": "15.1.0",
+    "eslint-config-next": "15.1.2",
     "eslint-config-prettier": "^9.1.0",
     "million": "^3.1.11",
     "postcss": "^8.4.49",
@@ -145,7 +145,7 @@
     ]
   },
   "overrides": {
-    "@types/react": "19.0.1",
+    "@types/react": "19.0.2",
     "@types/react-dom": "19.0.2"
   }
 }
