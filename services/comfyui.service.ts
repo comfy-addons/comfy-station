@@ -164,201 +164,236 @@ export class ComfyPoolInstance {
           const task = queuingTasks[i]
           const user = task.trigger?.user
           const workflow = task.workflow
-          const input = task.inputValues
-          let builder = getBuilder(workflow)
-          await this.updateTaskEventFn(task, ETaskStatus.Pending)
-          if (user) {
-            this.cachingService.set('USER_EXECUTING_TASK', user.id, Date.now())
-          }
-          pool.run(async (api) => {
-            const start = performance.now()
-            try {
-              const client = await em.findOne(Client, { id: api.id })
-              if (client) {
-                task.client = client
-                await em.persist(task).flush()
-                await this.cachingService.set('LAST_TASK_CLIENT', api.id, Date.now())
-              }
-              for (const key in input) {
-                if (!workflow.mapInput?.[key]) {
-                  this.logger.w('pickingJob', `Input key ${key} not found in workflow map`, {
-                    key,
-                    workflowId: workflow.id
-                  })
-                  continue
+          try {
+            const input = task.inputValues
+            let builder = getBuilder(workflow)
+            await this.updateTaskEventFn(task, ETaskStatus.Pending)
+            if (user) {
+              this.cachingService.set('USER_EXECUTING_TASK', user.id, Date.now())
+            }
+            pool.run(async (api) => {
+              const start = performance.now()
+              try {
+                const client = await em.findOne(Client, { id: api.id })
+                if (client) {
+                  task.client = client
+                  await em.persist(task).flush()
+                  await this.cachingService.set('LAST_TASK_CLIENT', api.id, Date.now())
                 }
-                const inputData = input[key] || workflow.mapInput?.[key].default
-                if (!inputData) {
-                  continue
-                }
-                switch (workflow.mapInput?.[key].type) {
-                  case EValueType.Number:
-                  case EValueUtilityType.Seed:
-                    builder.input(key, Number(inputData))
-                    break
-                  case EValueUtilityType.Prefixer:
-                    builder.input(key, task.id)
-                    break
-                  case EValueType.String:
-                    builder.input(key, String(inputData))
-                    break
-                  case EValueType.File:
-                  case EValueType.Image:
-                    const attachmentId = inputData as string
-                    const file = await em.findOneOrFail(Attachment, { id: attachmentId })
-                    const fileBlob = await AttachmentService.getInstance().getFileBlob(file.fileName)
-                    if (!fileBlob) {
-                      await this.updateTaskEventFn(task, ETaskStatus.Failed, {
-                        details: `Can not load attachments ${file.fileName}`,
-                        clientId: api.id
-                      })
-                      await this.cachingService.set('LAST_TASK_CLIENT', api.id, Date.now())
-                      return
-                    }
-                    const uploadedImg = await api.uploadImage(fileBlob, file.fileName)
-                    if (!uploadedImg) {
-                      await this.updateTaskEventFn(task, ETaskStatus.Failed, {
-                        details: `Failed to upload attachment into comfy server, ${file.fileName}`,
-                        clientId: api.id
-                      })
-                      await this.cachingService.set('LAST_TASK_CLIENT', api.id, Date.now())
-                      return
-                    }
-                    builder.input(key, uploadedImg.info.filename)
-                    break
-                  default:
-                    builder.input(key, inputData)
-                    break
-                }
-              }
-
-              return new CallWrapper(api, builder)
-                .onPending(async () => {
-                  await this.updateTaskEventFn(task, ETaskStatus.Running, {
-                    details: 'LOADING RESOURCES',
-                    clientId: api.id
-                  })
-                })
-                .onProgress(async (e) => {
-                  await this.updateTaskEventFn(task, ETaskStatus.Running, {
-                    details: JSON.stringify({
-                      key: 'progress',
-                      data: { node: Number(e.node), max: Number(e.max), value: Number(e.value) }
-                    }),
-                    clientId: api.id
-                  })
-                })
-                .onPreview(async (e) => {
-                  const arrayBuffer = await e.arrayBuffer()
-                  const base64String = Buffer.from(arrayBuffer).toString('base64')
-                  await this.cachingService.set('PREVIEW', task.id, base64String)
-                })
-                .onStart(async () => {
-                  await this.updateTaskEventFn(task, ETaskStatus.Running, {
-                    details: 'START RENDERING',
-                    clientId: api.id
-                  })
-                })
-                .onFinished((outData) => {
-                  const backgroundFn = async () => {
-                    await this.updateTaskEventFn(task, ETaskStatus.Success, {
-                      details: 'DOWNLOADING OUTPUT',
-                      clientId: api.id
+                for (const key in input) {
+                  if (!workflow.mapInput?.[key]) {
+                    this.logger.w('pickingJob', `Input key ${key} not found in workflow map`, {
+                      key,
+                      workflowId: workflow.id
                     })
-                    const attachment = AttachmentService.getInstance()
-                    const output = await parseOutput(api, workflow, outData)
-                    await this.updateTaskEventFn(task, ETaskStatus.Success, {
-                      details: 'UPLOADING OUTPUT',
-                      clientId: api.id
-                    })
-                    const tmpOutput = cloneDeep(output) as Record<string, any>
-                    // If key is array of Blob, convert it to base64
-                    for (const key in tmpOutput) {
-                      if (Array.isArray(tmpOutput[key])) {
-                        tmpOutput[key] = (await Promise.all(
-                          tmpOutput[key].map(async (v, idx) => {
-                            if (v instanceof Blob) {
-                              const imgUtil = new ImageUtil(Buffer.from(await v.arrayBuffer()))
-                              const [preview, high, raw] = await Promise.all([
-                                // For thumbnail
-                                imgUtil
-                                  .clone()
-                                  .resizeMax(1024)
-                                  .intoPreviewJPG()
-                                  .catch((e) => {
-                                    this.logger.w('Error while converting to preview', e)
-                                    return null
-                                  }),
-                                // For on click into thumbnail preview
-                                imgUtil
-                                  .clone()
-                                  .intoPreviewJPG()
-                                  .catch((e) => {
-                                    this.logger.w('Error while converting to preview', e)
-                                    return null
-                                  }),
-                                // Raw image, use for download
-                                imgUtil.intoPNG()
-                              ])
-                              const tmpName = `${task.id}_${key}_${idx}.png`
-                              const [uploaded] = await Promise.all([
-                                attachment.uploadFile(raw, `${tmpName}`),
-                                preview
-                                  ? attachment.uploadFile(preview, `${tmpName}_preview.jpg`)
-                                  : Promise.resolve(false),
-                                high ? attachment.uploadFile(high, `${tmpName}_high.jpg`) : Promise.resolve(false)
-                              ])
-                              if (uploaded) {
-                                const fileInfo = await attachment.getFileURL(tmpName)
-                                const ratio = await imgUtil.getRatio()
-                                const outputAttachment = em.create(
-                                  Attachment,
-                                  {
-                                    fileName: tmpName,
-                                    size: raw.byteLength,
-                                    storageType:
-                                      fileInfo?.type === EAttachmentType.LOCAL ? EStorageType.LOCAL : EStorageType.S3,
-                                    status: EAttachmentStatus.UPLOADED,
-                                    ratio,
-                                    task,
-                                    workflow
-                                  },
-                                  { partial: true }
-                                )
-                                em.persist(outputAttachment)
-                                return outputAttachment.id
-                              }
-                            }
-                            return v
-                          })
-                        )) as string[]
+                    continue
+                  }
+                  const inputData = input[key] || workflow.mapInput?.[key].default
+                  if (!inputData) {
+                    continue
+                  }
+                  switch (workflow.mapInput?.[key].type) {
+                    case EValueType.Number:
+                    case EValueUtilityType.Seed:
+                      builder.input(key, Number(inputData))
+                      break
+                    case EValueUtilityType.Prefixer:
+                      builder.input(key, task.id)
+                      break
+                    case EValueType.String:
+                      builder.input(key, String(inputData))
+                      break
+                    case EValueType.File:
+                    case EValueType.Image:
+                      const attachmentId = inputData as string
+                      const file = await em.findOneOrFail(Attachment, { id: attachmentId })
+                      const fileBlob = await AttachmentService.getInstance().getFileBlob(file.fileName)
+                      if (!fileBlob) {
+                        await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+                          details: `Can not load attachments ${file.fileName}`,
+                          clientId: api.id
+                        })
+                        await this.cachingService.set('LAST_TASK_CLIENT', api.id, Date.now())
+                        return
                       }
-                    }
-                    const outputConfig = workflow.mapOutput
-                    const outputData = Object.keys(outputConfig || {}).reduce(
-                      (acc, val) => {
-                        if (tmpOutput[val] && outputConfig?.[val]) {
-                          acc[val] = {
-                            type: outputConfig[val].type as EValueType,
-                            value: tmpOutput[val] as any
+                      const uploadedImg = await api.uploadImage(fileBlob, file.fileName)
+                      if (!uploadedImg) {
+                        await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+                          details: `Failed to upload attachment into comfy server, ${file.fileName}`,
+                          clientId: api.id
+                        })
+                        await this.cachingService.set('LAST_TASK_CLIENT', api.id, Date.now())
+                        return
+                      }
+                      builder.input(key, uploadedImg.info.filename)
+                      break
+                    default:
+                      builder.input(key, inputData)
+                      break
+                  }
+                }
+
+                return new CallWrapper(api, builder)
+                  .onPending(async () => {
+                    await this.updateTaskEventFn(task, ETaskStatus.Running, {
+                      details: 'LOADING RESOURCES',
+                      clientId: api.id
+                    })
+                  })
+                  .onProgress(async (e) => {
+                    await this.updateTaskEventFn(task, ETaskStatus.Running, {
+                      details: JSON.stringify({
+                        key: 'progress',
+                        data: { node: Number(e.node), max: Number(e.max), value: Number(e.value) }
+                      }),
+                      clientId: api.id
+                    })
+                  })
+                  .onPreview(async (e) => {
+                    const arrayBuffer = await e.arrayBuffer()
+                    const base64String = Buffer.from(arrayBuffer).toString('base64')
+                    await this.cachingService.set('PREVIEW', task.id, base64String)
+                  })
+                  .onStart(async () => {
+                    await this.updateTaskEventFn(task, ETaskStatus.Running, {
+                      details: 'START RENDERING',
+                      clientId: api.id
+                    })
+                  })
+                  .onFinished((outData) => {
+                    const backgroundFn = async () => {
+                      await this.updateTaskEventFn(task, ETaskStatus.Success, {
+                        details: 'DOWNLOADING OUTPUT',
+                        clientId: api.id
+                      })
+                      const attachment = AttachmentService.getInstance()
+                      const output = await parseOutput(api, workflow, outData)
+                      await this.updateTaskEventFn(task, ETaskStatus.Success, {
+                        details: 'UPLOADING OUTPUT',
+                        clientId: api.id
+                      })
+                      const tmpOutput = cloneDeep(output) as Record<string, any>
+                      // If key is array of Blob, convert it to base64
+                      for (const key in tmpOutput) {
+                        if (Array.isArray(tmpOutput[key])) {
+                          tmpOutput[key] = (await Promise.all(
+                            tmpOutput[key].map(async (v, idx) => {
+                              if (v instanceof Blob) {
+                                const imgUtil = new ImageUtil(Buffer.from(await v.arrayBuffer()))
+                                const [preview, high, raw] = await Promise.all([
+                                  // For thumbnail
+                                  imgUtil
+                                    .clone()
+                                    .resizeMax(1024)
+                                    .intoPreviewJPG()
+                                    .catch((e) => {
+                                      this.logger.w('Error while converting to preview', e)
+                                      return null
+                                    }),
+                                  // For on click into thumbnail preview
+                                  imgUtil
+                                    .clone()
+                                    .intoPreviewJPG()
+                                    .catch((e) => {
+                                      this.logger.w('Error while converting to preview', e)
+                                      return null
+                                    }),
+                                  // Raw image, use for download
+                                  imgUtil.intoPNG()
+                                ])
+                                const tmpName = `${task.id}_${key}_${idx}.png`
+                                const [uploaded] = await Promise.all([
+                                  attachment.uploadFile(raw, `${tmpName}`),
+                                  preview
+                                    ? attachment.uploadFile(preview, `${tmpName}_preview.jpg`)
+                                    : Promise.resolve(false),
+                                  high ? attachment.uploadFile(high, `${tmpName}_high.jpg`) : Promise.resolve(false)
+                                ])
+                                if (uploaded) {
+                                  const fileInfo = await attachment.getFileURL(tmpName)
+                                  const ratio = await imgUtil.getRatio()
+                                  const outputAttachment = em.create(
+                                    Attachment,
+                                    {
+                                      fileName: tmpName,
+                                      size: raw.byteLength,
+                                      storageType:
+                                        fileInfo?.type === EAttachmentType.LOCAL ? EStorageType.LOCAL : EStorageType.S3,
+                                      status: EAttachmentStatus.UPLOADED,
+                                      ratio,
+                                      task,
+                                      workflow
+                                    },
+                                    { partial: true }
+                                  )
+                                  em.persist(outputAttachment)
+                                  return outputAttachment.id
+                                }
+                              }
+                              return v
+                            })
+                          )) as string[]
+                        }
+                      }
+                      const outputConfig = workflow.mapOutput
+                      const outputData = Object.keys(outputConfig || {}).reduce(
+                        (acc, val) => {
+                          if (tmpOutput[val] && outputConfig?.[val]) {
+                            acc[val] = {
+                              type: outputConfig[val].type as EValueType,
+                              value: tmpOutput[val] as any
+                            }
                           }
-                        }
-                        return acc
-                      },
-                      {} as Record<
-                        string,
-                        {
-                          type: EValueType
-                          value: any
-                        }
-                      >
+                          return acc
+                        },
+                        {} as Record<
+                          string,
+                          {
+                            type: EValueType
+                            value: any
+                          }
+                        >
+                      )
+                      task.executionTime = performance.now() - start
+                      task.outputValues = outputData
+                      if (user) {
+                        userRep.makeNotify(user, {
+                          title: `Task is finished`,
+                          type: ENotificationType.Info,
+                          target: {
+                            targetType: ENotificationTarget.WorkflowTask,
+                            targetId: task.id
+                          }
+                        })
+                        this.cachingService.set('USER_EXECUTING_TASK', user.id, Date.now())
+                      }
+                      await Promise.all([
+                        em.flush(),
+                        this.updateTaskEventFn(task, ETaskStatus.Success, {
+                          details: 'FINISHED',
+                          clientId: api.id,
+                          data: outData
+                        })
+                      ])
+                    }
+                    const timeoutPromise = new Promise((_, reject) =>
+                      setTimeout(() => reject(new Error('Task execution timed out')), 60000)
                     )
-                    task.executionTime = performance.now() - start
-                    task.outputValues = outputData
+                    Promise.race([backgroundFn(), timeoutPromise]).catch(async (e) => {
+                      await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+                        details: (e.cause as any)?.error?.message || e.message,
+                        clientId: api.id
+                      })
+                      console.error(e)
+                    })
+                  })
+                  .onFailed(async (e) => {
                     if (user) {
                       userRep.makeNotify(user, {
-                        title: `Task is finished`,
-                        type: ENotificationType.Info,
+                        title: `Task is failed`,
+                        type: ENotificationType.Error,
+                        priority: 2,
+                        description: (e.cause as any)?.error?.message || e.message,
                         target: {
                           targetType: ENotificationTarget.WorkflowTask,
                           targetId: task.id
@@ -366,72 +401,44 @@ export class ComfyPoolInstance {
                       })
                       this.cachingService.set('USER_EXECUTING_TASK', user.id, Date.now())
                     }
-                    await Promise.all([
-                      em.flush(),
-                      this.updateTaskEventFn(task, ETaskStatus.Success, {
-                        details: 'FINISHED',
-                        clientId: api.id,
-                        data: outData
-                      })
-                    ])
-                  }
-                  const timeoutPromise = new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Task execution timed out')), 60000)
-                  )
-                  Promise.race([backgroundFn(), timeoutPromise]).catch(async (e) => {
                     await this.updateTaskEventFn(task, ETaskStatus.Failed, {
                       details: (e.cause as any)?.error?.message || e.message,
                       clientId: api.id
                     })
                     console.error(e)
                   })
-                })
-                .onFailed(async (e) => {
-                  if (user) {
-                    userRep.makeNotify(user, {
-                      title: `Task is failed`,
-                      type: ENotificationType.Error,
-                      priority: 2,
-                      description: (e.cause as any)?.error?.message || e.message,
-                      target: {
-                        targetType: ENotificationTarget.WorkflowTask,
-                        targetId: task.id
-                      }
-                    })
-                    this.cachingService.set('USER_EXECUTING_TASK', user.id, Date.now())
-                  }
-                  await this.updateTaskEventFn(task, ETaskStatus.Failed, {
-                    details: (e.cause as any)?.error?.message || e.message,
-                    clientId: api.id
+                  .run()
+                  .catch(async (e) => {
+                    throw e
                   })
-                  console.error(e)
+              } catch (e: any) {
+                if (user) {
+                  userRep.makeNotify(user, {
+                    title: `Task is failed`,
+                    type: ENotificationType.Error,
+                    description: (e.cause as any)?.error?.message || e?.message || "Can't execute task",
+                    priority: 2,
+                    target: {
+                      targetType: ENotificationTarget.WorkflowTask,
+                      targetId: task.id
+                    }
+                  })
+                  this.cachingService.set('USER_EXECUTING_TASK', user.id, Date.now())
+                }
+                await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+                  details: (e.cause as any)?.error?.message || e?.message || "Can't execute task",
+                  clientId: api.id
                 })
-                .run()
-                .catch(async (e) => {
-                  throw e
-                })
-            } catch (e: any) {
-              if (user) {
-                userRep.makeNotify(user, {
-                  title: `Task is failed`,
-                  type: ENotificationType.Error,
-                  description: (e.cause as any)?.error?.message || e?.message || "Can't execute task",
-                  priority: 2,
-                  target: {
-                    targetType: ENotificationTarget.WorkflowTask,
-                    targetId: task.id
-                  }
-                })
-                this.cachingService.set('USER_EXECUTING_TASK', user.id, Date.now())
+                console.error(e)
+                return false
               }
-              await this.updateTaskEventFn(task, ETaskStatus.Failed, {
-                details: (e.cause as any)?.error?.message || e?.message || "Can't execute task",
-                clientId: api.id
-              })
-              console.error(e)
-              return false
-            }
-          }, task.computedWeight)
+            }, task.computedWeight)
+          } catch (e) {
+            console.error(e)
+            await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+              details: `Can't execute task ${task.id}`
+            })
+          }
         }
         await this.cachingService.set('LAST_TASK_CLIENT', -1, Date.now())
         await em.flush()
