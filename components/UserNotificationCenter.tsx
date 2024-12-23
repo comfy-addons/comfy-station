@@ -16,6 +16,12 @@ import DownloadImagesButton from './ui-ext/download-button'
 TimeAgo.addLocale(en)
 const timeAgo = new TimeAgo('en-US')
 
+const dotLoading = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
+
+const canShowNotifications = () => {
+  return 'Notification' in window && Notification.permission === 'granted'
+}
+
 const NotificationItem = ({ notification, onClick }: { notification: UserNotification; onClick: () => void }) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
@@ -74,6 +80,7 @@ const NotificationItem = ({ notification, onClick }: { notification: UserNotific
 export const UserNotificationCenter: IComponent<{
   isAdmin: boolean
 }> = ({ isAdmin }) => {
+  const dotIdx = useRef(0)
   const [isRunning, setIsRunning] = useState(false)
   const {
     data: notifications,
@@ -91,11 +98,31 @@ export const UserNotificationCenter: IComponent<{
   const containerRef = useRef<HTMLDivElement>(null)
   const cleanNotification = trpc.notification.markAsReadAll.useMutation()
 
+  useEffect(() => {
+    if ('Notification' in window) {
+      Notification.requestPermission()
+    }
+  }, [])
+
   trpc.watch.notification.useSubscription(undefined, {
-    onData: () => refetch()
+    onData: async (data) => {
+      refetch()
+    }
   })
+
   trpc.watch.executing.useSubscription(undefined, {
     onData: (running) => setIsRunning(running)
+  })
+
+  trpc.notification.watch.useSubscription(undefined, {
+    onData: (data) => {
+      if (document.hidden && canShowNotifications()) {
+        new Notification(data.title, {
+          body: data.description,
+          icon: '/favicon.ico'
+        })
+      }
+    }
   })
 
   const markRead = trpc.notification.markAsRead.useMutation()
@@ -118,6 +145,20 @@ export const UserNotificationCenter: IComponent<{
   const items = notifications?.pages.map((p) => p.items).flat()
 
   const haveNoti = !!items?.some((v) => !v.read)
+
+  useEffect(() => {
+    if (isRunning) {
+      const bak = document.title
+      const interval = setInterval(() => {
+        dotIdx.current = (dotIdx.current + 1) % dotLoading.length
+        document.title = `${dotLoading[dotIdx.current]} | ${bak}`
+      }, 1000)
+      return () => {
+        clearInterval(interval)
+        document.title = bak
+      }
+    }
+  }, [isRunning])
 
   return (
     <Popover modal>

@@ -3,7 +3,9 @@ import { privateProcedure } from '../procedure'
 import { router } from '../trpc'
 import { UserNotification } from '@/entities/user_notifications'
 import CachingService from '@/services/caching.service'
+import { EventEmitter, on } from 'node:events'
 
+export const UserNotificationEE = new EventEmitter()
 export const userNotificationRouter = router({
   list: privateProcedure
     .input(
@@ -65,5 +67,18 @@ export const userNotificationRouter = router({
       user: ctx.session.user!
     })
     await CachingService.getInstance().set('USER_NOTIFICATION', ctx.session.user!.id, Date.now())
+  }),
+  watch: privateProcedure.subscription(async function* ({ signal, ctx }) {
+    const user = ctx.session.user!
+    for await (const [data] of on(UserNotificationEE, `noti:${user.id}`, {
+      // Passing the AbortSignal from the request automatically cancels the event emitter when the request is aborted
+      signal: signal
+    })) {
+      const post = data as {
+        title: string
+        description?: string
+      }
+      yield post
+    }
   })
 })

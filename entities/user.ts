@@ -5,7 +5,6 @@ import {
   EntityRepositoryType,
   ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryKey,
   Property
 } from '@mikro-orm/core'
@@ -22,6 +21,7 @@ import type { UserNotification } from './user_notifications'
 import type { Attachment } from './attachment'
 import type { Trigger } from './trigger'
 import { UserRepository } from './repositories/user'
+import { UserNotificationEE } from '@/server/routers/user_notification'
 
 export interface IMaper {
   key: string
@@ -122,5 +122,15 @@ export class User {
 
   static hashPassword(password: string): string {
     return createHmac('sha256', password).digest('hex')
+  }
+
+  static notifyUser = async (
+    userId: number | string,
+    data: {
+      title: string
+      description?: string
+    }
+  ) => {
+    UserNotificationEE.emit(`noti:${userId}`, data)
   }
 }
