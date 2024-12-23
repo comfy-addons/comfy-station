@@ -88,7 +88,10 @@ export const AttachmentReview: IComponent<{
   if (mode === 'image') {
     return (
       <div
-        className={cn('w-16 h-16 rounded-xl cursor-pointer btn bg-secondary overflow-hidden relative group', className)}
+        className={cn(
+          'w-16 h-16 rounded-xl cursor-pointer btn bg-secondary overflow-hidden relative group hover:outline',
+          className
+        )}
       >
         <PhotoView src={image?.high?.url}>
           <TooltipPopup

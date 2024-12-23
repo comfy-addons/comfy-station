@@ -1,8 +1,11 @@
 import { create } from 'zustand'
 import { Card } from './ui/card'
-import { HTMLAttributes, ReactElement, ReactNode, useState } from 'react'
+import { HTMLAttributes, ReactElement, ReactNode, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import useCurrentMousePos from '@/hooks/useCurrentMousePos'
+import { usePathname } from '@/i18n/routing'
+import { useActionDebounce } from '@/hooks/useAction'
 
 interface ITooltipStore {
   active: boolean
@@ -53,22 +56,44 @@ export const TooltipPopup: IComponent<
 }
 
 export const TooltipPopupContainer: IComponent = () => {
-  const [isHovering, setIsHovering] = useState(false)
-  const { active, renderContent, containerCls } = useTooltipStore()
+  const { x } = useCurrentMousePos()
+  const pathname = usePathname()
+  const { active, renderContent, setRenderContent, containerCls } = useTooltipStore()
+
+  const [isShowing, setIsShowing] = useState(false)
+  const debounce = useActionDebounce(340, true)
+  const [crrX, setCrrX] = useState(x)
+
+  useEffect(() => {
+    setCrrX(x)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, renderContent])
+
+  useEffect(() => {
+    setRenderContent(false)
+  }, [pathname, setRenderContent])
+
+  useEffect(() => {
+    debounce(() => setIsShowing(active))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active])
+
   return (
     <AnimatePresence>
-      {(active || isHovering) && !!renderContent && (
+      {isShowing && (
         <motion.div
-          className='fixed z-10 right-4 bottom-4 flex pointer-events-none backdrop-blur rounded-xl'
+          className={cn('fixed z-10 bottom-3 hidden md:flex pointer-events-none')}
+          animate={{
+            left: crrX > window.innerWidth / 2 ? 12 : 'unset',
+            right: crrX > window.innerWidth / 2 ? 'unset' : 12
+          }}
           exit={{ opacity: 0 }}
         >
-          <Card
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
-            className={cn('min-w-[340px] !bg-background/50 pointer-events-auto', containerCls)}
-          >
-            {renderContent}
-          </Card>
+          {
+            <Card className={cn('min-w-[340px] !bg-background/50 backdrop-blur', containerCls)}>
+              {!!renderContent && renderContent}
+            </Card>
+          }
         </motion.div>
       )}
     </AnimatePresence>
