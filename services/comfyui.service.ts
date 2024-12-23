@@ -156,7 +156,11 @@ export class ComfyPoolInstance {
           $in: [ETaskStatus.Queuing]
         }
       },
-      { limit: 10, populate: ['workflow', 'parent', 'trigger.user.weightOffset'], orderBy: { createdAt: 'ASC' } }
+      {
+        limit: 10,
+        populate: ['workflow', 'parent', 'trigger.user.weightOffset', 'workflow.rawWorkflow'],
+        orderBy: { createdAt: 'ASC' }
+      }
     )
     try {
       if (queuingTasks.length > 0) {
