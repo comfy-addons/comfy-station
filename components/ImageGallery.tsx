@@ -5,8 +5,10 @@ import { AttachmentReview } from './AttachmentReview'
 import { useActionDebounce, useActionThreshold } from '@/hooks/useAction'
 import { useOnScreen } from '@/hooks/useOnScreen'
 
+type TLoadableAttachment = Attachment | { id: string; loading: boolean }
+
 export const ImageGallery: IComponent<{
-  items: Array<{ loading: true } | Attachment>
+  items: Array<TLoadableAttachment>
   favoriteIds?: string[]
   onFetchMore?: () => void
   imgPerRow?: number
@@ -115,7 +117,9 @@ export const ImageGallery: IComponent<{
                     shortName='NA'
                   />
                 )}
-                {'loading' in item && <AttachmentReview loading className='w-full h-full object-cover' />}
+                {'loading' in item && (
+                  <AttachmentReview taskId={item.id} loading className='w-full h-full object-cover' />
+                )}
               </div>
             )
           })}

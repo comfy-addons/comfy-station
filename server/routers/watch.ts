@@ -100,5 +100,13 @@ export const watchRouter = router({
         subscriber.next(!!task)
       })
     })
+  }),
+  preview: privateProcedure.input(z.object({ taskId: z.string() })).subscription(async ({ input, ctx }) => {
+    const cacher = CachingService.getInstance()
+    return observable<string>((subscriber) => {
+      return cacher.on('PREVIEW', input.taskId, (ev) => {
+        subscriber.next(ev.detail.blob64)
+      })
+    })
   })
 })

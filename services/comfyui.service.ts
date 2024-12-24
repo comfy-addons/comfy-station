@@ -256,7 +256,7 @@ export class ComfyPoolInstance {
                   .onPreview(async (e) => {
                     const arrayBuffer = await e.arrayBuffer()
                     const base64String = Buffer.from(arrayBuffer).toString('base64')
-                    await this.cachingService.set('PREVIEW', task.id, base64String)
+                    await this.cachingService.set('PREVIEW', task.id, { blob64: base64String })
                   })
                   .onStart(async () => {
                     await this.updateTaskEventFn(task, ETaskStatus.Running, {

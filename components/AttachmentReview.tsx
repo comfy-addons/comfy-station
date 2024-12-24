@@ -13,6 +13,7 @@ import { AttachmentDetail } from './AttachmentDetail'
 import LoadableImage from './LoadableImage'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { TooltipPopup } from './TooltipPopup'
+import { useState } from 'react'
 
 const AttachmentTooltipPopup: IComponent<{
   taskId?: string
@@ -66,6 +67,7 @@ export const AttachmentReview: IComponent<{
   onPressFavorite
 }) => {
   const enabled = !!data?.id
+  const [previewUrl, setPreviewUrl] = useState<string>()
   const { data: image, isLoading } = trpc.attachment.get.useQuery(
     {
       id: data?.id!
@@ -83,6 +85,18 @@ export const AttachmentReview: IComponent<{
       window.open(image?.high?.url, '_blank')
     }
   }
+
+  trpc.watch.preview.useSubscription(
+    { taskId: taskId! },
+    {
+      onData: (base64PngBuffer) => {
+        // Convert base64 to png url for image src
+        setPreviewUrl(`data:image/png;base64,${base64PngBuffer}`)
+      },
+      enabled: !!taskId && loading
+    }
+  )
+
   const imageLoaded = !loading && (!isLoading || !enabled)
 
   if (mode === 'image') {
@@ -100,10 +114,12 @@ export const AttachmentReview: IComponent<{
             tooltipContent={(active) => <AttachmentTooltipPopup taskId={taskId} active={active} />}
           >
             <LoadableImage
-              loading={loading || isLoading}
-              src={image?.preview?.url}
+              loading={!previewUrl && (loading || isLoading)}
+              src={image?.preview?.url || previewUrl}
               alt={shortName}
-              className='w-full h-full object-cover'
+              className={cn('w-full h-full object-cover', {
+                'animate-pulse': !!previewUrl && (loading || isLoading)
+              })}
             />
           </TooltipPopup>
         </PhotoView>
@@ -189,7 +205,8 @@ export const AttachmentReview: IComponent<{
           'animate-pulse': loading
         })}
       >
-        {!imageLoaded && <LoadingSVG width={16} height={16} className='repeat-infinite' />}
+        {!imageLoaded && !previewUrl && <LoadingSVG width={16} height={16} className='repeat-infinite' />}
+        {previewUrl && <AvatarImage src={previewUrl} alt={shortName} />}
         {imageLoaded && shortName}
       </AvatarFallback>
     </Avatar>

@@ -46,7 +46,7 @@ export default function WorkflowGallery() {
     enabled: !!slug
   })
 
-  const pending = runningTask.data ? runningTask.data.map(() => ({ loading: true }) as const) : []
+  const pending = runningTask.data ? runningTask.data.map((d) => ({ ...d, loading: true }) as const) : []
   const images = infoLoader.data ? infoLoader.data.pages.flatMap((d) => d.items) : []
   const allowFav = !!session?.user.role && session.user.role > EUserRole.User
 

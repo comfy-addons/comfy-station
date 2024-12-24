@@ -27,7 +27,7 @@ export default function GalleryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infoLoader.refetch, runningTask.refetch])
 
-  const pending = runningTask.data ? runningTask.data.map(() => ({ loading: true }) as const) : []
+  const pending = runningTask.data ? runningTask.data.map((d) => ({ ...d, loading: true }) as const) : []
   const images = infoLoader.data ? infoLoader.data.pages.flatMap((d) => d.items) : []
 
   return (
