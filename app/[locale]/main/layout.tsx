@@ -2,7 +2,6 @@
 
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { usePathname } from '@routing'
 import { useSession } from 'next-auth/react'
 import { AdminSideInfo } from './AdminSideInfo'
 import { TopBar } from './TopBar'
@@ -10,14 +9,15 @@ import { EUserRole } from '@/entities/enum'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
 import { WorkflowSidePicker } from './WorkflowSidePicker'
 import { useDynamicValue } from '@/hooks/useDynamicValue'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ChartBarIcon, Image, ListIcon, PlaySquare } from 'lucide-react'
-import { forceRecalculatePortal, Portal } from '@/components/PortalWrapper'
-import { RouteConf, TRouterKey } from '@/constants/route'
+import { ChartBarIcon, ListIcon, PlaySquare } from 'lucide-react'
+import { forceRecalculatePortal, Portal } from '@/components/Portal'
+import { RouteConf } from '@/constants/route'
 import { TooltipPopupContainer } from '@/components/TooltipPopup'
 
 const Layout: IComponent = ({ children }) => {
+  const ref = useRef<HTMLDivElement>(null)
   const session = useSession()
   const { routeConf, router } = useCurrentRoute()
   const dyn = useDynamicValue()
@@ -46,6 +46,7 @@ const Layout: IComponent = ({ children }) => {
           </div>
         )}
         <div
+          ref={ref}
           id='main-content'
           className='flex-1 hidden md:flex flex-col h-full overflow-hidden bg-background border rounded-lg transition-all duration-300 relative'
         >
@@ -54,7 +55,7 @@ const Layout: IComponent = ({ children }) => {
             {children}
           </SimpleTransitionLayout>
           {!isExecutePage && (
-            <Portal targetRef={'main-content'} waitForTarget followScroll>
+            <Portal target={ref} followScroll>
               <div
                 className='absolute hidden md:block left-[50%] bottom-4 md:-bottom-4 z-10 shadow p-1 backdrop-blur-lg bg-background/40 rounded-lg duration-200'
                 style={{

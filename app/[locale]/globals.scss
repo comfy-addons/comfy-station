@@ -120,7 +120,7 @@ html {
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.6); /* Slightly darker on hover */
+    background: rgba(255, 255, 255, 0.6); /* Slightly darker on hover */
   }
 }
 
@@ -128,13 +128,15 @@ body {
   height: 100vh;
   height: 100dvh;
   width: 100vw;
+
+  overflow: hidden;
 }
 
 @media (display-mode: standalone) {
   _::-webkit-full-page-media,
   _:future,
   :root .safari_only {
-    padding-bottom: 18px; //resize
+    padding-bottom: 18px;
   }
 }
 

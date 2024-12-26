@@ -93,7 +93,7 @@ export const ImageGallery: IComponent<{
                 key={virtualRow.key}
                 data-index={virtualRow.index}
                 ref={rowVirtualizer.measureElement}
-                className={'animate-fade duration-200 p-1'}
+                className={'animate-fade duration-200 p-1 hover:z-10 isolate'}
                 style={{
                   animationDelay: `${virtualRow.index * 34}ms`,
                   position: 'absolute',
@@ -118,7 +118,7 @@ export const ImageGallery: IComponent<{
                   />
                 )}
                 {'loading' in item && (
-                  <AttachmentReview taskId={item.id} loading className='w-full h-full object-cover' />
+                  <AttachmentReview key={item.id} taskId={item.id} loading className='w-full h-full object-cover' />
                 )}
               </div>
             )

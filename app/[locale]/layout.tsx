@@ -58,6 +58,7 @@ export default async function RootLayout(
             </TRPCLayout>
           </NextIntlClientProvider>
         </SessionLayout>
+        <div id='portal-me' className='fixed z-10 top-0 left-0 w-screen h-screen pointer-events-none transition-all' />
       </body>
     </html>
   )

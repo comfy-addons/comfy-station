@@ -437,15 +437,23 @@ export const workflowTaskRouter = router({
                 ]
               }
             }
-      return ctx.em.find(WorkflowTask, {
-        ...query,
-        ...triggerQuery,
-        status: {
-          $nin: [ETaskStatus.Failed, ETaskStatus.Parent]
+      return ctx.em.find(
+        WorkflowTask,
+        {
+          ...query,
+          ...triggerQuery,
+          status: {
+            $nin: [ETaskStatus.Failed, ETaskStatus.Parent]
+          },
+          outputValues: null,
+          attachments: null,
+          executionTime: null
         },
-        outputValues: null,
-        attachments: null,
-        executionTime: null
-      })
+        {
+          orderBy: {
+            createdAt: 'DESC'
+          }
+        }
+      )
     })
 })

@@ -66,7 +66,6 @@ export const ClientLayout: IComponent = ({ children }) => {
 
   return (
     <>
-      <Snow count={24} />
       {session.status === 'loading' && (
         <div className='top-0 left-0 fixed w-screen h-[100dvh] md:h-screen z-10 bg-popover/50 flex justify-end items-end p-8'>
           <Card className='p-4 flex gap-4 items-center bg-background'>
