@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* Portal handle for popup or when you need put your component on top of app */
 
+import { useWaitRef } from '@/hooks/useWaitRef'
 import { getWindowRelativeOffset } from '@/utils/tools'
 import React, { RefObject, useCallback, useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -62,6 +63,7 @@ export const Portal: IComponent<{
   castOverlay
 }) => {
   const portalID = useId()
+  const toRefReady = useWaitRef(to)
   const targetRef = useRef(target?.current)
   const containerRef = useRef<null | HTMLDivElement | HTMLBodyElement>(to?.current)
 
@@ -79,6 +81,7 @@ export const Portal: IComponent<{
   )
 
   useEffect(() => {
+    if (to && !toRefReady) return
     if (to?.current) {
       const ele = to.current.querySelector(`#${PORTAL_ROOT_ID}`)
       portalContainerRef.current = ele as HTMLDivElement
@@ -114,9 +117,10 @@ export const Portal: IComponent<{
     }
 
     setResult(createPortal(childrenWrapper, cloneEleRef.current))
-  }, [])
+  }, [toRefReady])
 
   const reCalculate = useCallback(() => {
+    if (disabled) return
     if (target?.current) {
       targetRef.current = target.current
     }
@@ -143,9 +147,10 @@ export const Portal: IComponent<{
       cloneEleRef.current.style.pointerEvents = 'none'
       cloneEleRef.current.style.position = 'absolute'
     }
-  }, [])
+  }, [disabled])
 
   useEffect((): (() => void) | void => {
+    if (to && !toRefReady) return
     /* Bind your component into portal, place on top of app */
     if (!target) {
       if (to?.current) {
@@ -163,9 +168,10 @@ export const Portal: IComponent<{
         }
       }
     }
-  }, [cloneEleRef, portalContainerRef, target, containerRef, scrollElement])
+  }, [cloneEleRef, portalContainerRef, target, containerRef, scrollElement, toRefReady])
 
   useEffect(() => {
+    if (to && !toRefReady) return
     if (!containerRef.current) {
       if (to?.current) {
         containerRef.current = to.current
@@ -192,7 +198,7 @@ export const Portal: IComponent<{
     if (cloneEleRef.current) {
       setResult(createPortal(childrenWrapper, cloneEleRef.current))
     }
-  }, [children])
+  }, [children, toRefReady])
 
   useEffect(() => {
     if (!portalContainerRef.current) return
