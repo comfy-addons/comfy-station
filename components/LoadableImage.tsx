@@ -64,12 +64,12 @@ const LoadableImage: React.FC<LoadableImageProps> = ({
       )}
     >
       {isLoading && (
-        <div className='flex justify-center items-center h-full w-full'>
+        <div className={cn('flex justify-center items-center h-full w-full', className)}>
           <LoadingSVG width={32} height={32} />
         </div>
       )}
       {imageError && (
-        <div className='flex justify-center items-center h-full w-full'>
+        <div className={cn('flex justify-center items-center h-full w-full', className)}>
           {fallback || <ExclamationTriangleIcon width={32} height={32} />}
         </div>
       )}

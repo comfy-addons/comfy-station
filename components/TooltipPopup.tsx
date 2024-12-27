@@ -3,9 +3,9 @@ import { Card } from './ui/card'
 import { HTMLAttributes, ReactElement, ReactNode, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import useCurrentMousePos from '@/hooks/useCurrentMousePos'
 import { usePathname } from '@/i18n/routing'
 import { useActionDebounce } from '@/hooks/useAction'
+import useCurrentMousePosRef from '@/hooks/useCurrentMousePos'
 
 interface ITooltipStore {
   active: boolean
@@ -56,7 +56,9 @@ export const TooltipPopup: IComponent<
 }
 
 export const TooltipPopupContainer: IComponent = () => {
-  const { x } = useCurrentMousePos()
+  const {
+    current: { x }
+  } = useCurrentMousePosRef()
   const pathname = usePathname()
   const { active, renderContent, setRenderContent, containerCls } = useTooltipStore()
 

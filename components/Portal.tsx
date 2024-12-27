@@ -1,35 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* Portal handle for popup or when you need put your component on top of app */
 
-import { uniqueId } from 'lodash'
-import React, { RefObject, useEffect, useRef, useState } from 'react'
+import { getWindowRelativeOffset } from '@/utils/tools'
+import React, { RefObject, useCallback, useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-/**
- * Get element position on parent
- */
-const getWindowRelativeOffset = (
-  parentWindow: Element,
-  elem: Element
-): { left: number; top: number; right: number; bottom: number } => {
-  const offset = {
-    left: 0,
-    top: 0,
-    right: 0,
-    bottom: 0
-  }
-  // relative to the target field's document
-  const childPos = elem.getBoundingClientRect()
-  const parentPos = parentWindow.getBoundingClientRect()
-
-  offset.top = childPos.top - parentPos.top
-  offset.right = childPos.right - parentPos.right
-  offset.bottom = childPos.bottom - parentPos.bottom
-  offset.left = childPos.left - parentPos.left
-
-  return offset
-}
-
+const PORTAL_ROOT_ID = 'portal-root'
 const FORCE_RECALCULATE_KEY = 'FORCE_RECALCULATE_KEY'
 
 /**
@@ -37,21 +13,11 @@ const FORCE_RECALCULATE_KEY = 'FORCE_RECALCULATE_KEY'
  */
 export const Portal: IComponent<{
   /**
-   * ID of container to portal to, Default to body tag
+   * Disabled portal, render children directly
    */
-  to?: string
   disabled?: boolean
   /**
-   * Target of parent object
-   */
-  target?: RefObject<HTMLDivElement | HTMLSpanElement | null>
-
-  /**
-   * Scrollable element that contain this portal (DEFAULT `body`)
-   */
-  scrollElement?: RefObject<HTMLDivElement | HTMLSpanElement | null>
-  /**
-   * Enabled follow scroll
+   * Enabled follow scroll, portal will follow scroll of window, require more performance (DEFAULT false)
    */
   followScroll?: boolean
   /**
@@ -62,157 +28,179 @@ export const Portal: IComponent<{
    * Whether user can interact with children inside or not
    */
   interactive?: boolean
+  /**
+   * Cast dark overlay on top of portal
+   */
   castOverlay?: boolean
+
+  /**
+   * Wrapper around children
+   */
+  wrapperCls?: string
+  /**
+   * ID of container to portal to, Default to body tag
+   */
+  to?: RefObject<HTMLDivElement | null>
+  /**
+   * Target of parent object,
+   * size and position of portal will be follow this target
+   */
+  target?: RefObject<HTMLDivElement | HTMLSpanElement | null>
+  /**
+   * Scrollable element that contain this portal (DEFAULT `body`)
+   */
+  scrollElement?: RefObject<HTMLDivElement | HTMLSpanElement | null>
 }> = ({
   to,
   disabled,
   children,
   target,
-  followScroll = true,
+  wrapperCls,
+  followScroll = false,
   scrollElement = null,
   interactive = true,
   castOverlay
 }) => {
-  const container = useRef<null | HTMLDivElement | HTMLBodyElement>(null)
-  const ref = useRef(target?.current)
-  const [portalID] = useState(uniqueId('portal'))
-  const mount = useRef<HTMLDivElement | null>(null)
-  const el = useRef<HTMLDivElement | null>(null)
+  const portalID = useId()
+  const targetRef = useRef(target?.current)
+  const containerRef = useRef<null | HTMLDivElement | HTMLBodyElement>(to?.current)
+
+  const cloneEleRef = useRef<HTMLDivElement | null>(null)
+  const portalContainerRef = useRef<HTMLDivElement | HTMLBodyElement | null>(null)
+
   const [result, setResult] = useState(<div />)
 
-  const childrenWrapper = interactive ? <div style={{ pointerEvents: 'visible' }}>{children}</div> : children
+  const childrenWrapper = interactive ? (
+    <div className={wrapperCls} style={{ pointerEvents: 'visible' }}>
+      {children}
+    </div>
+  ) : (
+    children
+  )
 
   useEffect(() => {
-    /* Prevent bug on nextJS, we will call document after rendered */
-    mount.current = document.getElementById(to ? `${to}-portal-root` : 'portal-root') as HTMLDivElement
-    if (!mount.current) {
-      const portalRoot = document.createElement('div')
-      portalRoot.id = to ? `${to}-portal-root` : 'portal-root'
-      if (interactive === false) {
-        portalRoot.style.pointerEvents = 'none'
-      }
-      switch (typeof to) {
-        case 'string': {
-          const targetElement = document.getElementById(to)
-          if (targetElement) {
-            targetElement.appendChild(portalRoot)
-            break
-          }
-        }
-        default: {
-          document.getElementsByTagName('body')[0].appendChild(portalRoot)
-        }
-      }
-      mount.current = portalRoot
+    if (to?.current) {
+      const ele = to.current.querySelector(`#${PORTAL_ROOT_ID}`)
+      portalContainerRef.current = ele as HTMLDivElement
+    } else {
+      portalContainerRef.current = document.getElementById(PORTAL_ROOT_ID) as HTMLDivElement
     }
-    if (!el.current) {
+    // Create portal root if not exist
+    if (!portalContainerRef.current) {
+      const portalRoot = document.createElement('div')
+      portalRoot.id = PORTAL_ROOT_ID
+      portalRoot.style.position = 'fixed'
+      portalRoot.style.width = '100%'
+      portalRoot.style.height = '100%'
+      portalRoot.style.top = '0'
+      portalRoot.style.left = '0'
+      portalRoot.style.zIndex = '9999'
+      portalRoot.style.pointerEvents = 'none'
+
+      if (to?.current) {
+        to.current.appendChild(portalRoot)
+      } else {
+        document.getElementsByTagName('body')[0].appendChild(portalRoot)
+      }
+      portalContainerRef.current = portalRoot
+    }
+
+    // Create portal element
+    if (!cloneEleRef.current) {
       const bootstrapDiv = document.createElement('div')
       bootstrapDiv.id = portalID
-      el.current = bootstrapDiv
+      bootstrapDiv.style.display = 'flex'
+      cloneEleRef.current = bootstrapDiv
     }
-    setResult(createPortal(childrenWrapper, el.current))
+
+    setResult(createPortal(childrenWrapper, cloneEleRef.current))
   }, [])
 
-  const reCalculate = () => {
+  const reCalculate = useCallback(() => {
     if (target?.current) {
-      ref.current = target.current
+      targetRef.current = target.current
     }
-    if (followScroll) {
-      /**
-       * Set to new position on mouse scroll (WORKAROUND)
-       * TODO: Optimize this some day, use relative offset for avoid re-calculating
-       */
-      const top = window.pageYOffset || document.documentElement.scrollTop
-      const left = window.pageXOffset || document.documentElement.scrollLeft
-      /* Bind your component into portal, place on top of app */
-      if (ref?.current && el.current && container.current) {
-        el.current.style.width = ref.current.offsetWidth ? `${ref.current.offsetWidth}px` : ref.current.style.width
-        el.current.style.height = ref.current.offsetHeight ? `${ref.current.offsetHeight}px` : ref.current.style.height
-        const offset = getWindowRelativeOffset(scrollElement?.current || container.current, ref.current)
-        const ele = document.getElementById(portalID)
-        if (ele) {
-          ele.style.left = `${offset.left + left}px`
-          ele.style.top = `${offset.top - top}px`
-          ele.style.pointerEvents = 'none'
-          ele.style.position = 'absolute'
-        }
-      }
+    /**
+     * Set to new position on mouse scroll (WORKAROUND)
+     * TODO: Optimize this some day, use relative offset for avoid re-calculating
+     */
+
+    /* Bind your component into portal, place on top of app */
+    if (targetRef?.current && cloneEleRef.current && containerRef.current) {
+      const top = window.scrollY || document.documentElement.scrollTop
+      const left = window.scrollX || document.documentElement.scrollLeft
+      cloneEleRef.current.style.width = targetRef.current.offsetWidth
+        ? `${targetRef.current.offsetWidth}px`
+        : targetRef.current.style.width
+      cloneEleRef.current.style.height = targetRef.current.offsetHeight
+        ? `${targetRef.current.offsetHeight}px`
+        : targetRef.current.style.height
+      const offset = getWindowRelativeOffset(scrollElement?.current || containerRef.current, targetRef.current)
+
+      // Set new position
+      cloneEleRef.current.style.left = `${offset.left + left}px`
+      cloneEleRef.current.style.top = `${offset.top - top}px`
+      cloneEleRef.current.style.pointerEvents = 'none'
+      cloneEleRef.current.style.position = 'absolute'
     }
-  }
+  }, [])
 
   useEffect((): (() => void) | void => {
     /* Bind your component into portal, place on top of app */
     if (!target) {
-      switch (typeof to) {
-        case 'string': {
-          const targetElement = document.getElementById(to)
-          if (targetElement) {
-            ref.current = targetElement
-            break
-          }
-        }
-        default: {
-          ref.current = document.getElementsByTagName('body')[0]
-        }
+      if (to?.current) {
+        targetRef.current = to.current
+      } else {
+        targetRef.current = document.getElementsByTagName('body')[0]
       }
     }
-    if (ref?.current && el.current && container.current) {
-      const offset = getWindowRelativeOffset(scrollElement?.current || container.current, ref.current)
-      el.current.style.position = 'absolute'
-      el.current.style.width = ref.current.offsetWidth ? `${ref.current.offsetWidth}px` : ref.current.style.width
-      el.current.style.height = ref.current.offsetHeight ? `${ref.current.offsetHeight}px` : ref.current.style.height
-      el.current.style.left = `${offset.left}px`
-      el.current.style.top = `${offset.top + window.scrollY}px`
-      el.current.style.pointerEvents = 'none'
-    }
-    if (mount.current && el.current) {
-      mount.current.appendChild(el.current)
+    reCalculate()
+    if (portalContainerRef.current && cloneEleRef.current) {
+      portalContainerRef.current.appendChild(cloneEleRef.current)
       return () => {
-        if (el.current) {
-          mount.current?.removeChild(el.current)
+        if (cloneEleRef.current) {
+          portalContainerRef.current?.removeChild(cloneEleRef.current)
         }
       }
     }
-  }, [el, mount, target, container, scrollElement])
+  }, [cloneEleRef, portalContainerRef, target, containerRef, scrollElement])
 
   useEffect(() => {
-    if (!container.current) {
-      switch (typeof to) {
-        case 'string': {
-          const targetElement = document.getElementById(to)
-          if (targetElement) {
-            container.current = targetElement as HTMLDivElement
-            break
-          }
-        }
-        default: {
-          container.current = document.getElementsByTagName('body')[0]
-        }
+    if (!containerRef.current) {
+      if (to?.current) {
+        containerRef.current = to.current
+      } else {
+        containerRef.current = document.getElementsByTagName('body')[0]
       }
     }
-    window.addEventListener('scroll', reCalculate, true)
-    window.addEventListener('resize', reCalculate)
+    reCalculate()
+    if (!disabled) {
+      if (followScroll) {
+        window.addEventListener('scroll', reCalculate, true)
+      }
+      window.addEventListener('resize', reCalculate)
+    }
     window.addEventListener(FORCE_RECALCULATE_KEY, reCalculate)
     return () => {
       window.removeEventListener('scroll', reCalculate)
       window.removeEventListener('resize', reCalculate)
       window.removeEventListener(FORCE_RECALCULATE_KEY, reCalculate)
     }
-  }, [])
+  }, [disabled])
 
   useEffect((): void => {
-    if (el.current) {
-      setResult(createPortal(childrenWrapper, el.current))
+    if (cloneEleRef.current) {
+      setResult(createPortal(childrenWrapper, cloneEleRef.current))
     }
   }, [children])
 
   useEffect(() => {
-    if (!container.current) return
+    if (!portalContainerRef.current) return
     if (!castOverlay) return
     if (!disabled) {
-      container.current.style.backgroundColor = 'rgba(0,0,0,0.5)'
+      portalContainerRef.current.style.backgroundColor = 'rgba(0,0,0,0.5)'
     } else {
-      container.current.style.backgroundColor = 'transparent'
+      portalContainerRef.current.style.backgroundColor = 'transparent'
     }
   }, [disabled, castOverlay])
 

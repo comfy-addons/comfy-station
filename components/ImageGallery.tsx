@@ -35,7 +35,7 @@ export const ImageGallery: IComponent<{
   const rowVirtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: (i) => 100,
+    estimateSize: () => 100,
     getItemKey: (i) => {
       const item = items[i]
       if ('loading' in item) {

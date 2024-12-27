@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
-const useCurrentMousePos = () => {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+const useCurrentMousePosRef = () => {
+  const mousePos = useRef({ x: 0, y: 0 })
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
-      setMousePos({ x: event.clientX, y: event.clientY })
+      mousePos.current = { x: event.clientX, y: event.clientY }
     }
 
     window.addEventListener('mousemove', handleMouseMove)
@@ -18,4 +18,4 @@ const useCurrentMousePos = () => {
   return mousePos
 }
 
-export default useCurrentMousePos
+export default useCurrentMousePosRef

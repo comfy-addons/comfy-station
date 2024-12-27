@@ -13,7 +13,6 @@ import { useEffect, useRef, useState } from 'react'
 import { m } from 'framer-motion'
 import { forceRecalculatePortal, Portal } from './Portal'
 import { useStateSyncDebounce } from '@/hooks/useStateSyncDebounce'
-import useCurrentMousePos from '@/hooks/useCurrentMousePos'
 import { useClipboardCopyFn } from '@/hooks/useClipboardCopyFn'
 
 import { AddonDiv } from './AddonDiv'
@@ -21,12 +20,19 @@ import useMobile from '@/hooks/useMobile'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { AttachmentDetail } from './AttachmentDetail'
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogHeader } from './ui/dialog'
+import { useTargetRefById } from '@/hooks/useTargetRefById'
+import useCurrentMousePosRef from '@/hooks/useCurrentMousePos'
+import { useEngineStore } from '@/states/engine'
+import { useScrollingStatusRef } from '@/hooks/useScrollingStatus'
 
 const AttachmentTooltipPopup: IComponent<{
   taskId?: string
   active: boolean
 }> = ({ taskId, active }) => {
-  const { data: detail } = trpc.workflowTask.detail.useQuery(taskId!, { enabled: !!taskId && active })
+  const { data: detail } = trpc.workflowTask.detail.useQuery(taskId!, {
+    enabled: !!taskId && active,
+    refetchOnWindowFocus: false
+  })
   const { copy } = useClipboardCopyFn()
   return (
     <div className='p-1 text-foreground'>
@@ -75,12 +81,19 @@ export const AttachmentReview: IComponent<{
 }) => {
   const enabled = !!data?.id
   const isMobile = useMobile()
-  const { x } = useCurrentMousePos()
+  const {
+    current: { x }
+  } = useCurrentMousePosRef()
+
   const ref = useRef<HTMLDivElement>(null)
+  const scrollingRef = useScrollingStatusRef()
+  const portalRef = useTargetRefById<HTMLDivElement>('portal-me')
+
   const [floatLeft, setFloatLeft] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
 
-  const [hoverSync] = useStateSyncDebounce(isHovering, 1000)
+  const [hoverSync, setHoverSync] = useState(isHovering)
+  const [mouseSync] = useStateSyncDebounce(isHovering, 500)
   const [previewUrl, setPreviewUrl] = useState<string>()
 
   const { data: image, isLoading } = trpc.attachment.get.useQuery(
@@ -116,6 +129,18 @@ export const AttachmentReview: IComponent<{
     forceRecalculatePortal()
   }, [hoverSync])
 
+  useEffect(() => {
+    const timeOut = setTimeout(() => {
+      if (ref.current && !ref.current.matches(':hover')) {
+        setIsHovering(false)
+        setHoverSync(false)
+      } else {
+        setHoverSync(isHovering)
+      }
+    }, 1000)
+    return () => clearTimeout(timeOut)
+  }, [isHovering])
+
   const imageLoaded = !loading && (!isLoading || !enabled)
   const isPop = hoverSync && isHovering && !isMobile
 
@@ -124,14 +149,18 @@ export const AttachmentReview: IComponent<{
       setFloatLeft(x > window.innerWidth / 2)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHovering])
+  }, [mouseSync])
 
   if (mode === 'image') {
     return (
       <div
         ref={ref}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
+        onMouseMove={() => {
+          if (!scrollingRef.current && !isHovering) setIsHovering(true)
+        }}
+        onMouseLeave={() => {
+          setIsHovering(false)
+        }}
         className={cn(
           'w-16 h-16 rounded-xl cursor-pointer transition-all bg-secondary overflow-hidden relative group hover:outline',
           className
@@ -139,7 +168,7 @@ export const AttachmentReview: IComponent<{
       >
         <PhotoView src={image?.high?.url}>
           <div className='w-full h-full'>
-            <Portal to='portal-me' disabled={!isPop} target={ref} castOverlay={true}>
+            <Portal to={portalRef} disabled={!isPop} target={ref} castOverlay wrapperCls='w-full h-full'>
               <div className='w-full h-full relative'>
                 <m.div
                   className={cn('w-full h-full', {
@@ -153,74 +182,76 @@ export const AttachmentReview: IComponent<{
                     src={image?.preview?.url || previewUrl}
                     alt={shortName}
                     className={cn('w-full h-full object-cover transition-all will-change-transform', {
-                      'animate-pulse': !!previewUrl && (loading || isLoading),
+                      'bg-background': isPop && !previewUrl && (loading || isLoading),
+                      'animate-pulse': !isPop && !!previewUrl && (loading || isLoading),
                       'rounded-lg outline shadow cursor-pointer': isPop
                     })}
                   />
                 </m.div>
-                <m.div
-                  className={cn('absolute min-h-full -z-10', {
-                    'pr-[100%]': floatLeft,
-                    'pl-[100%]': !floatLeft,
-                    hidden: !isPop
-                  })}
-                  style={{
-                    top: -(ref.current?.clientHeight ?? 100) * 0.075,
-                    left: floatLeft ? undefined : (ref.current?.clientWidth ?? 100) * 0.075,
-                    right: floatLeft ? (ref.current?.clientWidth ?? 100) * 0.075 : undefined
-                  }}
-                  initial={{ translateX: floatLeft ? 100 : -100 }}
-                  animate={{ translateX: 0 }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div
-                    className={cn({
-                      'ml-4': !floatLeft,
-                      'mr-4': floatLeft
+                {isPop && (
+                  <m.div
+                    className={cn('absolute min-h-full -z-10', {
+                      'pr-[100%]': floatLeft,
+                      'pl-[100%]': !floatLeft
                     })}
+                    style={{
+                      top: -(ref.current?.clientHeight ?? 100) * 0.075,
+                      left: floatLeft ? undefined : (ref.current?.clientWidth ?? 100) * 0.075,
+                      right: floatLeft ? (ref.current?.clientWidth ?? 100) * 0.075 : undefined
+                    }}
+                    initial={{ translateX: floatLeft ? 100 : -100 }}
+                    animate={{ translateX: 0 }}
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <div
-                      style={{ height: (ref.current?.clientHeight ?? 100) * 1.15 }}
-                      className='relative w-[340px] overflow-auto min-h-[400px] bg-background/50 backdrop-blur-xl rounded-lg border'
+                      className={cn({
+                        'ml-4': !floatLeft,
+                        'mr-4': floatLeft
+                      })}
                     >
-                      <AttachmentTooltipPopup taskId={taskId} active={hoverSync && isHovering} />
-                    </div>
-                    <div className='w-full mt-2 h-10 flex justify-end gap-2'>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild className='flex items-center'>
-                          <Button variant='secondary' className='bg-background/50 backdrop-blur-lg'>
-                            <code>DOWNLOAD</code> <Download width={16} height={16} className='ml-2' />
+                      <div
+                        style={{ height: (ref.current?.clientHeight ?? 100) * 1.15 }}
+                        className='relative w-[340px] overflow-auto min-h-[400px] bg-background/50 backdrop-blur-xl rounded-lg border'
+                      >
+                        <AttachmentTooltipPopup taskId={taskId} active={hoverSync && isHovering} />
+                      </div>
+                      <div className='w-full mt-2 h-10 flex justify-end gap-2'>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild className='flex items-center'>
+                            <Button variant='secondary' className='bg-background/50 backdrop-blur-lg'>
+                              <code>DOWNLOAD</code> <Download width={16} height={16} className='ml-2' />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent side='left' className='bg-background/80 backdrop-blur-lg'>
+                            <DropdownMenuItem onClick={() => downloadFn('jpg')} className='cursor-pointer text-sm'>
+                              <span>Download compressed JPG</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => downloadFn()} className='cursor-pointer text-sm'>
+                              <span>Download Raw</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        {!!onPressFavorite && (
+                          <Button
+                            onClick={() => onPressFavorite?.(data?.id!)}
+                            variant='secondary'
+                            className='bg-background/50 backdrop-blur-lg'
+                          >
+                            <code>FAVORITE</code>
+                            <Star
+                              width={16}
+                              height={16}
+                              className={cn('ml-2', {
+                                'fill-zinc-200 stroke-zinc-200': !isFavorited,
+                                'fill-yellow-500 stroke-yellow-500': isFavorited
+                              })}
+                            />
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent side='left' className='bg-background/80 backdrop-blur-lg'>
-                          <DropdownMenuItem onClick={() => downloadFn('jpg')} className='cursor-pointer text-sm'>
-                            <span>Download compressed JPG</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => downloadFn()} className='cursor-pointer text-sm'>
-                            <span>Download Raw</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      {!!onPressFavorite && (
-                        <Button
-                          onClick={() => onPressFavorite?.(data?.id!)}
-                          variant='secondary'
-                          className='bg-background/50 backdrop-blur-lg'
-                        >
-                          <code>FAVORITE</code>
-                          <Star
-                            width={16}
-                            height={16}
-                            className={cn('ml-2', {
-                              'fill-zinc-200 stroke-zinc-200': !isFavorited,
-                              'fill-yellow-500 stroke-yellow-500': isFavorited
-                            })}
-                          />
-                        </Button>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </m.div>
+                  </m.div>
+                )}
               </div>
             </Portal>
           </div>

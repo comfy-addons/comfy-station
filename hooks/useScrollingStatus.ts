@@ -1,12 +1,12 @@
-import { useState, useRef, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 
-export const useScrollingStatus = () => {
-  const [isScrolling, setIsScrolling] = useState(false)
+export const useScrollingStatusRef = () => {
+  const isScrollingRef = useRef(false)
   const scrollTimer = useRef<Timer | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolling(true)
+      isScrollingRef.current = true
 
       // Clear existing timer
       if (scrollTimer.current) {
@@ -15,8 +15,8 @@ export const useScrollingStatus = () => {
 
       // Set new timer to mark scrolling as finished after 150ms of no scroll events
       scrollTimer.current = setTimeout(() => {
-        setIsScrolling(false)
-      }, 1000)
+        isScrollingRef.current = false
+      }, 250)
     }
 
     window.addEventListener('scroll', handleScroll, true)
@@ -29,5 +29,5 @@ export const useScrollingStatus = () => {
     }
   }, [])
 
-  return isScrolling
+  return isScrollingRef
 }
