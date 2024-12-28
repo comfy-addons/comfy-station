@@ -65,6 +65,10 @@ export class ComfyPoolInstance {
               }
             : undefined
       })
+      client.on('all', (ev) => {
+        if (ev.detail.type === 'crystools.monitor') return
+        console.log(ev.detail)
+      })
       this.pool.addClient(client)
     }
     this.cleanAllRunningTasks().then(() => delay(1000).then(() => this.pickingJob()))

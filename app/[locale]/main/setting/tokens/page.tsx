@@ -9,14 +9,14 @@ import { Pencil, RefreshCcwDot, Trash2 } from 'lucide-react'
 import { TokenPopup } from './TokenPopup'
 import { usePathname, useRouter } from 'next/navigation'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
-import { useClipboardCopyFn } from '@/hooks/useClipboardCopyFn'
+import useCopyAction from '@/hooks/useCopyAction'
 
 export default function TokenPage() {
   const router = useRouter()
   const pathName = usePathname()
   const tokens = trpc.token.list.useQuery()
 
-  const { copy } = useClipboardCopyFn()
+  const { copyToClipboard } = useCopyAction()
   const reRoller = trpc.token.reroll.useMutation()
   const destroyer = trpc.token.destroy.useMutation()
 
@@ -59,7 +59,11 @@ export default function TokenPage() {
           <TableBody>
             {tokens.data?.map((token) => (
               <TableRow key={token.id}>
-                <TableCell className='cursor-pointer' onDoubleClick={() => copy(token.id)} title='Double click to copy'>
+                <TableCell
+                  className='cursor-pointer'
+                  onDoubleClick={() => copyToClipboard(token.id, 'Token ID copied')}
+                  title='Double click to copy'
+                >
                   {token.id.slice(-8)}...
                 </TableCell>
                 <TableCell>{token.description ?? '-'}</TableCell>
@@ -122,7 +126,7 @@ export default function TokenPage() {
                     size='icon'
                     variant='outline'
                     onClick={async (event) => {
-                      copy(token.id)
+                      copyToClipboard(token.id)
                       const button = event.target as HTMLButtonElement
                       button.textContent = '✓'
                       setTimeout(() => {

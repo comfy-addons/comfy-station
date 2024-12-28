@@ -13,7 +13,6 @@ import { useEffect, useRef, useState } from 'react'
 import { m } from 'framer-motion'
 import { forceRecalculatePortal, Portal } from './Portal'
 import { useStateSyncDebounce } from '@/hooks/useStateSyncDebounce'
-import { useClipboardCopyFn } from '@/hooks/useClipboardCopyFn'
 
 import { AddonDiv } from './AddonDiv'
 import useMobile from '@/hooks/useMobile'
@@ -22,8 +21,9 @@ import { AttachmentDetail } from './AttachmentDetail'
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogHeader } from './ui/dialog'
 import { useTargetRefById } from '@/hooks/useTargetRefById'
 import useCurrentMousePosRef from '@/hooks/useCurrentMousePos'
-import { useEngineStore } from '@/states/engine'
 import { useScrollingStatusRef } from '@/hooks/useScrollingStatus'
+import useCopyAction from '@/hooks/useCopyAction'
+import { useActionDebounce } from '@/hooks/useAction'
 
 const AttachmentTooltipPopup: IComponent<{
   taskId?: string
@@ -33,7 +33,7 @@ const AttachmentTooltipPopup: IComponent<{
     enabled: !!taskId && active,
     refetchOnWindowFocus: false
   })
-  const { copy } = useClipboardCopyFn()
+  const { copyToClipboard } = useCopyAction()
   return (
     <div className='p-1 text-foreground'>
       <div className='flex flex-col justify-between max-w-[420px] text-justify p-2'>
@@ -44,7 +44,8 @@ const AttachmentTooltipPopup: IComponent<{
         Object.entries(detail.inputValues).map(([key, value], idx) => (
           <AddonDiv
             key={key}
-            onDoubleClick={() => copy(String(value))}
+            title='Double click to copy'
+            onDoubleClick={() => copyToClipboard(String(value), 'Value copied')}
             className={cn(
               'flex flex-col justify-between max-w-[420px] break-words p-2 even:bg-secondary/50 hover:opacity-80 cursor-pointer active:opacity-100'
             )}
@@ -93,8 +94,9 @@ export const AttachmentReview: IComponent<{
   const [isHovering, setIsHovering] = useState(false)
 
   const [hoverSync, setHoverSync] = useState(isHovering)
-  const [mouseSync] = useStateSyncDebounce(isHovering, 500)
+  const [mouseSync] = useStateSyncDebounce(isHovering, 400)
   const [previewUrl, setPreviewUrl] = useState<string>()
+  const debounce = useActionDebounce(250, true)
 
   const { data: image, isLoading } = trpc.attachment.get.useQuery(
     {
@@ -131,15 +133,15 @@ export const AttachmentReview: IComponent<{
 
   useEffect(() => {
     const timeOut = setTimeout(() => {
-      if (ref.current && !ref.current.matches(':hover')) {
+      if (scrollingRef.current || (ref.current && !ref.current.matches(':hover'))) {
         setIsHovering(false)
         setHoverSync(false)
       } else {
         setHoverSync(isHovering)
       }
-    }, 1000)
+    }, 500)
     return () => clearTimeout(timeOut)
-  }, [isHovering])
+  }, [isHovering, scrollingRef])
 
   const imageLoaded = !loading && (!isLoading || !enabled)
   const isPop = hoverSync && isHovering && !isMobile
@@ -156,7 +158,9 @@ export const AttachmentReview: IComponent<{
       <div
         ref={ref}
         onMouseMove={() => {
-          if (!scrollingRef.current && !isHovering) setIsHovering(true)
+          debounce(() => {
+            if (!scrollingRef.current && !isHovering) setIsHovering(true)
+          })
         }}
         onMouseLeave={() => {
           setIsHovering(false)
@@ -184,7 +188,7 @@ export const AttachmentReview: IComponent<{
                     className={cn('w-full h-full object-cover transition-all will-change-transform', {
                       'bg-background': isPop && !previewUrl && (loading || isLoading),
                       'animate-pulse': !isPop && !!previewUrl && (loading || isLoading),
-                      'rounded-lg outline shadow cursor-pointer': isPop
+                      'rounded-lg outline outline-white shadow cursor-pointer': isPop
                     })}
                   />
                 </m.div>

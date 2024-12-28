@@ -13,14 +13,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import { Link } from '@/i18n/routing'
 import { RouteConf } from '@/constants/route'
-import { useClipboardCopyFn } from '@/hooks/useClipboardCopyFn'
 import { useWorkflowStore } from '@/states/workflow'
+import useCopyAction from '@/hooks/useCopyAction'
 
 export const WorkflowApiSnippet = () => {
   const isDark = useDarkMode()
   const [open, setOpen] = useState(false)
   const [tabIndx, setTabIndx] = useState<number>(0)
-  const { copy } = useClipboardCopyFn()
+  const { copyToClipboard } = useCopyAction()
   const [token, setToken] = useState('')
   const [language, setLanguage] = useState<ESupportedSnippetLanguage>(ESupportedSnippetLanguage.JAVASCRIPT_FETCH)
   const { slug } = useCurrentRoute()
@@ -50,7 +50,7 @@ export const WorkflowApiSnippet = () => {
     const snippetContent = snippet.snippets.find((snip) => snip.id === language)
     if (!snippetContent) return null
     const content = token ? snippetContent.content.replace('REPLACE_API_TOKEN', token) : snippetContent.content
-    copy(content)
+    copyToClipboard(content, 'Copied to clipboard')
   }
 
   return (
