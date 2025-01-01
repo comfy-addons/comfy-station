@@ -84,6 +84,7 @@ class AttachmentService {
       await this.s3.send(new ListBucketsCommand({}))
       return true
     } catch (error: any) {
+      this.logger.w('checkS3Connection', 'Error checking S3 connection', { error })
       return false
     }
   }

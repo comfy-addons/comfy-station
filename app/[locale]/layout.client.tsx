@@ -9,18 +9,32 @@ import { useRouter } from '@routing'
 import { ReactFlowProvider } from '@xyflow/react'
 import { useSession } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import { PhotoProvider } from 'react-photo-view'
+import { IdleTimerProvider } from 'react-idle-timer'
 
 import 'react-photo-view/dist/react-photo-view.css'
-
-const Snow = dynamic(() => import('@/components/Snow').then((mod) => mod.Snow), { ssr: false })
+import { trpc } from '@/utils/trpc'
+import { EDeviceStatus } from '@/entities/enum'
+import { useActionDebounce } from '@/hooks/useAction'
 
 export const ClientLayout: IComponent = ({ children }) => {
   const pathname = usePathname()
   const session = useSession()
   const router = useRouter()
   const isDarkMode = useDarkMode()
+  const debounce = useActionDebounce(500, true)
+  const keepAlive = trpc.userClient.ping.useMutation()
+  const userStatusUpdater = trpc.userClient.updateStatus.useMutation()
+
+  const updateStatus = useCallback(
+    (status: EDeviceStatus) => {
+      debounce(() => {
+        userStatusUpdater.mutate({ status })
+      })
+    },
+    [debounce, userStatusUpdater]
+  )
 
   useEffect(() => {
     const root = document.getElementsByTagName('html')?.[0]
@@ -43,8 +57,10 @@ export const ClientLayout: IComponent = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session])
 
-  // Prevent zoom-to-tabs gesture in safari
   useEffect(() => {
+    // Update status to online when component is mounted
+    updateStatus(EDeviceStatus.ONLINE)
+    // Prevent zoom-to-tabs gesture in safari
     document.addEventListener('gesturestart', function (e) {
       e.preventDefault()
       // special hack to prevent zoom-to-tabs gesture in safari
@@ -62,10 +78,49 @@ export const ClientLayout: IComponent = ({ children }) => {
       // special hack to prevent zoom-to-tabs gesture in safari
       document.body.style.zoom = '0.99'
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  useEffect(() => {
+    const vsFn = () => {
+      if (document.hidden) {
+        updateStatus(EDeviceStatus.IDLE)
+      } else {
+        updateStatus(EDeviceStatus.ONLINE)
+      }
+    }
+    const beforeUnloadFn = () => {
+      userStatusUpdater.mutate({ status: EDeviceStatus.OFFLINE })
+    }
+    // Listen if this tab is not active
+    document.addEventListener('visibilitychange', vsFn)
+    // Listen if this tab is closed
+    window.addEventListener('beforeunload', beforeUnloadFn)
+
+    return () => {
+      document.removeEventListener('visibilitychange', vsFn)
+      window.removeEventListener('beforeunload', beforeUnloadFn)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updateStatus])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      keepAlive.mutate()
+    }, 30000)
+
+    return () => {
+      clearInterval(interval)
+    }
+  }, [keepAlive])
+
   return (
-    <>
+    <IdleTimerProvider
+      startOnMount
+      timeout={60000}
+      onIdle={() => updateStatus(EDeviceStatus.IDLE)}
+      onActive={() => updateStatus(EDeviceStatus.ONLINE)}
+    >
       {session.status === 'loading' && (
         <div className='top-0 left-0 fixed w-screen h-[100dvh] md:h-screen z-10 bg-popover/50 flex justify-end items-end p-8'>
           <Card className='p-4 flex gap-4 items-center bg-background'>
@@ -85,6 +140,6 @@ export const ClientLayout: IComponent = ({ children }) => {
         </PhotoProvider>
       </ReactFlowProvider>
       <Toaster />
-    </>
+    </IdleTimerProvider>
   )
 }

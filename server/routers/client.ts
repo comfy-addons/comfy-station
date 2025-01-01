@@ -78,7 +78,7 @@ export const clientRouter = router({
     .input(
       z.object({
         clientId: z.string(),
-        mode: z.enum(['FREE_VRAM', 'REBOOT', 'INTERRUPT'])
+        mode: z.nativeEnum(EClientAction)
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -98,6 +98,7 @@ export const clientRouter = router({
       const action = ctx.em.create(ClientActionEvent, {
         client,
         trigger,
+        action: input.mode,
         createdAt: new Date()
       })
 
@@ -107,21 +108,23 @@ export const clientRouter = router({
       }
       try {
         switch (input.mode) {
-          case 'FREE_VRAM':
-            action.action = EClientAction.FREE_MEMORY
+          case EClientAction.FREE_MEMORY:
             await clientCtl.freeMemory(true, true)
             break
-          case 'REBOOT':
-            action.action = EClientAction.RESTART
+          case EClientAction.RESTART:
             if (!clientCtl.ext.manager.isSupported) {
               throw new Error('Client not supported')
             }
             await clientCtl.ext.manager.rebootInstance()
             break
-          case 'INTERRUPT':
-            action.action = EClientAction.INTERRUPT
+          case EClientAction.INTERRUPT:
             await clientCtl.interrupt()
             break
+          case EClientAction.FORCE_RECONNECT:
+            await clientCtl.reconnectWs(true)
+            break
+          default:
+            throw new Error('Unknown action')
         }
         await ctx.em.persistAndFlush(action)
         return true

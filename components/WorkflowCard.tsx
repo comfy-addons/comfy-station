@@ -81,28 +81,11 @@ export const WorkflowCard: IComponent<{
         disabled={session.data!.user.role < EUserRole.Editor}
         className='h-fit flex-1 w-full !pb-0 shadow rounded-xl relative'
       >
-        {data.status !== EWorkflowActiveStatus.Activated && (
-          <div className='absolute w-full z-10 p-3 bg-background rounded-xl shadow border flex items-center flex-col'>
-            {data.status === EWorkflowActiveStatus.Deactivated && (
-              <EyeSlashIcon className={'w-6 h-6 text-orange-400 mb-2'} />
-            )}
-            {data.status === EWorkflowActiveStatus.Deleted && <Trash2 className={'w-6 h-6 mb-2 text-destructive'} />}
-            <span className='font-bold uppercase text-sm'>{data.status}</span>
-            {data.status === EWorkflowActiveStatus.Deactivated && (
-              <p className='text-xs text-center max-w-52'>User still can get access to old tasks</p>
-            )}
-            {data.status === EWorkflowActiveStatus.Deleted && (
-              <p className='text-xs text-center max-w-52'>User will loose access to old tasks</p>
-            )}
-          </div>
-        )}
         <Card
           onClick={() => router.push(`/main/workflow/${data.id}`)}
-          className={cn('shadow-none cursor-pointer hover:shadow-lg transition-all overflow-hidden', {
-            'opacity-20': data.status !== EWorkflowActiveStatus.Activated
-          })}
+          className={cn('shadow-none cursor-pointer hover:shadow-lg transition-all overflow-hidden')}
         >
-          <CardHeader className='w-full aspect-video bg-secondary rounded-b-xl shadow-inner relative p-0'>
+          <CardHeader className='w-full aspect-video bg-secondary rounded-b-xl shadow-inner relative p-0 overflow-hidden'>
             <div className='absolute right-2 top-2 z-10'>
               <MiniBadge
                 dotClassName={stator.data?.isExecuting ? 'bg-orange-500' : 'bg-gray-500'}
@@ -114,9 +97,28 @@ export const WorkflowCard: IComponent<{
               alt={data.name || ''}
               preferredSize='preview'
               className='w-full h-full'
-              containerClassName='!mt-0'
+              containerClassName={cn('!mt-0 transition-all', {
+                'blur-xl opacity-50': data.status !== EWorkflowActiveStatus.Activated
+              })}
               data={data.avatar}
             />
+            {data.status !== EWorkflowActiveStatus.Activated && (
+              <div className='!mt-0 rounded-none flex absolute top-0 left-0 w-full h-full items-center gap-4 justify-center'>
+                {data.status === EWorkflowActiveStatus.Deactivated && (
+                  <EyeSlashIcon className={'w-6 h-6 text-orange-400'} />
+                )}
+                {data.status === EWorkflowActiveStatus.Deleted && <Trash2 className={'w-6 h-6 text-destructive'} />}
+                <div className='flex flex-col'>
+                  <span className='font-bold uppercase text-sm'>{data.status}</span>
+                  {data.status === EWorkflowActiveStatus.Deactivated && (
+                    <p className='text-xs text-center max-w-52'>User still can get access to old tasks</p>
+                  )}
+                  {data.status === EWorkflowActiveStatus.Deleted && (
+                    <p className='text-xs text-center max-w-52'>User will loose access to old tasks</p>
+                  )}
+                </div>
+              </div>
+            )}
           </CardHeader>
           <CardContent className='pt-4 pb-2 px-2'>
             <CardTitle>{data.name}</CardTitle>

@@ -5,7 +5,7 @@ import { LoadingSVG } from '@/components/svg/LoadingSVG'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { EUserRole } from '@/entities/enum'
+import { EDeviceStatus, EUserRole } from '@/entities/enum'
 import { EGlobalEvent, useGlobalEvent } from '@/hooks/useGlobalEvent'
 import { trpc } from '@/utils/trpc'
 import { DollarSign, Dumbbell, Play, Settings2 } from 'lucide-react'
@@ -29,7 +29,7 @@ export default function SettingUserPage() {
   }
 
   return (
-    <div className='w-full h-full space-y-4'>
+    <div className='w-full h-full space-y-4 overflow-x-auto'>
       <Dialog open={!!selectedUser} onOpenChange={(open) => !open && setSelectedUser(null)}>
         <DialogContent className='max-w-2xl'>
           <DialogHeader>
@@ -59,19 +59,28 @@ export default function SettingUserPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedUsers.map(({ user, runCount }) => {
+          {sortedUsers.map(({ user, runCount, status }) => {
             const shortName = user.email.split('@')[0].slice(0, 2).toUpperCase()
 
             return (
               <TableRow key={user.id}>
                 <TableCell>
                   <div className='flex items-center gap-2'>
-                    <AttachmentReview
-                      mode='avatar'
-                      shortName={shortName}
-                      data={user.avatar}
-                      className='rounded w-8 h-8'
-                    />
+                    <div className='relative'>
+                      <AttachmentReview
+                        mode='avatar'
+                        shortName={shortName}
+                        data={user.avatar}
+                        className='rounded w-8 h-8'
+                      />
+                      <div
+                        className={cn('w-3 h-3 absolute -bottom-1 -right-1 rounded-full border-background border-2', {
+                          'bg-green-500': status === EDeviceStatus.ONLINE,
+                          'bg-blue-400': status === EDeviceStatus.IDLE,
+                          'bg-zinc-700': status === EDeviceStatus.OFFLINE
+                        })}
+                      />
+                    </div>
                     <div className='flex flex-col'>
                       <span className='font-medium'>{user.email}</span>
                       <span className='text-xs text-muted-foreground'>ID: {user.id.split('-').pop()}</span>

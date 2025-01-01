@@ -1,5 +1,5 @@
 import { Client } from '@/entities/client'
-import { EClientStatus } from '@/entities/enum'
+import { EClientAction, EClientStatus } from '@/entities/enum'
 import { cn } from '@/lib/utils'
 import { trpc } from '@/utils/trpc'
 import { TMonitorEvent } from '@saintno/comfyui-sdk'
@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { MonitoringStat } from './MonitoringStat'
 
 import { ArrowPathIcon, CircleStackIcon, CpuChipIcon, TrashIcon } from '@heroicons/react/24/outline'
-import { HamburgerMenuIcon, SquareIcon } from '@radix-ui/react-icons'
+import { HamburgerMenuIcon, ReloadIcon, SquareIcon } from '@radix-ui/react-icons'
 import { TaskBar } from './TaskBar'
 import {
   DropdownMenu,
@@ -28,7 +28,7 @@ export const ClientInfoMonitoring: IComponent<{
   client: Client
 }> = ({ client }) => {
   const { toast } = useToast()
-  const [actioning, setActioning] = useState(false)
+  const [isDoingAction, setDoingAction] = useState(false)
   const [status, setStatus] = useState<EClientStatus>()
   const [clientTasks, setClientTasks] = useState<WorkflowTask[]>()
   const [monitoring, setMonitoring] = useState<TMonitorEvent>()
@@ -59,18 +59,18 @@ export const ClientInfoMonitoring: IComponent<{
   const deleter = trpc.client.delete.useMutation()
   const { mutateAsync } = trpc.client.control.useMutation()
 
-  const handlePressAction = async (mode: 'FREE_VRAM' | 'REBOOT' | 'INTERRUPT') => {
-    setActioning(true)
+  const handlePressAction = async (mode: EClientAction) => {
+    setDoingAction(true)
     mutateAsync({
       clientId: client.id,
       mode
     }).finally(() => {
-      setActioning(false)
+      setDoingAction(false)
     })
   }
 
   const handlePressDelete = async () => {
-    setActioning(true)
+    setDoingAction(true)
     deleter
       .mutateAsync(client.host)
       .then(() => {
@@ -86,7 +86,7 @@ export const ClientInfoMonitoring: IComponent<{
         })
       })
       .finally(() => {
-        setActioning(false)
+        setDoingAction(false)
       })
   }
 
@@ -144,24 +144,34 @@ export const ClientInfoMonitoring: IComponent<{
           <div className='flex gap-2 w-full'>
             <DropdownMenu>
               <DropdownMenuTrigger asChild className='flex items-center'>
-                <LoadableButton loading={actioning} variant='outline' size='icon' className='aspect-square'>
+                <LoadableButton loading={isDoingAction} variant='outline' size='icon' className='aspect-square'>
                   <HamburgerMenuIcon width={16} height={16} />
                 </LoadableButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent side='bottom' align='start' className='w-48'>
-                <DropdownMenuItem onClick={() => handlePressAction('REBOOT')} className='cursor-pointer'>
+                <DropdownMenuItem onClick={() => handlePressAction(EClientAction.RESTART)} className='cursor-pointer'>
                   <ArrowPathIcon className='mr-2' width={16} height={16} />
                   <span className='min-w-[100px]'>Reboot</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handlePressAction('FREE_VRAM')} className='cursor-pointer'>
+                <DropdownMenuItem
+                  onClick={() => handlePressAction(EClientAction.FREE_MEMORY)}
+                  className='cursor-pointer'
+                >
                   <TrashIcon className='mr-2' width={16} height={16} />
                   <span className='min-w-[100px]'>Free VRAM</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handlePressAction(EClientAction.FORCE_RECONNECT)}
+                  className='cursor-pointer'
+                >
+                  <ReloadIcon className='mr-2' width={16} height={16} />
+                  <span className='min-w-[100px]'>Force reconnect</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   disabled={status !== EClientStatus.Executing}
                   className='text-destructive cursor-pointer'
-                  onClick={() => handlePressAction('INTERRUPT')}
+                  onClick={() => handlePressAction(EClientAction.INTERRUPT)}
                 >
                   <SquareIcon className='mr-2' width={16} height={16} />
                   <span className='min-w-[100px]'>Cancel current task</span>
@@ -191,7 +201,7 @@ export const ClientInfoMonitoring: IComponent<{
       </div>
       <div
         className={cn('w-2 transition-all', {
-          'bg-blue-500': status === EClientStatus.Online,
+          'bg-green-500': status === EClientStatus.Online,
           'bg-zinc-500': status === EClientStatus.Offline,
           'bg-destructive': status === EClientStatus.Error,
           'bg-orange-500': status === EClientStatus.Executing

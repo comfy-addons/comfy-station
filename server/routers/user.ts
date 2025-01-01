@@ -2,22 +2,34 @@ import { z } from 'zod'
 import { adminProcedure, privateProcedure } from '../procedure'
 import { router } from '../trpc'
 import { User } from '@/entities/user'
-import { ETaskStatus, EUserRole } from '@/entities/enum'
+import { EDeviceStatus, ETaskStatus, EUserRole } from '@/entities/enum'
 import { Attachment } from '@/entities/attachment'
 import { WorkflowTask } from '@/entities/workflow_task'
 import CachingService from '@/services/caching.service'
+import { UserClient } from '@/entities/user_clients'
 
 export const userRouter = router({
   list: adminProcedure.query(async ({ ctx }) => {
     const users = await ctx.em.find(User, {}, { populate: ['avatar'] })
     const output = await Promise.all(
-      users.map(async (user) => ({
-        user,
-        runCount: await ctx.em.count(WorkflowTask, {
-          status: { $ne: ETaskStatus.Parent },
-          trigger: { user }
+      users.map(async (user) => {
+        const onlineDevices = await ctx.em.find(UserClient, {
+          user,
+          deviceStatus: { $in: [EDeviceStatus.ONLINE, EDeviceStatus.IDLE] }
         })
-      }))
+        return {
+          user,
+          status: onlineDevices?.some((dv) => dv.deviceStatus === EDeviceStatus.ONLINE)
+            ? EDeviceStatus.ONLINE
+            : onlineDevices?.some((dv) => dv.deviceStatus === EDeviceStatus.IDLE)
+              ? EDeviceStatus.IDLE
+              : EDeviceStatus.OFFLINE,
+          runCount: await ctx.em.count(WorkflowTask, {
+            status: { $ne: ETaskStatus.Parent },
+            trigger: { user }
+          })
+        }
+      })
     )
     return output
   }),

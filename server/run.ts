@@ -13,7 +13,7 @@ import { convertIMessToRequest } from './utils/request'
 import { ElysiaHandler } from './elysia'
 import { appRouter } from './routers/_app'
 import { createContext } from './context'
-import { NotificationManagement } from '@/services/notification.service'
+import { UserManagement } from '@/services/user.service'
 import { CleanupService } from '@/services/cleanup.service'
 
 /**
@@ -23,7 +23,7 @@ MikroORMInstance.getInstance()
 ComfyPoolInstance.getInstance()
 AttachmentService.getInstance()
 CachingService.getInstance()
-NotificationManagement.getInstance()
+UserManagement.getInstance()
 /**
  * Start cleanup after 5 seconds
  */

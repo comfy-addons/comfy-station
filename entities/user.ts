@@ -22,6 +22,7 @@ import type { Attachment } from './attachment'
 import type { Trigger } from './trigger'
 import { UserRepository } from './repositories/user'
 import { UserNotificationEE } from '@/server/routers/user_notification'
+import { UserClient } from './user_clients'
 
 export interface IMaper {
   key: string
@@ -114,6 +115,13 @@ export class User {
     cascade: [Cascade.REMOVE]
   })
   triggers = new Collection<Trigger>(this)
+
+  @OneToMany({
+    entity: 'UserClient',
+    mappedBy: 'user',
+    cascade: [Cascade.REMOVE]
+  })
+  clients = new Collection<UserClient>(this)
 
   constructor(email: string, password: string) {
     this.email = email

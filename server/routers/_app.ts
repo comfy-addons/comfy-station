@@ -13,6 +13,7 @@ import { workflowRouter } from './workflow'
 import { snippetRouter } from './snippet'
 import { workflowTaskRouter } from './workflow_task'
 import { generativeRouter } from './generative'
+import { userClientRouter } from './user_client'
 
 export const appRouter = router({
   task: taskRouter,
@@ -27,6 +28,7 @@ export const appRouter = router({
   watch: watchRouter,
   token: tokenRouter,
   user: userRouter,
+  userClient: userClientRouter,
   notification: userNotificationRouter,
   generative: generativeRouter
 })

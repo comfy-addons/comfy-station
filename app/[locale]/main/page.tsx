@@ -6,6 +6,7 @@ import { WorkflowCard } from '@/components/WorkflowCard'
 import { useMemo } from 'react'
 import { useDynamicValue } from '@/hooks/useDynamicValue'
 import { cn } from '@/lib/utils'
+import { EWorkflowActiveStatus } from '@/entities/enum'
 
 /**
  * Current redirect to /auth/basic
@@ -26,7 +27,15 @@ export default function Home() {
   const dyn = useDynamicValue([1230, 1656])
 
   const renderCards = useMemo(() => {
-    const items = query.data?.pages.map((v) => v.items).flat()
+    const items = query.data?.pages
+      .map((v) => v.items)
+      .flat()
+      .sort((a, b) => {
+        // De-active last
+        if (a.status === b.status) return 0
+        if (a.status === EWorkflowActiveStatus.Activated) return -1
+        return 1
+      })
     return items?.map((item, i) => <WorkflowCard data={item} key={item.id} />)
   }, [query.data])
 

@@ -127,6 +127,7 @@ export enum EClientAction {
   INSTALL_EXTENSION,
   TOGGLE_EXTENSION,
   UPDATE_EXTENSION,
+  FORCE_RECONNECT,
   UPDATE_COMFYUI,
   FIX_EXTENSION,
   FREE_MEMORY,
@@ -161,4 +162,17 @@ export enum EAttachmentStatus {
 export enum EStorageType {
   LOCAL = 'LOCAL',
   S3 = 'S3'
+}
+
+export enum EDeviceStatus {
+  ONLINE = 'Online',
+  IDLE = 'Idle',
+  OFFLINE = 'Offline'
+}
+
+export enum EDeviceType {
+  PC = 'PC',
+  PHONE = 'Phone',
+  TABLET = 'Tablet',
+  OTHER = 'Other'
 }

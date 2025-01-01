@@ -97,7 +97,6 @@ export const Portal: IComponent<{
       portalRoot.style.height = '100%'
       portalRoot.style.top = '0'
       portalRoot.style.left = '0'
-      portalRoot.style.zIndex = '9999'
       portalRoot.style.pointerEvents = 'none'
 
       if (to?.current) {
