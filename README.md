@@ -34,7 +34,7 @@ Ready to get started? Here's how to set up ComfyUI Station:
 
     ```bash
     git clone https://github.com/comfy-addons/comfy-station.git
-    cd comfy-addons-comfy-station
+    cd comfy-station
     ```
 
 3.  **Set up your `.env` file:** ⚙️
@@ -54,7 +54,7 @@ Ready to get started? Here's how to set up ComfyUI Station:
       - If you don't have S3 credentials, don't fill these fields, the app will use local storage.
     - Your OpenAI credentials (optional): `OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL`
 
-    4.  **Create Your First Account:** 👤
+4.  **Create Your First Account:** 👤
 
         - Create an Admin (Level 5) user with the following command:
           ```bash
@@ -64,13 +64,13 @@ Ready to get started? Here's how to set up ComfyUI Station:
           - Editor (Level 4) user, who can only create and execute workflows: `-l 4`
           - User (Level 3) user, who can only execute workflows: `-l 3`
 
-    5.  **Build with Docker Compose:** 🐳
+5.  **Build with Docker Compose:** 🐳
 
         ```bash
         docker-compose up --build
         ```
 
-    6.  **Access the Application:** 🌐
+6.  **Access the Application:** 🌐
         Open your browser and go to `http://localhost:3000`.
 
 ## 🚀 How to Use
@@ -79,7 +79,7 @@ Getting started with ComfyUI Station is a breeze:
 
 1.  **Login:** Access the application at `http://localhost:3000` and sign in using your username and password, or an existing API token.
 2.  **Add a ComfyUI Client:**
-    - Go to the admin panel and add your ComfyUI server by its URL.
+    - Login with admin account and add your ComfyUI server by its URL.
     - Input any necessary authentication.
 3.  **Start Creating Workflows:**
     - Select a workflow to run from the main workflow picker or upload your own in the top bar.
@@ -97,12 +97,9 @@ Getting started with ComfyUI Station is a breeze:
 
 - **Multi-Instance Management**: Connect and manage multiple ComfyUI instances seamlessly. 🔗
 - **Intuitive UI**: Enjoy a user-friendly interface designed for both beginners and experts. ✨
-- **Workflow Scheduling**: Plan and schedule your rendering tasks for optimal resource use. 📅
 - **Real-Time Monitoring:** Track the progress and status of your tasks and connected ComfyUI nodes with real-time updates. 📊
 - **Advanced Image Handling**: Preview, and download your generated images with ease. 🖼️
 - **API Token Management**: Securely generate and manage API tokens for programmatic interaction. 🔑
-- **Open Source**: Contribute and customize your experience with an open-source tool. 🛠️
-- **Multi-language support**: Support EN and VI language. 🌍
 - **AI Suggestion for prompt**: Use integrated AI tool for better prompt. 🧙
 
 ## 👐 Contributing
