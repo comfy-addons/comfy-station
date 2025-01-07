@@ -166,6 +166,9 @@ export const clientRouter = router({
     const api = new ComfyApi(input.host, 'test', {
       credentials: input.auth ? { type: 'basic', username: input.username!, password: input.password! } : undefined
     })
+    api.on('log', (log) => {
+      console.log(log)
+    })
     const test = await api.ping()
     if ('time' in test) {
       await api.init().waitForReady()

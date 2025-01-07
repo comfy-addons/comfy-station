@@ -67,7 +67,12 @@ export const AddClientDialog: IComponent = () => {
           <PlusIcon width={16} height={16} />
         </Button>
       </DialogTrigger>
-      <DialogContent className='max-w-full w-[calc(100vw-20px)] h-[calc(100vh-20px)] bg-background flex flex-col'>
+      <DialogContent
+        onInteractOutside={(e) => {
+          e.preventDefault()
+        }}
+        className='max-w-full w-[calc(100vw-20px)] h-[calc(100vh-20px)] bg-background flex flex-col'
+      >
         <DialogHeader>
           <DialogTitle className='text-base font-bold'>ADD NEW WORKER NODE</DialogTitle>
         </DialogHeader>

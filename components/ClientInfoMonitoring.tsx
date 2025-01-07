@@ -184,7 +184,7 @@ export const ClientInfoMonitoring: IComponent<{
               </DropdownMenuContent>
             </DropdownMenu>
             <div className='flex flex-col flex-auto'>
-              <OverflowText className='uppercase text-sm font-bold max-w-[170px]'>
+              <OverflowText className='uppercase text-sm font-bold max-w-[170px] text-left'>
                 {client.name || `NODE #${client.id.slice(0, 4)}`}
               </OverflowText>
               <a href={client.host} target='__blank' className='transition-all text-xs relative h-4 w-full justify-center items-center'>

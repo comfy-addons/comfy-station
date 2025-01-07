@@ -4,6 +4,7 @@ import { ReactNode, useEffect, useRef } from 'react'
 import { AttachmentReview } from './AttachmentReview'
 import { useActionDebounce, useActionThreshold } from '@/hooks/useAction'
 import { useOnScreen } from '@/hooks/useOnScreen'
+import { cn } from '@/lib/utils'
 
 type TLoadableAttachment = Attachment | { id: string; loading: boolean }
 
@@ -124,17 +125,17 @@ export const ImageGallery: IComponent<{
             )
           })}
         </div>
-        {!!items.length && (
-          <div
-            id='bottom'
-            ref={bottomRef}
-            className='w-full flex items-center justify-center mt-4 pt-4 pb-24 text-gray-400'
-          >
-            {hasNextPage && <div className='flex'>More data...</div>}
-            {isFetchingNextPage && <div className='flex'>Loading more data...</div>}
-            {!isFetchingNextPage && !hasNextPage && <div className='flex'>No more data</div>}
-          </div>
-        )}
+        <div
+          id='bottom'
+          ref={bottomRef}
+          className={cn('w-full flex items-center justify-center mt-4 pt-4 pb-24 text-gray-400', {
+            'hidden': items.length === 0
+          })}
+        >
+          {hasNextPage && <div className='flex'>More data...</div>}
+          {isFetchingNextPage && <div className='flex'>Loading more data...</div>}
+          {!isFetchingNextPage && !hasNextPage && <div className='flex'>No more data</div>}
+        </div>
       </div>
     </>
   )
