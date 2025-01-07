@@ -8,3 +8,9 @@ export enum EImportingClient {
   IMPORTED_EXTENSION = 'IMPORTED_EXTENSION',
   DONE = 'DONE'
 }
+
+export enum ECompressPreset {
+  PREVIEW = 'preview-image-jpg',
+  HIGH_JPG = 'high-jpg',
+  JPG = 'jpg'
+}

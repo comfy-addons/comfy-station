@@ -8,7 +8,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { User } from '@/entities/user'
-import { ECompressPreset, useAttachmentUploader } from '@/hooks/useAttachmentUploader'
+import { useAttachmentUploader } from '@/hooks/useAttachmentUploader'
 import { useToast } from '@/hooks/useToast'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { UpdateIcon } from '@radix-ui/react-icons'
@@ -17,6 +17,7 @@ import { useSession } from 'next-auth/react'
 import { useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { ECompressPreset } from '@/constants/enum'
 
 const UpdateSchema = z.object({
   avatarId: z.string().optional(),

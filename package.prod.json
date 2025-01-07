@@ -1,0 +1,60 @@
+{
+  "name": "next-golden-template",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start:trpc": "bun ./server/run.ts",
+    "start:next": "next start",
+    "start": "run-p start:**"
+  },
+  "packageManager": "^bun@1.0.0",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.712.0",
+    "@aws-sdk/node-http-handler": "^3.374.0",
+    "@aws-sdk/s3-request-presigner": "^3.712.0",
+    "@elysiajs/bearer": "^1.1.2",
+    "@elysiajs/cron": "^1.1.1",
+    "@elysiajs/swagger": "^1.1.6",
+    "@hookform/resolvers": "^3.9.1",
+    "@langchain/core": "^0.3.25",
+    "@langchain/openai": "^0.3.16",
+    "@mikro-orm/cli": "^6.4.1",
+    "@mikro-orm/core": "^6.4.1",
+    "@mikro-orm/libsql": "^6.4.1",
+    "@mikro-orm/reflection": "^6.4.1",
+    "@saintno/comfyui-sdk": "^0.2.40",
+    "@saintno/needed-tools": "^0.3.5",
+    "sharp": "^0.33.5",
+    "@trpc/react-query": "^11.0.0-rc.660",
+    "@trpc/server": "^11.0.0-rc.660",
+    "citty": "^0.1.6",
+    "cors": "^2.8.5",
+    "elysia": "^1.1.26",
+    "embla-carousel-react": "^8.5.1",
+    "httpsnippet": "^3.0.9",
+    "jsonwebtoken": "^9.0.2",
+    "libsql": "^0.4.7",
+    "lru-cache": "^11.0.2",
+    "mime": "^4.0.4",
+    "npm-run-all2": "^6.2.6",
+    "perf_hooks": "^0.0.1",
+    "redis": "^4.7.0",
+    "reflect-metadata": "^0.2.2",
+    "source-map-support": "^0.5.21",
+    "superjson": "^2.2.2",
+    "ts-results": "^3.3.0",
+    "ua-parser-js": "^2.0.0",
+    "uuid": "^10.0.0",
+    "ws": "^8.18.0",
+    "zod": "^3.24.1"
+  },
+  "mikro-orm": {
+    "useTsNode": true,
+    "tsConfigPath": "./tsconfig.mikro-orm.json",
+    "configPaths": ["./mikro-orm.config.ts"]
+  },
+  "overrides": {
+    "@types/react": "19.0.2",
+    "@types/react-dom": "19.0.2"
+  }
+}

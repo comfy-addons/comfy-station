@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 const ENVBackendSchema = z.object({
   BACKEND_URL: z.string().optional().default('http://localhost:3001'),
+  BACKEND_URL_INTERNAL: z.string().optional().default('http://localhost:3001'),
   NEXTAUTH_SECRET: z.string().optional().default('secret'),
   INTERNAL_SECRET: z.string().optional().default('internal-secret'),
   S3_ENDPOINT: z.string().optional(),
@@ -17,6 +18,7 @@ const ENVBackendSchema = z.object({
 
 export const BackendENV = ENVBackendSchema.parse({
   BACKEND_URL: process.env.BACKEND_URL,
+  BACKEND_URL_INTERNAL: process.env.BACKEND_URL_INTERNAL,
   NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
   INTERNAL_SECRET: process.env.INTERNAL_SECRET,
   S3_ENDPOINT: process.env.S3_ENDPOINT,

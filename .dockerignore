@@ -46,3 +46,4 @@ coverage*
 
 # Ignore all database files
 *.db
+storage

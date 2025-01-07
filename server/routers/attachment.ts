@@ -5,7 +5,7 @@ import { Attachment } from '@/entities/attachment'
 import AttachmentService from '@/services/attachment.service'
 import { EAttachmentStatus, EUserRole } from '@/entities/enum'
 import { ImageUtil } from '../utils/ImageUtil'
-import { ECompressPreset } from '@/hooks/useAttachmentUploader'
+import { ECompressPreset } from '@/constants/enum'
 
 const getAttachmentURL = async (attachment: Attachment) => {
   const prevName = `${attachment.fileName}_preview.jpg`

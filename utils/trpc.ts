@@ -27,7 +27,7 @@ export function getBaseUrl() {
       return backendURL
     }
   }
-  return BackendENV.BACKEND_URL
+  return BackendENV.BACKEND_URL_INTERNAL
 }
 
 function getBaseWsUrl() {

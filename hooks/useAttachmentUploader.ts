@@ -1,10 +1,5 @@
+import { ECompressPreset } from '@/constants/enum'
 import { trpc } from '@/utils/trpc'
-
-export enum ECompressPreset {
-  PREVIEW = 'preview-image-jpg',
-  HIGH_JPG = 'high-jpg',
-  JPG = 'jpg'
-}
 
 export const useAttachmentUploader = () => {
   const uploader = trpc.attachment.upload.useMutation()

@@ -4,7 +4,7 @@ import { ChevronLeft, Plus, PlusIcon, Trash2 } from 'lucide-react'
 import { Button } from '../ui/button'
 import { z } from 'zod'
 import { EUserRole } from '@/entities/enum'
-import { ECompressPreset, useAttachmentUploader } from '@/hooks/useAttachmentUploader'
+import { useAttachmentUploader } from '@/hooks/useAttachmentUploader'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
@@ -15,6 +15,7 @@ import LoadableImage from '../LoadableImage'
 import { trpc } from '@/utils/trpc'
 import { useToast } from '@/hooks/useToast'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
+import { ECompressPreset } from '@/constants/enum'
 
 const NewUserSchema = z.object({
   avatarId: z.string().optional(),
