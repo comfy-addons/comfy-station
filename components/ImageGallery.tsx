@@ -124,15 +124,17 @@ export const ImageGallery: IComponent<{
             )
           })}
         </div>
-        <div
-          id='bottom'
-          ref={bottomRef}
-          className='w-full flex items-center justify-center mt-4 pt-4 pb-24 text-gray-400'
-        >
-          {hasNextPage && <div className='flex'>More data...</div>}
-          {isFetchingNextPage && <div className='flex'>Loading more data...</div>}
-          {!isFetchingNextPage && !hasNextPage && <div className='flex'>No more data</div>}
-        </div>
+        {!!items.length && (
+          <div
+            id='bottom'
+            ref={bottomRef}
+            className='w-full flex items-center justify-center mt-4 pt-4 pb-24 text-gray-400'
+          >
+            {hasNextPage && <div className='flex'>More data...</div>}
+            {isFetchingNextPage && <div className='flex'>Loading more data...</div>}
+            {!isFetchingNextPage && !hasNextPage && <div className='flex'>No more data</div>}
+          </div>
+        )}
       </div>
     </>
   )

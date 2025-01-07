@@ -4,7 +4,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile.app
+      dockerfile: webapp.dockerfile
       args:
         - NEXT_PUBLIC_APP_URL=http://localhost:3000
     ports:
@@ -26,7 +26,7 @@ services:
   server:
     build:
       context: .
-      dockerfile: Dockerfile.server
+      dockerfile: server.dockerfile
     ports:
       - '3001:3001'
     env_file:

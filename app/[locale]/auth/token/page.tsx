@@ -21,7 +21,7 @@ const Page: NextPage = () => {
   return (
     <>
       <Form {...form}>
-        <form className='space-y-4'>
+        <form className='space-y-4 flex flex-col'>
           <FormField
             name='username'
             render={({ field }) => (
@@ -34,11 +34,14 @@ const Page: NextPage = () => {
               </FormItem>
             )}
           />
+          <code className='text-sm text-muted-foreground text-center mx-auto'>
+            Not supported yet!
+          </code>
           <div className='flex justify-between w-full'>
             <Button variant='link' type='button'>
               Github <ExternalLinkIcon className='ml-2 w-4 h-4' />
             </Button>
-            <Button type='submit'>
+            <Button type='submit' disabled>
               {t('submit')} <EnterIcon className='ml-2 w-4 h-4' />
             </Button>
           </div>

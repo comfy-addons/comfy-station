@@ -69,7 +69,7 @@ export const TopBar: IComponent = () => {
             <Button
               onClick={() => dispatchGlobalEvent(EGlobalEvent.BTN_CREATE_TOKEN)}
               size='icon'
-              variant='secondary'
+              variant='default'
               className='rounded-full'
               title='Create new token'
             >

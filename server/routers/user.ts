@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { adminProcedure, privateProcedure } from '../procedure'
+import { adminProcedure, privateProcedure, publicProcedure } from '../procedure'
 import { router } from '../trpc'
 import { User } from '@/entities/user'
 import { EDeviceStatus, ETaskStatus, EUserRole } from '@/entities/enum'
@@ -9,6 +9,40 @@ import CachingService from '@/services/caching.service'
 import { UserClient } from '@/entities/user_clients'
 
 export const userRouter = router({
+  isEmpty: publicProcedure.query(async ({ ctx }) => {
+    const userCount = await ctx.em.count(User, {})
+    return userCount === 0
+  }),
+  firstUser: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email(),
+        password: z.string().min(8)
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check if any users exist
+      const userCount = await ctx.em.count(User, {})
+      if (userCount > 0) {
+        throw new Error('First user already exists')
+      }
+
+      // Create first admin user
+      const user = ctx.em.create(
+        User,
+        {
+          email: input.email,
+          password: input.password,
+          role: EUserRole.Admin,
+          balance: -1,
+          weightOffset: 0
+        },
+        { partial: true }
+      )
+
+      await ctx.em.persistAndFlush(user)
+      return true
+    }),
   list: adminProcedure.query(async ({ ctx }) => {
     const users = await ctx.em.find(User, {}, { populate: ['avatar'] })
     const output = await Promise.all(

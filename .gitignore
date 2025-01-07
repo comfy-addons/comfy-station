@@ -47,3 +47,4 @@ playground
 public/attachments/*
 
 test.ts
+storage/

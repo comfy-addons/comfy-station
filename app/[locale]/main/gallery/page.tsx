@@ -4,6 +4,7 @@ import { ImageGallery } from '@/components/ImageGallery'
 import { useDynamicValue } from '@/hooks/useDynamicValue'
 import { trpc } from '@/utils/trpc'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { ImageOff } from 'lucide-react'
 import { useEffect } from 'react'
 
 export default function GalleryPage() {
@@ -41,7 +42,7 @@ export default function GalleryPage() {
         renderEmpty={() => {
           return (
             <div className='flex flex-col text-center text-foreground/50'>
-              <ExclamationTriangleIcon className='w-6 h-6 mx-auto my-2' />
+              <ImageOff className='w-6 h-6 mx-auto my-2' />
               <span className='uppercase'>Gallery is empty</span>
               <p className='text-xs'>Create your first task to see the results</p>
             </div>

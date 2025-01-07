@@ -7,6 +7,7 @@ import { UserInformation } from '@/components/UserInformation'
 import { WorkflowTask } from '@/entities/workflow_task'
 import { EGlobalEvent, useGlobalEvent } from '@/hooks/useGlobalEvent'
 import { trpc } from '@/utils/trpc'
+import { ServerOff } from 'lucide-react'
 import { useState } from 'react'
 
 export const AdminSideInfo: IComponent = () => {
@@ -71,7 +72,14 @@ export const AdminSideInfo: IComponent = () => {
           </div>
         </div>
       </div>
-      <div className='flex-1 w-full shadow-inner border-t border-b relative'>
+      <div className='flex-1 w-full flex flex-col shadow-inner border-t border-b relative'>
+        {!clients?.length && (
+          <div className='flex flex-1 flex-col items-center justify-center text-foreground/50'>
+            <ServerOff className='w-6 h-6 mx-auto my-2' />
+            <span className='uppercase'>Server list is empty</span>
+            <p className='text-xs'>Please add your first server</p>
+          </div>
+        )}
         <div className='absolute w-full h-full overflow-auto divide-y-[1px]'>
           {clients?.map((client) => <ClientInfoMonitoring key={client.id} client={client} />)}
         </div>

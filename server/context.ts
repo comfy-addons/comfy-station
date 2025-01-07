@@ -13,15 +13,14 @@ export const createContext = async (opts: CreateNextContextOptions) => {
   const orm = await MikroORMInstance.getInstance().getORM()
   const headers = opts.req.headers
   const rawAuthorization = headers['authorization'] ?? opts.info?.connectionParams?.Authorization
-  const accessToken = rawAuthorization?.replace('Bearer ', '')
+  const accessToken = rawAuthorization?.replace('Bearer', '').trim()
 
   const userIp = (headers['x-real-ip'] || headers['x-forwarded-for'] || opts.req.connection.remoteAddress) as string
   const userAgent = headers['user-agent']
-
   const em = orm.em.fork()
   try {
     let user: User | null = null
-    if (accessToken) {
+    if (accessToken && accessToken.length > 0) {
       const tokenInfo = verify(accessToken, BackendENV.NEXTAUTH_SECRET) as { email: string }
       user = await em.findOne(User, { email: tokenInfo.email })
     }
@@ -34,9 +33,12 @@ export const createContext = async (opts: CreateNextContextOptions) => {
         userAgent
       }
     }
-    void UserManagement.getInstance().handleUserEvent({ ...output, em: output.em.fork() })
+    if (user) {
+      void UserManagement.getInstance().handleUserEvent({ ...output, em: output.em.fork() })
+    }
     return output
   } catch (e) {
+    console.log(e)
     throw new Error('Invalid access token')
   }
 }

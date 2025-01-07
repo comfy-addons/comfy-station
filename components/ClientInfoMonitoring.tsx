@@ -184,10 +184,12 @@ export const ClientInfoMonitoring: IComponent<{
               </DropdownMenuContent>
             </DropdownMenu>
             <div className='flex flex-col flex-auto'>
-              <h1 className='uppercase text-sm font-bold'>{client.name || `NODE #${client.id.slice(0, 4)}`}</h1>
-              <div className='text-xs relative h-4 w-full justify-center items-center'>
+              <OverflowText className='uppercase text-sm font-bold max-w-[170px]'>
+                {client.name || `NODE #${client.id.slice(0, 4)}`}
+              </OverflowText>
+              <a href={client.host} target='__blank' className='transition-all text-xs relative h-4 w-full justify-center items-center'>
                 <OverflowText className='w-full absolute text-left'>{client.host}</OverflowText>
-              </div>
+              </a>
             </div>
           </div>
           <TaskBar className='max-w-[200px]' tasks={clientTasks || []} loading={clientTasks === undefined} total={20} />

@@ -35,6 +35,7 @@ export const clientRouter = router({
     const pool = ComfyPoolInstance.getInstance().pool
     const clientIns = pool.pickById(input)
     if (clientIns) {
+      clientIns.destroy()
       pool.removeClient(clientIns)
     }
     client.actionEvents.removeAll()

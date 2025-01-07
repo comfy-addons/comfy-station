@@ -7,6 +7,7 @@ import { useMemo } from 'react'
 import { useDynamicValue } from '@/hooks/useDynamicValue'
 import { cn } from '@/lib/utils'
 import { EWorkflowActiveStatus } from '@/entities/enum'
+import { PenOff } from 'lucide-react'
 
 /**
  * Current redirect to /auth/basic
@@ -36,8 +37,18 @@ export default function Home() {
         if (a.status === EWorkflowActiveStatus.Activated) return -1
         return 1
       })
-    return items?.map((item, i) => <WorkflowCard data={item} key={item.id} />)
+    return items?.map((item, i) => <WorkflowCard data={item} key={item.id} />) ?? []
   }, [query.data])
+
+  if (!renderCards.length) {
+    return (
+      <div className='flex h-full flex-col items-center justify-center text-foreground/50'>
+        <PenOff className='w-6 h-6 mx-auto my-2' />
+        <span className='uppercase'>Workflow is empty</span>
+        <p className='text-xs'>Create your first workflow</p>
+      </div>
+    )
+  }
 
   return (
     <div className='absolute w-full h-full overflow-y-auto pb-16'>
