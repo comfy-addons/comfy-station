@@ -30,7 +30,7 @@ export const WorkflowApiSnippet = () => {
     enabled: !!slug && open
   })
   const workflowSnippets = trpc.snippet.workflow.useQuery(
-    { id: slug!, input: currentInput },
+    { id: slug!, input: currentInput, host: getBaseUrl() },
     {
       enabled: !!slug && open
     }
@@ -174,7 +174,7 @@ export const WorkflowApiSnippet = () => {
           <p className='text-sm text-muted-foreground'>
             For more detailed, please visit{' '}
             <a
-              href={`${getBaseUrl()}/swagger#tag/workflow/POST/ext/api/workflow/{id}/execute`}
+              href={`${getBaseUrl()}/swagger#tag/workflow/POST/api/ext/workflow/{id}/execute`}
               className='underline hover:text-primary'
               target='_blank'
               rel='noopener noreferrer'

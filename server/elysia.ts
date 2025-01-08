@@ -53,7 +53,7 @@ export const ElysiaHandler = new Elysia()
   .use(UserPlugin)
   // Bind Internal Path
   .use(
-    new Elysia({ prefix: '/ext/api' })
+    new Elysia({ prefix: '/api/ext' })
       .get(
         '/health',
         () => {

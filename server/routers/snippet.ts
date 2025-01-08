@@ -14,9 +14,10 @@ import {
 
 export const snippetRouter = router({
   workflow: privateProcedure
-    .input(z.object({ id: z.string(), input: z.record(z.string(), z.any()).optional() }))
+    .input(z.object({ id: z.string(), input: z.record(z.string(), z.any()).optional(), host: z.string().optional() }))
     .query(async ({ input, ctx }) => {
       let needUpload = false
+      const host = input.host
       const workflow = await ctx.em.findOneOrFail(Workflow, { id: input.id })
       const inputBody: Record<string, string | number | boolean> = {}
       for (const inputKey in workflow.mapInput) {
@@ -41,22 +42,22 @@ export const snippetRouter = router({
           {
             name: 'Upload Attachment',
             description: 'Upload an attachment for using in workflow',
-            snippet: AttachmentSnippet()
+            snippet: AttachmentSnippet({ host })
           },
           {
             name: 'Execute Workflow',
             description: 'Execute a workflow and return a task',
-            snippet: WorkflowSnippet(input.id, inputBody)
+            snippet: WorkflowSnippet({ id: input.id, input: inputBody, host })
           },
           {
             name: 'Task Status',
             description: 'Get task status',
-            snippet: TaskStatusSnippet('YOUR_TASK_ID')
+            snippet: TaskStatusSnippet({ id: 'YOUR_TASK_ID', host })
           },
           {
             name: 'Task Attachment',
             description: 'Get task attachments after done',
-            snippet: TaskAttachmentSnippet('YOUR_TASK_ID')
+            snippet: TaskAttachmentSnippet({ id: 'YOUR_TASK_ID', host })
           }
         ]
         if (!needUpload) {

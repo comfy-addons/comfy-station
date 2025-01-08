@@ -22,9 +22,12 @@ export const metadata: Metadata = {
   description: 'A station for all your comfyui instance'
 }
 
-async function getBackendURL() {
+async function getBackendENV() {
   'use server'
-  return BackendENV.BACKEND_URL
+  return {
+    sameDomain: BackendENV.BE_SAME_DOMAIN,
+    url: BackendENV.BACKEND_URL
+  }
 }
 
 export default async function RootLayout(
@@ -38,12 +41,11 @@ export default async function RootLayout(
   const { session, locale } = params
 
   const { children } = props
-
+  const beEnv = await getBackendENV()
   const messages = await getMessages()
-  const backendURL = await getBackendURL()
 
   return (
-    <html lang={locale} data-backend-url={backendURL}>
+    <html lang={locale} data-backend-same-domain={beEnv.sameDomain} data-backend-url={beEnv.url}>
       <body>
         <SessionLayout session={session}>
           <NextIntlClientProvider timeZone='UTC' messages={messages}>

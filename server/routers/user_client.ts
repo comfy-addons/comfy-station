@@ -19,7 +19,6 @@ export const userClientRouter = router({
         user: ctx.session.user!,
         userAgent: ctx.extra.userAgent
       })
-      console.log(`User ${ctx.session.user!.email} updated status to ${input.status}`)
       client.deviceStatus = input.status
       await ctx.em.persistAndFlush(client)
     })

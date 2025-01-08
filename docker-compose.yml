@@ -1,18 +1,28 @@
 version: '3.8'
 
 services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app
+      - server
+    networks:
+      - comfy_network
+
   app:
     build:
       context: .
       dockerfile: webapp.dockerfile
       args:
         - NEXT_PUBLIC_APP_URL=http://localhost:3000
-    ports:
-      - '3000:3000'
     env_file:
       - .env
     environment:
-      - BACKEND_URL=${BACKEND_URL}
+      - BE_SAME_DOMAIN=true
       - BACKEND_URL_INTERNAL=http://server:3001
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - INTERNAL_SECRET=${INTERNAL_SECRET}
@@ -22,17 +32,17 @@ services:
     restart: unless-stopped
     networks:
       - comfy_network
+    expose:
+      - '3000'
 
   server:
     build:
       context: .
       dockerfile: server.dockerfile
-    ports:
-      - '3001:3001'
     env_file:
       - .env
     environment:
-      - BACKEND_URL=${BACKEND_URL}
+      - BE_SAME_DOMAIN=true
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - INTERNAL_SECRET=${INTERNAL_SECRET}
       - S3_ENDPOINT=${S3_ENDPOINT}
@@ -47,6 +57,8 @@ services:
     restart: unless-stopped
     networks:
       - comfy_network
+    expose:
+      - '3001'
 
 networks:
   comfy_network:

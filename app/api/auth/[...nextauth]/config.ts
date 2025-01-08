@@ -6,7 +6,7 @@ import { BackendENV } from '@/env'
 import { getBaseUrl } from '@/utils/trpc'
 
 const getUserInformationByCredentials = async (email: string, password: string): Promise<User | false> => {
-  return fetch(`${getBaseUrl()}/user/credential`, {
+  return fetch(`${getBaseUrl()}/api/user/credential`, {
     method: 'POST',
     body: JSON.stringify({ email, password }),
     headers: {
@@ -27,7 +27,7 @@ const getUserInformationByCredentials = async (email: string, password: string):
 }
 
 const getUserInformationByEmail = async (email: string): Promise<User | false> => {
-  return fetch(`${getBaseUrl()}/user/email`, {
+  return fetch(`${getBaseUrl()}/api/user/email`, {
     method: 'POST',
     body: JSON.stringify({ email }),
     headers: {

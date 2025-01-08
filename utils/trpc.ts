@@ -21,10 +21,11 @@ export function getBaseUrl() {
   if (typeof window !== 'undefined') {
     // Get html tag
     const html = document.querySelector('html')
-    // Get data-backend-url attribute
-    const backendURL = html?.getAttribute('data-backend-url')
-    if (backendURL) {
-      return backendURL
+    const isSameDomain = html?.getAttribute('data-backend-same-domain') === 'true'
+    if (isSameDomain) {
+      return window.location.origin
+    } else {
+      return html?.getAttribute('data-backend-url') ?? BackendENV.BACKEND_URL
     }
   }
   return BackendENV.BACKEND_URL_INTERNAL
@@ -71,7 +72,7 @@ const trpc = createTRPCNext<AppRouter>({
             false: splitLink({
               condition: (op) => isNonJsonSerializable(op.input),
               true: httpLink({
-                url: getBaseUrl(),
+                url: getBaseUrl() + '/api/trpc',
                 transformer: {
                   serialize: (data) => data as FormData,
                   deserialize: superjson.deserialize
@@ -83,7 +84,7 @@ const trpc = createTRPCNext<AppRouter>({
                 }
               }),
               false: httpBatchLink({
-                url: getBaseUrl(),
+                url: getBaseUrl() + '/api/trpc',
                 transformer: superjson,
                 async headers() {
                   return {
@@ -108,7 +109,7 @@ const trpc = createTRPCNext<AppRouter>({
            * If you want to use SSR, you need to use the server's full URL
            * @link https://trpc.io/docs/v11/ssr
            **/
-          url: `${getBaseUrl()}`,
+          url: `${getBaseUrl()}/api/trpc`,
           // You can pass any HTTP headers you wish here
           async headers() {
             if (!ctx?.req?.headers) {

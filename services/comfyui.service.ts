@@ -65,10 +65,6 @@ export class ComfyPoolInstance {
               }
             : undefined
       })
-      client.on('all', (ev) => {
-        if (ev.detail.type === 'crystools.monitor') return
-        console.log(ev.detail)
-      })
       this.pool.addClient(client)
     }
     this.cleanAllRunningTasks().then(() => delay(1000).then(() => this.pickingJob()))
@@ -180,6 +176,13 @@ export class ComfyPoolInstance {
               this.cachingService.set('USER_EXECUTING_TASK', user.id, Date.now())
             }
             pool.run(async (api) => {
+              if (api.ext.manager.isSupported) {
+                // Set preview method before execute
+                // TODO: Add setting for this
+                void api.ext.manager.previewMethod('latent2rgb').catch((e) => {
+                  console.error(e)
+                })
+              }
               const start = performance.now()
               try {
                 const client = await em.findOne(Client, { id: api.id })

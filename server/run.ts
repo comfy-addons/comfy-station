@@ -15,6 +15,7 @@ import { appRouter } from './routers/_app'
 import { createContext } from './context'
 import { UserManagement } from '@/services/user.service'
 import { CleanupService } from '@/services/cleanup.service'
+import { createPrefixedHandler } from './utils/handler'
 
 /**
  * Initialize all services
@@ -36,13 +37,14 @@ export const tRPCHandler = createHTTPHandler({
   router: appRouter,
   createContext: createContext as any
 })
+const prefixedTRPCHandler = createPrefixedHandler('/api/trpc', tRPCHandler)
 
 const server = createServer(async (req, res) => {
   try {
     /**
      * Handle the request using Elysia
      */
-    if (req.url?.startsWith('/swagger') || req.url?.startsWith('/user/') || req.url?.startsWith('/ext/api')) {
+    if (req.url?.startsWith('/swagger') || req.url?.startsWith('/api/user') || req.url?.startsWith('/api/ext')) {
       const request = await convertIMessToRequest(req)
       const output = await ElysiaHandler.handle(request)
       // If the response is 404, then passthrough request to tRPC's handler
@@ -64,7 +66,7 @@ const server = createServer(async (req, res) => {
   /**
    * Handle the request using tRPC
    */
-  tRPCHandler(req, res)
+  prefixedTRPCHandler(req, res)
 })
 
 const wss = new WebSocketServer({ server })

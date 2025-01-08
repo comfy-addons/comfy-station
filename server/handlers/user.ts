@@ -6,7 +6,7 @@ import Elysia, { t } from 'elysia'
 const mikro = MikroORMInstance.getInstance()
 
 export const UserPlugin = new Elysia({
-  prefix: '/user',
+  prefix: '/api/user',
   detail: {
     tags: ['Auth'],
     hide: true

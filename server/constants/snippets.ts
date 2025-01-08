@@ -1,11 +1,11 @@
-import { BackendENV } from '@/env'
 import { ESupportedSnippetLanguage, SnippetOutput } from '@/types/snippet'
 import { HTTPSnippet } from 'httpsnippet'
 
-export const WorkflowSnippet = (id: string, input: object, token = 'REPLACE_API_TOKEN') => {
+export const WorkflowSnippet = (config: { host?: string; id: string; input: object; token?: string }) => {
+  const { id, input, token = 'REPLACE_API_TOKEN', host = 'http://localhost:3001' } = config
   return new HTTPSnippet({
     method: 'POST',
-    url: `${BackendENV.BACKEND_URL}/ext/api/workflow/${id}/execute`,
+    url: `${host}/api/ext/workflow/${id}/execute`,
     headers: [
       { name: 'Content-Type', value: 'application/json' },
       {
@@ -23,10 +23,11 @@ export const WorkflowSnippet = (id: string, input: object, token = 'REPLACE_API_
   })
 }
 
-export const AttachmentSnippet = () => {
+export const AttachmentSnippet = (config: { host?: string }) => {
+  const { host = 'http://localhost:3001' } = config
   return new HTTPSnippet({
     method: 'POST',
-    url: `${BackendENV.BACKEND_URL}/ext/api/attachment/upload`,
+    url: `${host}/api/ext/attachment/upload`,
     headers: [
       {
         name: 'Authorization',
@@ -47,10 +48,11 @@ export const AttachmentSnippet = () => {
   })
 }
 
-export const TaskStatusSnippet = (id: string, token = 'REPLACE_API_TOKEN') => {
+export const TaskStatusSnippet = (config: { id: string; token?: string; host?: string }) => {
+  const { id, token = 'REPLACE_API_TOKEN', host = 'http://localhost:3001' } = config
   return new HTTPSnippet({
     method: 'GET',
-    url: `${BackendENV.BACKEND_URL}/ext/api/task/${id}/status`,
+    url: `${host}/api/ext/task/${id}/status`,
     headers: [
       {
         name: 'Authorization',
@@ -61,10 +63,11 @@ export const TaskStatusSnippet = (id: string, token = 'REPLACE_API_TOKEN') => {
   })
 }
 
-export const TaskAttachmentSnippet = (id: string, token = 'REPLACE_API_TOKEN') => {
+export const TaskAttachmentSnippet = (config: { id: string; token?: string; host?: string }) => {
+  const { id, token = 'REPLACE_API_TOKEN', host = 'http://localhost:3001' } = config
   return new HTTPSnippet({
     method: 'GET',
-    url: `${BackendENV.BACKEND_URL}/ext/api/task/${id}/attachments`,
+    url: `${host}/api/ext/task/${id}/attachments`,
     headers: [
       {
         name: 'Authorization',

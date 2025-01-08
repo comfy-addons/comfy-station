@@ -199,7 +199,6 @@ export const TaskItem: IComponent<{
         <Skeleton className='h-32 aspect-square rounded-none w-fit ml-auto' />
       </div>
     )
-  console.log(task)
 
   return (
     <ContextMenu>
