@@ -1,5 +1,9 @@
 # 🖼️ ComfyUI Station
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![CI](https://github.com/comfy-addons/comfy-station/actions/workflows/ci-docker-hub.yml/badge.svg)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-donate-yellow.svg)](https://www.buymeacoffee.com/tctien342)
+
 > Welcome to ComfyUI Station, your all-in-one hub for managing and enhancing your ComfyUI image generation experience! 🎨✨ This app isn't just another rendering tool; it's a powerful, user-friendly platform designed to make interacting with ComfyUI instances seamless. From workflow management to task execution, we've got you covered, making sure your creative journey is as smooth and enjoyable as possible. Let's unlock the full potential of your ComfyUI together!
 
 ![ComfyUI Station Logo or Screenshot](https://r2.550studios.com/comfy-station-bg.jpg)
@@ -27,51 +31,108 @@ Ready to get started? Here's how to set up ComfyUI Station:
 
 1.  **Prerequisites:** 📝
 
-    - **Bun:** Ensure you have Bun installed. You can download it from [https://bun.sh](https://bun.sh).
-    - **Docker:** Docker is needed for containerization. Get it at [https://www.docker.com](https://www.docker.com).
+    - **Docker:** Docker and Docker Compose is needed for containerization. Get it at [https://www.docker.com](https://www.docker.com).
 
-2.  **Clone the Repository:** 📥
+2.  **Docker compose file** 📥
 
-    ```bash
-    git clone https://github.com/comfy-addons/comfy-station.git
-    cd comfy-station
+    ```yml
+    version: '3.8'
+    
+    services:
+      nginx:
+        image: nginx:alpine
+        ports:
+          - '8080:80'
+        volumes:
+          - ./nginx.conf:/etc/nginx/nginx.conf:ro
+        depends_on:
+          - app
+          - server
+        networks:
+          - comfy_network
+    
+      app:
+        image: tctien342/comfy-station-webapp:latest
+        env_file:
+          - .env
+        environment:
+          - BE_SAME_DOMAIN=true
+          - BACKEND_URL_INTERNAL=http://server:3001
+          - NODE_ENV=production
+        depends_on:
+          - server
+        restart: unless-stopped
+        networks:
+          - comfy_network
+        expose:
+          - '3000'
+    
+      server:
+        image: tctien342/comfy-station-backend:latest
+        env_file:
+          - .env
+        environment:
+          - BE_SAME_DOMAIN=true
+          - NODE_ENV=production
+        volumes:
+          - ./storage:/app/storage
+        restart: unless-stopped
+        networks:
+          - comfy_network
+        expose:
+          - '3001'
+    
+    networks:
+      comfy_network:
+        driver: bridge
+    
     ```
 
 3.  **Set up your `.env` file:** ⚙️
-    Copy `.env.example` to `.env` and fill in your details.
+    Copy content below to your `.env` and fill in your details.
 
     ```bash
-    cp .env.example .env
-    # now open .env and update with your details
+    # Secret key for NextAuth authentication
+    NEXTAUTH_SECRET="your_nextauth_secret_here"
+
+    # Backend and frontend internal secret
+    INTERNAL_SECRET="your_internal_secret_here"
+    
+    # S3 storage configuration (Optional - Storage file on S3 services)
+    S3_ENDPOINT=
+    S3_BUCKET_NAME=
+    S3_REGION=
+    S3_ACCESS_KEY=
+    S3_SECRET_KEY=
+    
+    # Support for OpenAI (Optional - Auto fill input feature)
+    OPENAI_BASE_URL=
+    OPENAI_API_KEY=
+    OPENAI_MODEL=
     ```
 
     You will need:
 
     - `NEXTAUTH_SECRET`
-    - `BACKEND_URL`
     - `INTERNAL_SECRET`
     - Your S3 credentials (optional): `S3_ENDPOINT`, `S3_BUCKET_NAME`, etc.
       - If you don't have S3 credentials, don't fill these fields, the app will use local storage.
     - Your OpenAI credentials (optional): `OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL`
 
-4.  **Create Your First Account:** 👤
+4.  **Download `nginx` config file:** 📥
 
-        - Create an Admin (Level 5) user with the following command:
-          ```bash
-          bun cli user --email admin@example.com -p admin1234 -l 5
-          ```
-        - There are different user levels:
-          - Editor (Level 4) user, who can only create and execute workflows: `-l 4`
-          - User (Level 3) user, who can only execute workflows: `-l 3`
+    ```bash
+    curl -o nginx.conf https://raw.githubusercontent.com/comfy-addons/comfy-station/refs/heads/main/nginx.conf
+    ```
 
-5.  **Build with Docker Compose:** 🐳
+5.  **Start with Docker Compose:** 🐳
 
         ```bash
-        docker-compose up --build
+        docker-compose up -d
         ```
 
-6.  **Access the Application:** 🌐
-        Open your browser and go to `http://localhost:3000`.
+7.  **Access the Application:** 🌐
+        Open your browser and go to `http://localhost:8080` to create your first account.
 
 ## 🚀 How to Use
 
@@ -82,7 +143,9 @@ Getting started with ComfyUI Station is a breeze:
     - Login with admin account and add your ComfyUI server by its URL.
     - Input any necessary authentication.
 3.  **Start Creating Workflows:**
-    - Select a workflow to run from the main workflow picker or upload your own in the top bar.
+    - Download your workflow from ComfyUI web interface using `Workflow` -> `Export API`.
+    - Upload your own in the top bar.
+    - Select a workflow to run from the main workflow picker
     - Use the workflow parameters area to adjust the input configuration.
     - Click "Run" to start the task on one of your connected ComfyUI nodes.
 4.  **Manage and Monitor:**
