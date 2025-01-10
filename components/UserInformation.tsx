@@ -1,7 +1,5 @@
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar'
 import { ExitIcon } from '@radix-ui/react-icons'
-import { BellIcon } from 'lucide-react'
-import { Button } from './ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
 import { signOut, useSession } from 'next-auth/react'
 import { trpc } from '@/utils/trpc'
@@ -9,7 +7,6 @@ import { EDeviceStatus, EUserRole } from '@/entities/enum'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import { MiniBadge } from './MiniBadge'
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import { UserNotificationCenter } from './UserNotificationCenter'
 
 export const UserInformation: IComponent = () => {

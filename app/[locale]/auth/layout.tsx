@@ -46,7 +46,7 @@ const Layout: IComponent = ({ children }) => {
   }, [isEmptyUser, route])
 
   return (
-    <Card className='bg-background flex flex-col md:flex-row overflow-hidden relative w-full border-none md:w-fit h-[480px] rounded-none md:rounded-xl'>
+    <Card className='bg-background flex flex-col md:flex-row overflow-hidden relative w-full border-none md:w-fit md:h-[480px] min-h-full md:min-h-fit rounded-none md:rounded-xl'>
       <div className='w-full md:w-[400px] min-h-[400px] flex-1 relative'>
         <Image alt='Login background' className='object-cover' fill src={AuthBackground} />
       </div>

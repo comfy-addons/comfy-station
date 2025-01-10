@@ -3,6 +3,7 @@
 import { RouteConf } from '@/constants/route'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
 import { cn } from '@/lib/utils'
+import { ArrowLongLeftIcon } from '@heroicons/react/24/outline'
 import { Link } from '@routing'
 import { useSession } from 'next-auth/react'
 import { useMemo } from 'react'
@@ -33,9 +34,15 @@ const Layout: IComponent = ({ children }) => {
   }, [routeConf?.key, session.data])
 
   return (
-    <div className='w-full h-full flex flex-row divide-x-[1px]'>
-      <div className='h-full flex flex-col divide-y-[1px]'>{renderTabs}</div>
-      <div className='flex-1 h-full hidden md:grid'>{children}</div>
+    <div className='w-full h-full flex flex-col md:flex-row divide-x-[1px]'>
+      {routeConf?.key !== 'setting' && (
+        <Link href='/main/setting' className='px-4 py-2 md:hidden flex gap-2 items-center text-sm'>
+          <ArrowLongLeftIcon className='w-6 h-6' />
+          <code>Back to settings</code>
+        </Link>
+      )}
+      <div className='h-full hidden md:flex flex-col divide-y-[1px]'>{renderTabs}</div>
+      <div className='flex-1 h-full flex flex-col md:grid'>{children}</div>
     </div>
   )
 }

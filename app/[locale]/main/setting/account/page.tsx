@@ -86,7 +86,7 @@ export default function AccountPage() {
   }
 
   return (
-    <div className='w-full p-2 flex gap-4'>
+    <div className='w-full p-2 flex md:flex-row flex-col gap-4'>
       <input
         ref={fileRef}
         type='file'
@@ -103,9 +103,9 @@ export default function AccountPage() {
         alt='User avatar'
         data={user.avatar}
         onClick={() => fileRef.current?.click()}
-        containerClassName='w-64 h-64 rounded-lg overflow-hidden btn border'
+        containerClassName='md:w-64 md:h-64 w-full rounded-lg overflow-hidden btn border'
       />
-      <div className='flex flex-col flex-1 max-w-sm mt-4'>
+      <div className='flex flex-col flex-1 md:max-w-sm mt-4'>
         <label className='text-sm'>Email</label>
         <Input readOnly value={user.email} />
 
@@ -139,8 +139,8 @@ export default function AccountPage() {
                 )}
               />
             </div>
-            <div className='w-full flex justify-end gap-2'>
-              <LoadableButton loading={updater.isPending} type='submit'>
+            <div className='w-full flex md:justify-end gap-2'>
+              <LoadableButton loading={updater.isPending} type='submit' className='w-full mt-2 md:w-fit'>
                 <UpdateIcon className='w-4 h-4 mr-2' /> Update
               </LoadableButton>
             </div>

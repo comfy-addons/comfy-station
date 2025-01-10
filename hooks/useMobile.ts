@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 
-const useMobile = () => {
-  const [isMobile, setIsMobile] = useState(false)
+const useMobile = (initialize: boolean | null = false) => {
+  const [isMobile, setIsMobile] = useState<boolean | null>(initialize)
 
   useEffect(() => {
     const handleResize = () => {
