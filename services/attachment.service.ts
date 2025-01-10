@@ -31,7 +31,7 @@ class AttachmentService {
   private s3?: S3Client
   private logger: Logger
   private cacheStorage: LRUCache<string, string>
-  private localPath = process.cwd() + '/public/attachments/'
+  private localPath = process.cwd() + '/storage/attachments/'
 
   static getInstance(): AttachmentService {
     if (!AttachmentService.instance) {
@@ -89,11 +89,11 @@ class AttachmentService {
     }
   }
 
-  async getAttachmentURL(item: Attachment) {
-    return this.getFileURL(item.fileName)
+  async getAttachmentURL(item: Attachment, baseURL = 'http://localhost:3001') {
+    return this.getFileURL(item.fileName, 3600 * 24, baseURL)
   }
 
-  async getFileURL(fileName: string, expiresIn?: number) {
+  async getFileURL(fileName: string, expiresIn?: number, baseURL = '') {
     if (this.s3 && BackendENV.S3_BUCKET_NAME) {
       // Generate a file URL for the file in the S3 bucket
       const s3Url = this.cacheStorage.get(`s3Url:${fileName}`)
@@ -116,7 +116,7 @@ class AttachmentService {
     if (fs.existsSync(this.localPath + fileName)) {
       return {
         type: EAttachmentType.LOCAL,
-        url: '/attachments/' + fileName
+        url: baseURL + '/attachments/' + fileName
       }
     }
     return null

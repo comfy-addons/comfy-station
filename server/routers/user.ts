@@ -9,8 +9,8 @@ import CachingService from '@/services/caching.service'
 import { UserClient } from '@/entities/user_clients'
 
 export const userRouter = router({
-  isEmpty: publicProcedure.query(async ({ ctx }) => {
-    const userCount = await ctx.em.count(User, {})
+  isNotHaveAdmin: publicProcedure.query(async ({ ctx }) => {
+    const userCount = await ctx.em.count(User, { role: EUserRole.Admin })
     return userCount === 0
   }),
   firstUser: publicProcedure
@@ -21,10 +21,15 @@ export const userRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Check if any users exist
-      const userCount = await ctx.em.count(User, {})
+      // Check if any admin exist
+      const adminCount = await ctx.em.count(User, { role: EUserRole.Admin })
+      if (adminCount > 0) {
+        throw new Error('Admin user already exists')
+      }
+      // Check if user already exists
+      const userCount = await ctx.em.count(User, { email: input.email })
       if (userCount > 0) {
-        throw new Error('First user already exists')
+        throw new Error('User already exists')
       }
 
       // Create first admin user

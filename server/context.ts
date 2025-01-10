@@ -18,6 +18,10 @@ export const createContext = async (opts: CreateNextContextOptions) => {
   const userIp = (headers['x-real-ip'] || headers['x-forwarded-for'] || opts.req.connection.remoteAddress) as string
   const userAgent = headers['user-agent']
   const em = orm.em.fork()
+
+  const url = new URL(opts.req.url || '', 'http://localhost:3001')
+  const baseUrl = `${url.protocol}//${url.host}`
+
   try {
     let user: User | null = null
     if (accessToken && accessToken.length > 0) {
@@ -28,6 +32,7 @@ export const createContext = async (opts: CreateNextContextOptions) => {
       session: { user },
       em,
       headers,
+      baseUrl,
       extra: {
         userIp,
         userAgent

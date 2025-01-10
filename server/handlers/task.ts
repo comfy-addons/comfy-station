@@ -9,10 +9,12 @@ import { QueryOrder } from '@mikro-orm/core'
 import { AttachmentSchema, AttachmentURLSchema } from '../schemas/attachment'
 import { Attachment } from '@/entities/attachment'
 import AttachmentService from '@/services/attachment.service'
+import { EnsureBaseURL } from '../plugins/ensure-baseurl-plugin'
 
 export const TaskPlugin = new Elysia({ prefix: '/task', detail: { tags: ['Task'] } })
   .use(EnsureMikroORMPlugin)
   .use(EnsureTokenPlugin)
+  .use(EnsureBaseURL)
   .get(
     '/',
     async ({ token, em, query: { offset = 0, limit = 10 } }) => {
@@ -180,7 +182,7 @@ export const TaskPlugin = new Elysia({ prefix: '/task', detail: { tags: ['Task']
   )
   .get(
     '/:id/attachments',
-    async ({ em, params: { id } }) => {
+    async ({ em, params: { id }, baseUrl }) => {
       const task = await em.findOne(WorkflowTask, { id }, { populate: ['attachments', 'subTasks.attachments'] })
       if (!task) {
         return new NotFoundError("Task doesn't exist")
@@ -197,9 +199,9 @@ export const TaskPlugin = new Elysia({ prefix: '/task', detail: { tags: ['Task']
           const prevName = `${attachment.fileName}_preview.jpg`
           const highName = `${attachment.fileName}_high.jpg`
           const [stock, preview, high] = await Promise.all([
-            AttachmentService.getInstance().getFileURL(stockName),
-            AttachmentService.getInstance().getFileURL(prevName),
-            AttachmentService.getInstance().getFileURL(highName)
+            AttachmentService.getInstance().getFileURL(stockName, undefined, baseUrl),
+            AttachmentService.getInstance().getFileURL(prevName, undefined, baseUrl),
+            AttachmentService.getInstance().getFileURL(highName, undefined, baseUrl)
           ])
           return {
             info: attachment,

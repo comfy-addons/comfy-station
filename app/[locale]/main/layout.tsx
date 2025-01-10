@@ -51,7 +51,7 @@ const Layout: IComponent = ({ children }) => {
           className='flex-1 hidden md:flex flex-col h-full overflow-hidden bg-background border rounded-lg transition-all duration-300 relative'
         >
           <TopBar />
-          <SimpleTransitionLayout deps={[routeConf?.group || '']} className='flex-1 relative'>
+          <SimpleTransitionLayout deps={[routeConf?.group || '']} className='flex-1 relative border-t'>
             {children}
           </SimpleTransitionLayout>
           {!isExecutePage && (
@@ -82,7 +82,7 @@ const Layout: IComponent = ({ children }) => {
 
   const renderMobileView = useMemo(() => {
     return (
-      <div className='fixed top-0 bottom-0 w-full h-full flex flex-col md:flex-row overflow-hidden'>
+      <div className='fixed top-0 bottom-0 w-full h-full flex flex-col md:flex-row overflow-hidden border-t'>
         <Tabs
           value={executeTab}
           onValueChange={(v) => setExecuteTab(v)}

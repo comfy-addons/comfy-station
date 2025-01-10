@@ -469,8 +469,8 @@ export class ComfyPoolInstance {
         statusEvent.message = msg
       }
       client.statusEvents.add(statusEvent)
-      await this.cachingService.set('CLIENT_STATUS', client.id, status)
       await em.persist(statusEvent).flush()
+      await this.cachingService.set('CLIENT_STATUS', client.id, status)
     }
   }
 

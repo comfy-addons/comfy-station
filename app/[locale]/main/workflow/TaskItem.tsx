@@ -206,7 +206,9 @@ export const TaskItem: IComponent<{
         <div className='w-full flex relative group pl-2'>
           {!!attachments && (
             <PhotoSlider
-              images={attachments.map((item) => ({ src: item.high!.url, key: item.preview!.url }))}
+              images={attachments
+                .filter((item) => !!item.high)
+                .map((item) => ({ src: item.high!.url, key: item.preview!.url }))}
               visible={showImages}
               onClose={() => setShowImages(false)}
               loadingElement={

@@ -7,13 +7,13 @@ import { EAttachmentStatus, EUserRole } from '@/entities/enum'
 import { ImageUtil } from '../utils/ImageUtil'
 import { ECompressPreset } from '@/constants/enum'
 
-const getAttachmentURL = async (attachment: Attachment) => {
+const getAttachmentURL = async (attachment: Attachment, baseUrl = 'http://localhost:3001') => {
   const prevName = `${attachment.fileName}_preview.jpg`
   const highName = `${attachment.fileName}_high.jpg`
   const [imageInfo, imagePreviewInfo, imageHighInfo] = await Promise.all([
-    AttachmentService.getInstance().getFileURL(attachment.fileName, 3600 * 24),
-    AttachmentService.getInstance().getFileURL(prevName, 3600 * 24),
-    AttachmentService.getInstance().getFileURL(highName, 3600 * 24)
+    AttachmentService.getInstance().getFileURL(attachment.fileName, 3600 * 24, baseUrl),
+    AttachmentService.getInstance().getFileURL(prevName, 3600 * 24, baseUrl),
+    AttachmentService.getInstance().getFileURL(highName, 3600 * 24, baseUrl)
   ])
   return {
     raw: imageInfo,
@@ -34,7 +34,7 @@ export const attachmentRouter = router({
       if (!attachment) {
         return null
       }
-      return getAttachmentURL(attachment)
+      return getAttachmentURL(attachment, ctx.baseUrl)
     }),
   getList: privateProcedure.input(z.array(z.string())).query(async ({ ctx, input }) => {
     const attachments = await ctx.em.find(Attachment, { id: { $in: input } })
@@ -42,7 +42,7 @@ export const attachmentRouter = router({
       attachments.map(async (attachment) => {
         return {
           id: attachment.id,
-          urls: await getAttachmentURL(attachment)
+          urls: await getAttachmentURL(attachment, ctx.baseUrl)
         }
       })
     )

@@ -101,14 +101,14 @@ export default function SettingUserPage() {
                   <MiniBadge
                     Icon={DollarSign}
                     count={user.balance === -1 ? 'Unlimited' : user.balance.toFixed(2)}
-                    className='px-0 w-min border-none'
+                    className='px-0 w-min border-none shadow-none'
                   />
                 </TableCell>
                 <TableCell>
-                  <MiniBadge Icon={Dumbbell} count={user.weightOffset} className='px-0 w-min border-none' />
+                  <MiniBadge Icon={Dumbbell} count={user.weightOffset} className='px-0 w-min border-none shadow-none' />
                 </TableCell>
                 <TableCell>
-                  <MiniBadge Icon={Play} count={`${runCount}`} className='px-0 w-min border-none' />
+                  <MiniBadge Icon={Play} count={`${runCount}`} className='px-0 w-min border-none shadow-none' />
                 </TableCell>
                 <TableCell>
                   <Button variant='ghost' size='icon' onClick={() => setSelectedUser(user.id)}>

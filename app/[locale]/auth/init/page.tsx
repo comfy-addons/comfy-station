@@ -22,14 +22,16 @@ const Page: NextPage = () => {
   const [submitting, setSubmitting] = useState(false)
   const { toast } = useToast()
   const t = useTranslations('auth.basic')
-  const formSchema = z.object({
-    username: z.string().min(2, { message: t('zod.username.min') }),
-    password: z.string().min(6, { message: t('zod.password.min') }),
-    confirmPassword: z.string()
-  }).refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  })
+  const formSchema = z
+    .object({
+      username: z.string().min(2, { message: t('zod.username.min') }),
+      password: z.string().min(6, { message: t('zod.password.min') }),
+      confirmPassword: z.string()
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "Passwords don't match",
+      path: ['confirmPassword']
+    })
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -38,7 +40,7 @@ const Page: NextPage = () => {
       confirmPassword: ''
     }
   })
-  const { data: isEmptyUser } = trpc.user.isEmpty.useQuery()
+  const { data: isEmptyUser } = trpc.user.isNotHaveAdmin.useQuery()
   const creator = trpc.user.firstUser.useMutation()
 
   const handleLogin = form.handleSubmit((data) => {

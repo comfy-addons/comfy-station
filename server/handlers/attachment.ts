@@ -5,13 +5,15 @@ import AttachmentService from '@/services/attachment.service'
 import { AttachmentSchema, AttachmentURLSchema } from '../schemas/attachment'
 import { EAttachmentStatus } from '@/entities/enum'
 import { EnsureTokenPlugin } from '../plugins/ensure-token.plugin'
+import { EnsureBaseURL } from '../plugins/ensure-baseurl-plugin'
 
 export const AttachmentPlugin = new Elysia({ prefix: '/attachment', detail: { tags: ['Attachment'] } })
   .use(EnsureMikroORMPlugin)
   .use(EnsureTokenPlugin)
+  .use(EnsureBaseURL)
   .get(
     '/:id',
-    async ({ em, params: { id } }) => {
+    async ({ em, params: { id }, baseUrl }) => {
       const attachment = await em.findOne(Attachment, { id })
       if (!attachment) {
         return new NotFoundError('Attachment not found')
@@ -20,9 +22,9 @@ export const AttachmentPlugin = new Elysia({ prefix: '/attachment', detail: { ta
       const prevName = `${attachment.fileName}_preview.jpg`
       const highName = `${attachment.fileName}_high.jpg`
       const [stock, preview, high] = await Promise.all([
-        AttachmentService.getInstance().getFileURL(stockName),
-        AttachmentService.getInstance().getFileURL(prevName),
-        AttachmentService.getInstance().getFileURL(highName)
+        AttachmentService.getInstance().getFileURL(stockName, undefined, baseUrl),
+        AttachmentService.getInstance().getFileURL(prevName, undefined, baseUrl),
+        AttachmentService.getInstance().getFileURL(highName, undefined, baseUrl)
       ])
       return JSON.stringify({
         attachment,

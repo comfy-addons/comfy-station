@@ -5,7 +5,7 @@ import { Button } from './ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
 import { signOut, useSession } from 'next-auth/react'
 import { trpc } from '@/utils/trpc'
-import { EUserRole } from '@/entities/enum'
+import { EDeviceStatus, EUserRole } from '@/entities/enum'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import { MiniBadge } from './MiniBadge'
@@ -18,13 +18,20 @@ export const UserInformation: IComponent = () => {
   const shortUsername = (session.data?.user?.email || '?').split('@')[0].slice(0, 2).toUpperCase()
   const { data: avatarInfo } = trpc.attachment.get.useQuery({ id: session.data?.user?.avatar?.id || '' })
 
+  const updateStatus = trpc.userClient.updateStatus.useMutation()
+
   trpc.watch.balance.useSubscription(undefined, {
     onData: (data) => {
       setBalance(data)
     }
   })
 
-  const handlePressLogout = () => {
+  const handlePressLogout = async () => {
+    try {
+      await updateStatus.mutateAsync({ status: EDeviceStatus.OFFLINE })
+    } catch (e) {
+      console.error(e)
+    }
     signOut({
       callbackUrl: '/',
       redirect: true
@@ -44,7 +51,7 @@ export const UserInformation: IComponent = () => {
             <AvatarFallback>{shortUsername}</AvatarFallback>
           </Avatar>
           <div
-            className={cn('flex flex-col', {
+            className={cn('flex flex-col text-start', {
               'order-0': notAdmin,
               'order-2': !notAdmin
             })}

@@ -142,8 +142,8 @@ export const clientRouter = router({
       const data = await Promise.all(clients.map((client) => cacher.get('CLIENT_STATUS', client.id)))
       return {
         online: data.filter((e) => !!e && [EClientStatus.Online, EClientStatus.Executing].includes(e)).length,
-        offline: data.filter((e) => !!e && e === EClientStatus.Offline).length,
-        error: data.filter((e) => !!e && e === EClientStatus.Error).length
+        offline: data.filter((e) => e === EClientStatus.Offline).length,
+        error: data.filter((e) => e === EClientStatus.Error).length
       }
     }
 

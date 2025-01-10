@@ -171,9 +171,9 @@ export const workflowTaskRouter = router({
         const prevName = `${fileName}_preview.jpg`
         const highName = `${fileName}_high.jpg`
         const [imageInfo, imagePreviewInfo, imageHighInfo] = await Promise.all([
-          AttachmentService.getInstance().getFileURL(fileName, 3600 * 24),
-          AttachmentService.getInstance().getFileURL(prevName, 3600 * 24),
-          AttachmentService.getInstance().getFileURL(highName, 3600 * 24)
+          AttachmentService.getInstance().getFileURL(fileName, 3600 * 24, ctx.baseUrl),
+          AttachmentService.getInstance().getFileURL(prevName, 3600 * 24, ctx.baseUrl),
+          AttachmentService.getInstance().getFileURL(highName, 3600 * 24, ctx.baseUrl)
         ])
         return {
           raw: imageInfo,

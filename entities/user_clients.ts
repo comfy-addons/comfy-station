@@ -4,20 +4,20 @@ import { EDeviceType, EDeviceStatus } from './enum'
 
 @Entity()
 export class UserClient {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'bigint' })
   id!: number
 
   @ManyToOne('User', { deleteRule: 'cascade' })
   user!: User
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   @Index()
   endpoint?: string // Web Push endpoint
 
-  @Property({ nullable: true })
+  @Property({ type: 'varchar', nullable: true })
   publicKey?: string // Public key for push encryption
 
-  @Property({ nullable: true })
+  @Property({ type: 'varchar', nullable: true })
   authKey?: string // Auth key for push encryption
 
   @Enum(() => EDeviceType)
@@ -26,16 +26,16 @@ export class UserClient {
   @Enum(() => EDeviceStatus)
   deviceStatus!: EDeviceStatus // Online, Idle, Offline
 
-  @Property()
+  @Property({ type: 'timestamp' })
   lastActiveAt!: Date // Last time the device was active
 
-  @Property({ nullable: true })
+  @Property({ type: 'varchar', nullable: true })
   ipAddress?: string // Optional: Store IP address for device identification
 
-  @Property({ nullable: true })
+  @Property({ type: 'varchar', nullable: true })
   userAgent?: string // Optional: Store the user-agent string for additional device info
 
-  @Property({ default: true })
+  @Property({ type: 'boolean', default: true })
   isActive!: boolean // To deactivate old/invalid subscriptions
 
   @Property({ type: 'timestamp' })

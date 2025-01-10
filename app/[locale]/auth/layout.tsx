@@ -23,7 +23,7 @@ const Layout: IComponent = ({ children }) => {
   const { setTheme, theme } = useAppStore()
   const currentTab = pathName.includes('token') ? 'token' : pathName.includes('init') ? 'init' : 'account'
 
-  const { data: isEmptyUser } = trpc.user.isEmpty.useQuery()
+  const { data: isEmptyUser } = trpc.user.isNotHaveAdmin.useQuery()
 
   const toggleTheme = () => {
     if (theme === 'system') {
@@ -46,8 +46,10 @@ const Layout: IComponent = ({ children }) => {
   }, [isEmptyUser, route])
 
   return (
-    <Card className='bg-background flex flex-col md:flex-row overflow-hidden relative w-full border-none md:w-fit h-fit rounded-none md:rounded-xl'>
-      <Image alt='Login background' className='object-cover w-full md:w-[400px]' height={400} src={AuthBackground} />
+    <Card className='bg-background flex flex-col md:flex-row overflow-hidden relative w-full border-none md:w-fit h-[480px] rounded-none md:rounded-xl'>
+      <div className='w-full md:w-[400px] min-h-[400px] flex-1 relative'>
+        <Image alt='Login background' className='object-cover' fill src={AuthBackground} />
+      </div>
       <div className='flex justify-start flex-col p-8 w-full md:w-[460px] gap-4'>
         {!isEmptyUser && (
           <Tabs value={currentTab}>

@@ -1,4 +1,4 @@
-import { createServer } from 'http'
+import { createServer, IncomingMessage, ServerResponse } from 'http'
 import cors from 'cors'
 import { WebSocketServer } from 'ws'
 import type { Socket } from 'net'
@@ -39,22 +39,67 @@ export const tRPCHandler = createHTTPHandler({
 })
 const prefixedTRPCHandler = createPrefixedHandler('/api/trpc', tRPCHandler)
 
+const handleStaticFile = async (req: IncomingMessage, res: ServerResponse) => {
+  if (!req.url) {
+    res.writeHead(404)
+    res.end()
+    return
+  }
+  // Return files in storage/attachments folder
+  const fileName = req.url.split('/attachments/')[1]
+  // Convert encoded URI to normal string
+  const decodedFileName = decodeURIComponent(fileName)
+  const fileBlob = await AttachmentService.getInstance().getFileBlob(decodedFileName)
+  if (fileBlob) {
+    res.writeHead(200, {
+      'Content-Type': fileBlob.type,
+      'Content-Length': fileBlob.size
+    })
+    const buffer = await fileBlob.arrayBuffer()
+    res.end(Buffer.from(buffer))
+  } else {
+    res.writeHead(404)
+    res.end('File not found')
+  }
+}
+
+const handleElysia = async (req: IncomingMessage, res: ServerResponse) => {
+  const request = await convertIMessToRequest(req)
+  const output = await ElysiaHandler.handle(request)
+  // If the response is 404, then passthrough request to tRPC's handler
+  if (output.status !== 404) {
+    res.writeHead(output.status, {
+      'Content-Type': output.headers.get('content-type') ?? 'application/json'
+    })
+    const contentType = output.headers.get('content-type') ?? 'application/json'
+    res.writeHead(output.status, { 'Content-Type': contentType })
+
+    if (contentType.startsWith('text/') || contentType === 'application/json') {
+      const data = await output.text()
+      res.write(data)
+    } else {
+      const data = await output.arrayBuffer()
+      res.write(Buffer.from(data))
+    }
+
+    res.end()
+    return true
+  }
+  return false
+}
+
 const server = createServer(async (req, res) => {
   try {
+    if (req.url?.startsWith('/attachments')) {
+      await handleStaticFile(req, res)
+      return
+    }
     /**
      * Handle the request using Elysia
      */
     if (req.url?.startsWith('/swagger') || req.url?.startsWith('/api/user') || req.url?.startsWith('/api/ext')) {
-      const request = await convertIMessToRequest(req)
-      const output = await ElysiaHandler.handle(request)
-      // If the response is 404, then passthrough request to tRPC's handler
-      if (output.status !== 404) {
-        res.writeHead(output.status, {
-          'Content-Type': output.headers.get('content-type') ?? 'application/json'
-        })
-        const data = await output.text()
-        res.write(data)
-        res.end()
+      const handled = await handleElysia(req, res)
+      if (handled) {
         return
       }
     }

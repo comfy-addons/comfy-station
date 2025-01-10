@@ -32,7 +32,7 @@ export default function GalleryPage() {
   const images = infoLoader.data ? infoLoader.data.pages.flatMap((d) => d.items) : []
 
   return (
-    <div className='absolute top-0 left-0 w-full h-full flex flex-col shadow-inner'>
+    <div className='absolute top-0 left-0 w-full h-full flex flex-col'>
       <ImageGallery
         imgPerRow={dyn([2, 3, 4, 5])}
         items={[...pending, ...images]}
