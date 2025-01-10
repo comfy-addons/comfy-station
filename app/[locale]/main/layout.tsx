@@ -82,7 +82,7 @@ const Layout: IComponent = ({ children }) => {
 
   const renderMobileView = useMemo(() => {
     return (
-      <div className='fixed top-0 bottom-0 w-full h-full flex flex-col md:flex-row overflow-hidden border-t'>
+      <div className='fixed top-0 bottom-0 w-full h-full flex flex-col md:flex-row overflow-hidden'>
         <Tabs
           value={executeTab}
           onValueChange={(v) => setExecuteTab(v)}

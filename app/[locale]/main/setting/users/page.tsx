@@ -29,7 +29,7 @@ export default function SettingUserPage() {
   }
 
   return (
-    <div className='w-full h-full space-y-4 overflow-x-auto'>
+    <div className='w-full h-full space-y-4 overflow-x-auto overflow-y-hidden'>
       <Dialog open={!!selectedUser} onOpenChange={(open) => !open && setSelectedUser(null)}>
         <DialogContent className='max-w-2xl'>
           <DialogHeader>

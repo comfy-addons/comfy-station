@@ -34,7 +34,7 @@ const Layout: IComponent = ({ children }) => {
   }, [routeConf?.key, session.data])
 
   return (
-    <div className='w-full h-full flex flex-col md:flex-row divide-x-[1px]'>
+    <div className='absolute w-full h-full flex flex-col md:flex-row divide-x-[1px] overflow-auto'>
       {routeConf?.key !== 'setting' && (
         <Link href='/main/setting' className='px-4 py-2 md:hidden flex gap-2 items-center text-sm'>
           <ArrowLongLeftIcon className='w-6 h-6' />
