@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/core'
 import { ClientMonitorEvent } from '../entities/client_monitor_event'
 import { ClientStatusEvent } from '../entities/client_status_event'
 import { CLEANUP_CONFIG } from '../config/constants'

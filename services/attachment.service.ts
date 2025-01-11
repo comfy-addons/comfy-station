@@ -94,78 +94,89 @@ class AttachmentService {
   }
 
   async getFileURL(fileName: string, expiresIn?: number, baseURL = '') {
-    if (this.s3 && BackendENV.S3_BUCKET_NAME) {
-      // Generate a file URL for the file in the S3 bucket
-      const s3Url = this.cacheStorage.get(`s3Url:${fileName}`)
-      if (s3Url) {
-        return {
-          type: EAttachmentType.S3,
-          url: s3Url
-        }
-      } else {
-        const signedUrl = await this.getSignedUrl(fileName, expiresIn)
-        if (signedUrl) {
-          this.cacheStorage.set(`s3Url:${fileName}`, signedUrl)
+    const place = await this.getExistObjectPlace(fileName)
+    switch (place) {
+      case EAttachmentType.S3: {
+        const s3Url = this.cacheStorage.get(`s3Url:${fileName}`)
+        if (s3Url) {
           return {
             type: EAttachmentType.S3,
-            url: signedUrl
+            url: s3Url
+          }
+        } else {
+          const signedUrl = await this.getSignedUrl(fileName, expiresIn)
+          if (signedUrl) {
+            this.cacheStorage.set(`s3Url:${fileName}`, signedUrl)
+            return {
+              type: EAttachmentType.S3,
+              url: signedUrl
+            }
           }
         }
       }
-    }
-    if (fs.existsSync(this.localPath + fileName)) {
-      return {
-        type: EAttachmentType.LOCAL,
-        url: baseURL + '/attachments/' + fileName
+      case EAttachmentType.LOCAL: {
+        return {
+          type: EAttachmentType.LOCAL,
+          url: baseURL + '/attachments/' + fileName
+        }
       }
+      default:
+        return null
     }
-    return null
   }
+
   async getSignedUrl(fileName: string, expiresIn?: number): Promise<string | undefined> {
-    if (await this.existObject(fileName)) {
-      if (this.s3 && BackendENV.S3_BUCKET_NAME) {
+    const place = await this.getExistObjectPlace(fileName)
+    switch (place) {
+      case EAttachmentType.S3: {
         // Generate a signed URL for the file in the S3 bucket
         const params = {
           Bucket: BackendENV.S3_BUCKET_NAME,
           Key: fileName
         }
         const command = new GetObjectCommand(params)
-        return getSignedUrl(this.s3, command, { expiresIn })
+        return getSignedUrl(this.s3!, command, { expiresIn })
       }
+      default:
+        return undefined
     }
-    return undefined
   }
 
   async getFileBlob(fileName: string): Promise<Blob | null> {
-    if (this.s3 && BackendENV.S3_BUCKET_NAME) {
-      try {
-        const params = {
-          Bucket: BackendENV.S3_BUCKET_NAME,
-          Key: fileName
+    const place = await this.getExistObjectPlace(fileName)
+    switch (place) {
+      case EAttachmentType.S3: {
+        try {
+          const params = {
+            Bucket: BackendENV.S3_BUCKET_NAME,
+            Key: fileName
+          }
+          const command = new GetObjectCommand(params)
+          const response = await this.s3!.send(command)
+          const streamToBuffer = (stream: any): Promise<Buffer> =>
+            new Promise((resolve, reject) => {
+              const chunks: any[] = []
+              stream.on('data', (chunk: any) => chunks.push(chunk))
+              stream.on('error', reject)
+              stream.on('end', () => resolve(Buffer.concat(chunks)))
+            })
+          const buffer = await streamToBuffer(response.Body)
+          return new Blob([buffer], { type: response.ContentType })
+        } catch (error) {
+          this.logger.w('getFileBlob', 'Error fetching file from S3', { error })
+          return null
         }
-        const command = new GetObjectCommand(params)
-        const response = await this.s3.send(command)
-        const streamToBuffer = (stream: any): Promise<Buffer> =>
-          new Promise((resolve, reject) => {
-            const chunks: any[] = []
-            stream.on('data', (chunk: any) => chunks.push(chunk))
-            stream.on('error', reject)
-            stream.on('end', () => resolve(Buffer.concat(chunks)))
-          })
-        const buffer = await streamToBuffer(response.Body)
-        return new Blob([buffer], { type: response.ContentType })
-      } catch (error) {
-        this.logger.w('getFileBlob', 'Error fetching file from S3', { error })
+      }
+      case EAttachmentType.LOCAL: {
+        const filePath = `${this.localPath}${fileName}`
+        if (fs.existsSync(filePath)) {
+          const buffer = fs.readFileSync(filePath)
+          const mimeType = mime.getType(fileName) || 'application/octet-stream'
+          return new Blob([buffer], { type: mimeType })
+        }
+      }
+      default:
         return null
-      }
-    } else {
-      const filePath = `${this.localPath}${fileName}`
-      if (fs.existsSync(filePath)) {
-        const buffer = fs.readFileSync(filePath)
-        const mimeType = mime.getType(fileName) || 'application/octet-stream'
-        return new Blob([buffer], { type: mimeType })
-      }
-      return null
     }
   }
 
@@ -229,18 +240,20 @@ class AttachmentService {
   /**
    * Checks if an object with the specified fileName exists in the Minio bucket.
    * @param fileName - The name of the object to check.
-   * @returns A Promise that resolves to the object's information if it exists, or rejects if it doesn't exist.
    */
-  existObject = async (fileName: string): Promise<Boolean> => {
+  getExistObjectPlace = async (fileName: string): Promise<EAttachmentType | null> => {
     if (this.s3) {
       const result = await this.s3
         ?.send(new HeadObjectCommand({ Bucket: BackendENV.S3_BUCKET_NAME, Key: fileName }))
         .catch(() => false)
       if (!!result) {
-        return true
+        return EAttachmentType.S3
       }
     }
-    return fs.existsSync(this.localPath + fileName)
+    if (fs.existsSync(this.localPath + fileName)) {
+      return EAttachmentType.LOCAL
+    }
+    return null
   }
 }
 
