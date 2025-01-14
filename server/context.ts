@@ -19,8 +19,16 @@ export const createContext = async (opts: CreateNextContextOptions) => {
   const userAgent = headers['user-agent']
   const em = orm.em.fork()
 
-  const url = new URL(opts.req.url || '', 'http://localhost:3001')
-  const baseUrl = `${url.protocol}//${url.host}`
+  // Get current base URL
+  let baseUrl = BackendENV.BACKEND_URL
+  if (!!opts.req.headers?.host) {
+    const httpProtocol =
+      opts.req.headers['x-forwarded-proto'] ||
+      opts.req.headers['x-forwarded-protocol'] ||
+      (opts.req as any).protocol ||
+      'http'
+    baseUrl = `${httpProtocol}://${opts.req.headers?.host}`
+  }
 
   try {
     let user: User | null = null
