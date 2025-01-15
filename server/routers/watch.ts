@@ -8,21 +8,19 @@ import CachingService from '@/services/caching.service'
 import { WorkflowTask } from '@/entities/workflow_task'
 
 export const watchRouter = router({
-  historyList: privateProcedure.subscription(async ({ ctx }) => {
+  historyList: privateProcedure.subscription(async function* ({ ctx, signal }) {
     const cacher = CachingService.getInstance()
-    return observable<number>((subscriber) => {
-      if (ctx.session.user!.role === EUserRole.Admin) {
-        return cacher.onCategory('HISTORY_LIST', (ev) => {
-          subscriber.next(ev.detail.value)
-        })
-      } else {
-        return cacher.on('HISTORY_LIST', ctx.session.user!.id, (ev) => {
-          subscriber.next(ev.detail)
-        })
+    if (ctx.session.user!.role === EUserRole.Admin) {
+      for await (const data of cacher.onCategoryGenerator('HISTORY_LIST', signal)) {
+        yield data.detail.value
       }
-    })
+    } else {
+      for await (const data of cacher.onGenerator('HISTORY_LIST', ctx.session.user!.id, signal)) {
+        yield data.detail
+      }
+    }
   }),
-  historyItem: privateProcedure.input(z.string()).subscription(async ({ input, ctx }) => {
+  historyItem: privateProcedure.input(z.string()).subscription(async function* ({ input, ctx, signal }) {
     const cacher = CachingService.getInstance()
     if (ctx.session.user!.role !== EUserRole.Admin) {
       const taskInfo = await ctx.em.findOneOrFail(
@@ -40,73 +38,64 @@ export const watchRouter = router({
         throw new Error('Unauthorized')
       }
     }
-    return observable<number>((subscriber) => {
-      return cacher.onCategory('HISTORY_ITEM', (ev) => {
-        if (ev.detail.id === input) subscriber.next(ev.detail.value)
-      })
-    })
+    for await (const data of cacher.onGenerator('HISTORY_ITEM', input, signal)) {
+      yield data.detail
+    }
   }),
-  workflow: privateProcedure.input(z.string()).subscription(async ({ input, ctx }) => {
+  workflow: privateProcedure.input(z.string()).subscription(async function* ({ input, signal }) {
     const cacher = CachingService.getInstance()
-    return observable<number>((subscriber) => {
-      return cacher.on('WORKFLOW', input, (ev) => {
-        subscriber.next(ev.detail)
-      })
-    })
+    for await (const data of cacher.onGenerator('WORKFLOW', input, signal)) {
+      yield data.detail
+    }
   }),
-  balance: privateProcedure.subscription(async ({ ctx }) => {
+  balance: privateProcedure.subscription(async function* ({ ctx, signal }) {
     const cacher = CachingService.getInstance()
-    return observable<number>((subscriber) => {
-      subscriber.next(ctx.session.user!.balance)
-      return cacher.on('USER_BALANCE', ctx.session.user!.id, (ev) => {
-        subscriber.next(ev.detail)
-      })
-    })
+    yield ctx.session.user!.balance
+    for await (const data of cacher.onGenerator('USER_BALANCE', ctx.session.user!.id, signal)) {
+      yield data.detail
+    }
   }),
-  notification: privateProcedure.subscription(async ({ ctx }) => {
+  notification: privateProcedure.subscription(async function* ({ ctx, signal }) {
     const cacher = CachingService.getInstance()
-    return observable<number>((subscriber) => {
-      return cacher.on('USER_NOTIFICATION', ctx.session.user!.id, (ev) => {
-        subscriber.next(ev.detail)
-      })
-    })
+
+    for await (const data of cacher.onGenerator('USER_NOTIFICATION', ctx.session.user!.id, signal)) {
+      yield data.detail
+    }
   }),
-  executing: privateProcedure.subscription(async ({ ctx }) => {
+  executing: privateProcedure.subscription(async function* ({ ctx, signal }) {
     const cacher = CachingService.getInstance()
-    return observable<boolean>((subscriber) => {
-      return cacher.on('USER_EXECUTING_TASK', ctx.session.user!.id, async (ev) => {
-        const task = await ctx.em.findOne(WorkflowTask, {
-          trigger: {
-            $or: [
-              {
-                user: {
-                  id: ctx.session.user?.id
-                }
-              },
-              {
-                token: {
-                  createdBy: ctx.session.user?.id
-                }
+
+    for await (const _ of cacher.onGenerator('USER_EXECUTING_TASK', ctx.session.user!.id, signal)) {
+      const task = await ctx.em.findOne(WorkflowTask, {
+        trigger: {
+          $or: [
+            {
+              user: {
+                id: ctx.session.user?.id
               }
-            ]
-          },
-          status: {
-            $nin: [ETaskStatus.Failed, ETaskStatus.Parent]
-          },
-          outputValues: null,
-          attachments: null,
-          executionTime: null
-        })
-        subscriber.next(!!task)
+            },
+            {
+              token: {
+                createdBy: ctx.session.user?.id
+              }
+            }
+          ]
+        },
+        status: {
+          $nin: [ETaskStatus.Failed, ETaskStatus.Parent]
+        },
+        outputValues: null,
+        attachments: null,
+        executionTime: null
       })
-    })
+      yield !!task
+    }
   }),
-  preview: privateProcedure.input(z.object({ taskId: z.string() })).subscription(async ({ input, ctx }) => {
+  preview: privateProcedure.input(z.object({ taskId: z.string() })).subscription(async function* ({ input, signal }) {
     const cacher = CachingService.getInstance()
-    return observable<string>((subscriber) => {
-      return cacher.on('PREVIEW', input.taskId, (ev) => {
-        subscriber.next(ev.detail.blob64)
-      })
-    })
+
+    for await (const data of cacher.onGenerator('PREVIEW', input.taskId, signal)) {
+      yield data.detail.blob64
+    }
   })
 })

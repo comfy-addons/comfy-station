@@ -30,6 +30,7 @@ import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
 const SelectionSchema = z.nativeEnum(EValueSelectionType)
 
 export const FinalizeStep: IComponent = () => {
+  const idRef = useRef(Math.random().toString(36).substring(7))
   const [loading, setLoading] = useState(false)
   const [progressEv, setProgressEv] = useState<TWorkflowProgressMessage>()
   const [previewBlob, setPreviewBlob] = useState<Blob>()
@@ -44,7 +45,7 @@ export const FinalizeStep: IComponent = () => {
 
   const isEnd = progressEv?.key === 'finished' || progressEv?.key === 'failed'
 
-  trpc.workflow.testWorkflow.useSubscription(undefined, {
+  trpc.workflow.testWorkflow.useSubscription(idRef.current, {
     onData: (ev) => {
       if (ev.key === 'preview') {
         const base64 = ev.data.blob64
@@ -52,7 +53,6 @@ export const FinalizeStep: IComponent = () => {
         setPreviewBlob(blob)
         return
       }
-
       setProgressEv(ev)
       if (ev.key === 'failed' || ev.key === 'finished') {
         setLoading(false)
@@ -69,6 +69,7 @@ export const FinalizeStep: IComponent = () => {
 
   const handlePressTest = async () => {
     if (!workflow) return
+    setProgressEv(undefined)
     const wfObj = cloneDeep(inputWorkflowTest.current)
     // Check if there are files to upload
     const inputKeys = Object.keys(workflow?.mapInput || {})
@@ -87,6 +88,7 @@ export const FinalizeStep: IComponent = () => {
     }
     setLoading(true)
     mutateAsync({
+      id: idRef.current,
       workflow,
       input: wfObj
     })

@@ -46,15 +46,12 @@ export const clientRouter = router({
     await cacher.set('CLIENT_STATUS', input, EClientStatus.Offline)
     return true
   }),
-  monitorSystem: adminProcedure.input(z.string()).subscription(async ({ input, ctx }) => {
-    return observable<TMonitorEvent>((subscriber) => {
-      const off = cacher.on('SYSTEM_MONITOR', input, (ev) => {
-        subscriber.next(ev.detail)
-      })
-      return off
-    })
+  monitorSystem: adminProcedure.input(z.string()).subscription(async function* ({ input, signal }) {
+    for await (const data of cacher.onGenerator('SYSTEM_MONITOR', input, signal)) {
+      yield data.detail
+    }
   }),
-  monitorStatus: adminProcedure.input(z.string()).subscription(async ({ input, ctx }) => {
+  monitorStatus: adminProcedure.input(z.string()).subscription(async function* ({ input, ctx, signal }) {
     const latestEvent = await ctx.em.findOne(
       ClientStatusEvent,
       {
@@ -66,14 +63,12 @@ export const clientRouter = router({
     )
     if (!latestEvent) {
       throw new Error('Client not found')
+    } else {
+      yield latestEvent.status
     }
-    return observable<EClientStatus>((subscriber) => {
-      subscriber.next(latestEvent.status)
-      const off = cacher.on('CLIENT_STATUS', input, (ev) => {
-        subscriber.next(ev.detail)
-      })
-      return off
-    })
+    for await (const data of cacher.onGenerator('CLIENT_STATUS', input, signal)) {
+      yield data.detail
+    }
   }),
   control: adminProcedure
     .input(
@@ -134,7 +129,7 @@ export const clientRouter = router({
         return false
       }
     }),
-  overview: adminProcedure.subscription(async ({ ctx }) => {
+  overview: adminProcedure.subscription(async function* ({ ctx, signal }) {
     const cacher = CachingService.getInstance()
 
     const getStatues = async () => {
@@ -146,14 +141,10 @@ export const clientRouter = router({
         error: data.filter((e) => e === EClientStatus.Error).length
       }
     }
-
-    return observable<Awaited<ReturnType<typeof getStatues>>>((subscriber) => {
-      getStatues().then((data) => subscriber.next(data))
-      const off = cacher.onCategory('CLIENT_STATUS', async (ev) => {
-        getStatues().then((data) => subscriber.next(data))
-      })
-      return off
-    })
+    yield await getStatues()
+    for await (const _ of cacher.onCategoryGenerator('CLIENT_STATUS', signal)) {
+      yield await getStatues()
+    }
   }),
   testNewClient: adminProcedure.input(ClientSchema).mutation(async ({ input, ctx }) => {
     if (input.auth && (!input.username || !input.password)) {
@@ -214,153 +205,153 @@ export const clientRouter = router({
   }),
   addNewClient: adminProcedure
     .input(z.intersection(ClientSchema, z.object({ displayName: z.string().optional() })))
-    .subscription(async ({ input, ctx }) => {
+    .subscription(async function* ({ input, ctx, signal }) {
       if (input.auth && (!input.username || !input.password)) {
         throw new Error('Username or password is required')
       }
       const api = new ComfyApi(input.host, 'test', {
         credentials: input.auth ? { type: 'basic', username: input.username!, password: input.password! } : undefined
       })
-      return observable<EImportingClient>((subscriber) => {
-        const run = async () => {
-          const test = await api.ping()
-          if (test.status) {
-            subscriber.next(EImportingClient.PING_OK)
-          } else {
-            subscriber.next(EImportingClient.FAILED)
-            return
-          }
-          let client = await ctx.em.findOne(Client, { host: input.host })
-          if (!client) {
-            client = ctx.em.create(Client, {
-              host: input.host,
-              auth: input.auth ? EAuthMode.Basic : EAuthMode.None,
-              username: input.username,
-              password: input.password,
-              name: input.displayName ?? input.host
-            })
-            await ctx.em.persistAndFlush(client)
-          }
-          subscriber.next(EImportingClient.CLIENT_CREATED)
 
-          const importCkpt = async () => {
-            const ckpts = await api.getCheckpoints()
-            for (const ckpt of ckpts) {
-              let resource = await ctx.em.findOne(Resource, { name: ckpt, type: EResourceType.Checkpoint })
-              if (!resource) {
-                resource = ctx.em.create(
-                  Resource,
-                  {
-                    name: ckpt,
-                    type: EResourceType.Checkpoint
-                  },
-                  { partial: true }
-                )
-              }
-              client.resources.add(resource)
-            }
-            await ctx.em.persistAndFlush(client)
-            subscriber.next(EImportingClient.IMPORTED_CHECKPOINT)
+      const test = await api.ping()
+      if (test.status) {
+        yield EImportingClient.PING_OK
+      } else {
+        yield EImportingClient.FAILED
+        return
+      }
+      let client = await ctx.em.findOne(Client, { host: input.host })
+      if (!client) {
+        client = ctx.em.create(Client, {
+          host: input.host,
+          auth: input.auth ? EAuthMode.Basic : EAuthMode.None,
+          username: input.username,
+          password: input.password,
+          name: input.displayName ?? input.host
+        })
+        await ctx.em.persistAndFlush(client)
+      }
+      yield EImportingClient.CLIENT_CREATED
+
+      const importCkpt = async () => {
+        const ckpts = await api.getCheckpoints()
+        for (const ckpt of ckpts) {
+          let resource = await ctx.em.findOne(Resource, { name: ckpt, type: EResourceType.Checkpoint })
+          if (!resource) {
+            resource = ctx.em.create(
+              Resource,
+              {
+                name: ckpt,
+                type: EResourceType.Checkpoint
+              },
+              { partial: true }
+            )
           }
-          const importLora = async () => {
-            const loras = await api.getLoras()
-            for (const lora of loras) {
-              let resource = await ctx.em.findOne(Resource, { name: lora, type: EResourceType.Lora })
-              if (!resource) {
-                resource = ctx.em.create(
-                  Resource,
-                  {
-                    name: lora,
-                    type: EResourceType.Lora
-                  },
-                  { partial: true }
-                )
-              }
-              client.resources.add(resource)
-            }
-            await ctx.em.persistAndFlush(client)
-            subscriber.next(EImportingClient.IMPORTED_LORA)
-          }
-          const importSamplerScheduler = async () => {
-            const samplerInfo = await api.getSamplerInfo()
-            const samplers = samplerInfo.sampler?.[0] as string[]
-            const schedulers = samplerInfo.scheduler?.[0] as string[]
-            for (const sampler of samplers) {
-              let resource = await ctx.em.findOne(Resource, { name: sampler, type: EResourceType.Sampler })
-              if (!resource) {
-                resource = ctx.em.create(
-                  Resource,
-                  {
-                    name: sampler,
-                    type: EResourceType.Sampler
-                  },
-                  { partial: true }
-                )
-              }
-              client.resources.add(resource)
-            }
-            for (const scheduler of schedulers) {
-              let resource = await ctx.em.findOne(Resource, { name: scheduler, type: EResourceType.Scheduler })
-              if (!resource) {
-                resource = ctx.em.create(
-                  Resource,
-                  {
-                    name: scheduler,
-                    type: EResourceType.Scheduler
-                  },
-                  { partial: true }
-                )
-              }
-              client.resources.add(resource)
-            }
-            await ctx.em.persistAndFlush(client)
-            subscriber.next(EImportingClient.IMPORTED_SAMPLER_SCHEDULER)
-          }
-          const importExtension = async () => {
-            const extensions = (await api.getNodeDefs()) ?? []
-            const promises = Object.values(extensions).map(async (ext) => {
-              let resource = await ctx.em.findOne(Extension, { pythonModule: ext.python_module, name: ext.name })
-              if (!resource) {
-                resource = ctx.em.create(
-                  Extension,
-                  {
-                    name: ext.name,
-                    displayName: ext.display_name,
-                    pythonModule: ext.python_module,
-                    category: ext.category,
-                    outputNode: ext.output_node,
-                    inputConf: ext.input.required,
-                    description: ext.description,
-                    outputConf: ext.output?.map((o, idx) => ({
-                      name: ext.output_name?.[idx] ?? '',
-                      isList: ext.output_is_list?.[idx] ?? false,
-                      type: o,
-                      tooltip: ext.output_tooltips?.[idx] ?? ''
-                    }))
-                  },
-                  { partial: true }
-                )
-              }
-              client.extensions.add(resource)
-            })
-            await Promise.all(promises)
-            await ctx.em.persistAndFlush(client)
-            subscriber.next(EImportingClient.IMPORTED_EXTENSION)
-          }
-          await Promise.all([importCkpt(), importLora(), importSamplerScheduler(), importExtension()]).catch((e) => {
-            console.error(e)
-            subscriber.next(EImportingClient.FAILED)
-          })
-          subscriber.next(EImportingClient.DONE)
-          ComfyPoolInstance.getInstance().pool.addClient(
-            new ComfyApi(input.host, client.id, {
-              credentials: input.auth
-                ? { type: 'basic', username: input.username!, password: input.password! }
-                : undefined
-            })
-          )
+          client.resources.add(resource)
         }
-        run()
-      })
+        await ctx.em.persistAndFlush(client)
+        return EImportingClient.IMPORTED_CHECKPOINT
+      }
+      const importLora = async () => {
+        const loras = await api.getLoras()
+        for (const lora of loras) {
+          let resource = await ctx.em.findOne(Resource, { name: lora, type: EResourceType.Lora })
+          if (!resource) {
+            resource = ctx.em.create(
+              Resource,
+              {
+                name: lora,
+                type: EResourceType.Lora
+              },
+              { partial: true }
+            )
+          }
+          client.resources.add(resource)
+        }
+        await ctx.em.persistAndFlush(client)
+        return EImportingClient.IMPORTED_LORA
+      }
+      const importSamplerScheduler = async () => {
+        const samplerInfo = await api.getSamplerInfo()
+        const samplers = samplerInfo.sampler?.[0] as string[]
+        const schedulers = samplerInfo.scheduler?.[0] as string[]
+        for (const sampler of samplers) {
+          let resource = await ctx.em.findOne(Resource, { name: sampler, type: EResourceType.Sampler })
+          if (!resource) {
+            resource = ctx.em.create(
+              Resource,
+              {
+                name: sampler,
+                type: EResourceType.Sampler
+              },
+              { partial: true }
+            )
+          }
+          client.resources.add(resource)
+        }
+        for (const scheduler of schedulers) {
+          let resource = await ctx.em.findOne(Resource, { name: scheduler, type: EResourceType.Scheduler })
+          if (!resource) {
+            resource = ctx.em.create(
+              Resource,
+              {
+                name: scheduler,
+                type: EResourceType.Scheduler
+              },
+              { partial: true }
+            )
+          }
+          client.resources.add(resource)
+        }
+        await ctx.em.persistAndFlush(client)
+        return EImportingClient.IMPORTED_SAMPLER_SCHEDULER
+      }
+      const importExtension = async () => {
+        const extensions = (await api.getNodeDefs()) ?? []
+        const promises = Object.values(extensions).map(async (ext) => {
+          let resource = await ctx.em.findOne(Extension, { pythonModule: ext.python_module, name: ext.name })
+          if (!resource) {
+            resource = ctx.em.create(
+              Extension,
+              {
+                name: ext.name,
+                displayName: ext.display_name,
+                pythonModule: ext.python_module,
+                category: ext.category,
+                outputNode: ext.output_node,
+                inputConf: ext.input.required,
+                description: ext.description,
+                outputConf: ext.output?.map((o, idx) => ({
+                  name: ext.output_name?.[idx] ?? '',
+                  isList: ext.output_is_list?.[idx] ?? false,
+                  type: o,
+                  tooltip: ext.output_tooltips?.[idx] ?? ''
+                }))
+              },
+              { partial: true }
+            )
+          }
+          client.extensions.add(resource)
+        })
+        await Promise.all(promises)
+        await ctx.em.persistAndFlush(client)
+        return EImportingClient.IMPORTED_EXTENSION
+      }
+      try {
+        for await (const status of [importCkpt(), importLora(), importSamplerScheduler(), importExtension()]) {
+          yield status
+        }
+        yield EImportingClient.DONE
+        ComfyPoolInstance.getInstance().pool.addClient(
+          new ComfyApi(input.host, client.id, {
+            credentials: input.auth
+              ? { type: 'basic', username: input.username!, password: input.password! }
+              : undefined
+          })
+        )
+      } catch (e) {
+        console.error(e)
+        yield EImportingClient.FAILED
+      }
     })
 })

@@ -16,7 +16,7 @@ export const taskRouter = router({
         clientId: z.string().optional()
       })
     )
-    .subscription(async ({ ctx, input }) => {
+    .subscription(async function* ({ ctx, input, signal }) {
       let trigger: any = {}
       const fn = async () => {
         if (ctx.session.user!.role !== EUserRole.Admin) {
@@ -49,19 +49,18 @@ export const taskRouter = router({
           { limit: input.limit, orderBy: { createdAt: 'DESC' }, populate: ['trigger', 'trigger.user'] }
         )
       }
-      return observable<Awaited<ReturnType<typeof fn>>>((subscriber) => {
-        fn().then((data) => subscriber.next(data))
-        const off = !input.clientId
-          ? cacher.onCategory('LAST_TASK_CLIENT', (ev) => {
-              fn().then((data) => subscriber.next(data))
-            })
-          : cacher.on('LAST_TASK_CLIENT', input.clientId, (ev) => {
-              fn().then((data) => subscriber.next(data))
-            })
-        return off
-      })
+      yield await fn()
+      if (!input.clientId) {
+        for await (const _ of cacher.onCategoryGenerator('LAST_TASK_CLIENT', signal)) {
+          yield await fn()
+        }
+      } else {
+        for await (const _ of cacher.onGenerator('LAST_TASK_CLIENT', input.clientId, signal)) {
+          yield await fn()
+        }
+      }
     }),
-  countStats: privateProcedure.subscription(async ({ ctx }) => {
+  countStats: privateProcedure.subscription(async function* ({ ctx }) {
     if (!ctx.session?.user) {
       throw new Error('Unauthorized')
     }
@@ -98,15 +97,11 @@ export const taskRouter = router({
         executed
       }
     }
-
-    return observable<Awaited<ReturnType<typeof getStats>>>((subscriber) => {
-      getStats().then((data) => subscriber.next(data))
-      const off = cacher.onCategory('CLIENT_STATUS', (ev) => {
-        if ([EClientStatus.Executing, EClientStatus.Online].includes(ev.detail.value)) {
-          getStats().then((data) => subscriber.next(data))
-        }
-      })
-      return off
-    })
+    yield await getStats()
+    for await (const data of cacher.onCategoryGenerator('CLIENT_STATUS')) {
+      if ([EClientStatus.Executing, EClientStatus.Online].includes(data.detail.value)) {
+        yield await getStats()
+      }
+    }
   })
 })

@@ -212,7 +212,7 @@ class CachingService extends EventTarget {
     }
   }
 
-  onCategoryGenerator = async function* x<T extends keyof TCachingKeyMap>(
+  onCategoryGenerator = async function* <T extends keyof TCachingKeyMap>(
     key: T,
     signal?: AbortSignal
   ): AsyncGenerator<

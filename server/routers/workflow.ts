@@ -2,7 +2,7 @@ import { adminProcedure, editorProcedure, privateProcedure } from '../procedure'
 import { router } from '../trpc'
 import { z } from 'zod'
 import { IMapperOutput, Workflow } from '@/entities/workflow'
-import { EventEmitter } from 'node:events'
+import { EventEmitter, on } from 'node:events'
 import { observable } from '@trpc/server/observable'
 import { ComfyPoolInstance } from '@/services/comfyui.service'
 import { CallWrapper } from '@saintno/comfyui-sdk'
@@ -16,6 +16,10 @@ import { WorkflowEditEvent } from '@/entities/workflow_edit_event'
 import { getBuilder, parseOutput } from '@/utils/workflow'
 
 const ee = new EventEmitter()
+
+const emitAction = (id: string, data: TWorkflowProgressMessage) => {
+  ee.emit(`workflow:${id}`, data)
+}
 
 const BaseSchema = z.object({
   key: z.string(),
@@ -236,132 +240,133 @@ export const workflowRouter = router({
       await ctx.em.flush()
       return true
     }),
-  testWorkflow: editorProcedure.subscription(async ({ input, ctx }) => {
-    return observable<TWorkflowProgressMessage>((subscriber) => {
-      const handle = (data: { input: Record<string, any>; workflow: Workflow }) => {
-        subscriber.next({ key: 'init' })
-        const builder = getBuilder(data.workflow)
-        const pool = ComfyPoolInstance.getInstance().pool
-        pool.run(async (api) => {
-          for (const key in data.input) {
-            const inputData = data.input[key] || data.workflow.mapInput?.[key].default
-            if (!inputData) {
-              continue
-            }
-            switch (data.workflow.mapInput?.[key].type) {
-              case EValueType.Number:
-              case EValueUtilityType.Seed:
-                builder.input(key, Number(inputData))
-                break
-              case EValueType.String:
-                builder.input(key, String(inputData))
-                break
-              case EValueType.File:
-              case EValueType.Video:
-              case EValueType.Image:
-                const file = inputData as Attachment
-                const fileBlob = await AttachmentService.getInstance().getFileBlob(file.fileName)
-                if (!fileBlob) {
-                  return subscriber.next({ key: 'failed', detail: 'missing file' })
-                }
-                const uploadedImg = await api.uploadImage(fileBlob, file.fileName)
-                if (!uploadedImg) {
-                  subscriber.next({ key: 'failed', detail: 'failed to upload file' })
-                  return
-                }
-                builder.input(key, uploadedImg.info.filename)
-                break
-              default:
-                builder.input(key, inputData)
-                break
-            }
-          }
-          return new CallWrapper(api, builder)
-            .onPending(() => {
-              subscriber.next({ key: 'loading' })
-            })
-            .onProgress((e) => {
-              subscriber.next({
-                key: 'progress',
-                data: { node: Number(e.node), max: Number(e.max), value: Number(e.value) }
-              })
-            })
-            .onPreview(async (e) => {
-              const arrayBuffer = await e.arrayBuffer()
-              const base64String = Buffer.from(arrayBuffer).toString('base64')
-              subscriber.next({ key: 'preview', data: { blob64: base64String } })
-            })
-            .onStart(() => {
-              subscriber.next({ key: 'start' })
-            })
-            .onFinished(async (outData) => {
-              subscriber.next({ key: 'downloading_output' })
-              const attachment = AttachmentService.getInstance()
-              const output = await parseOutput(api, data.workflow, outData)
-              subscriber.next({ key: 'uploading_output' })
-              const tmpOutput = cloneDeep(output) as Record<string, any>
-              // If key is array of Blob, convert it to base64
-              for (const key in tmpOutput) {
-                if (Array.isArray(tmpOutput[key])) {
-                  tmpOutput[key] = (await Promise.all(
-                    tmpOutput[key].map(async (v, idx) => {
-                      if (v instanceof Blob) {
-                        const imgUtil = new ImageUtil(Buffer.from(await v.arrayBuffer()))
-                        const jpg = await imgUtil.intoJPG()
-                        const tmpName = `${uniqueId()}_${key}_${idx}.jpg`
-                        const uploaded = await attachment.uploadFile(jpg, `${tmpName}`)
-                        if (uploaded) {
-                          return await attachment.getFileURL(tmpName)
-                        }
-                      }
-                      return v
-                    })
-                  )) as string[]
-                }
-              }
-              const outputConfig = data.workflow.mapOutput
-              const outputData = Object.keys(outputConfig || {}).reduce(
-                (acc, val) => {
-                  if (tmpOutput[val] && outputConfig?.[val]) {
-                    acc[val] = {
-                      info: outputConfig[val],
-                      data: tmpOutput[val]
-                    }
-                  }
-                  return acc
-                },
-                {} as Record<
-                  string,
-                  {
-                    info: IMapperOutput
-                    data: number | boolean | string | Array<{ type: EAttachmentType; url: string }>
-                  }
-                >
-              )
-              subscriber.next({ key: 'finished', data: { output: outputData } })
-            })
-            .onFailed((e) => {
-              console.warn(e)
-              subscriber.next({ key: 'failed', detail: (e.cause as any)?.error?.message || e.message })
-            })
-            .run()
-        })
-      }
-      ee.on('start', handle)
-      return () => {
-        ee.off('start', handle)
-      }
-    })
+  testWorkflow: editorProcedure.input(z.string()).subscription(async function* ({ ctx, input, signal }) {
+    for await (const [ev] of on(ee, `workflow:${input}`, {
+      // Passing the AbortSignal from the request automatically cancels the event emitter when the request is aborted
+      signal: signal
+    })) {
+      const data = ev as TWorkflowProgressMessage
+      yield data
+    }
   }),
   startTestWorkflow: editorProcedure
     .input(
       z.object({
+        id: z.string(),
         input: z.record(z.string(), z.any()),
         workflow: z.any()
       })
     )
     .mutation(async ({ input, ctx }) => {
-      ee.emit('start', input)
+      const data = input
+      const builder = getBuilder(data.workflow)
+      const pool = ComfyPoolInstance.getInstance().pool
+      emitAction(input.id, { key: 'init' })
+      pool.run(async (api) => {
+        for (const key in data.input) {
+          const inputData = data.input[key] || data.workflow.mapInput?.[key].default
+          if (!inputData) {
+            continue
+          }
+          switch (data.workflow.mapInput?.[key].type) {
+            case EValueType.Number:
+            case EValueUtilityType.Seed:
+              builder.input(key, Number(inputData))
+              break
+            case EValueType.String:
+              builder.input(key, String(inputData))
+              break
+            case EValueType.File:
+            case EValueType.Video:
+            case EValueType.Image:
+              const file = inputData as Attachment
+              const fileBlob = await AttachmentService.getInstance().getFileBlob(file.fileName)
+              if (!fileBlob) {
+                emitAction(input.id, { key: 'failed', detail: 'missing file' })
+                return
+              }
+              const uploadedImg = await api.uploadImage(fileBlob, file.fileName)
+              if (!uploadedImg) {
+                emitAction(input.id, { key: 'failed', detail: 'failed to upload file' })
+                return
+              }
+              builder.input(key, uploadedImg.info.filename)
+              break
+            default:
+              builder.input(key, inputData)
+              break
+          }
+        }
+        return new CallWrapper(api, builder)
+          .onPending(() => {
+            emitAction(input.id, { key: 'loading' })
+          })
+          .onProgress((e) => {
+            emitAction(input.id, {
+              key: 'progress',
+              data: { node: Number(e.node), max: Number(e.max), value: Number(e.value) }
+            })
+          })
+          .onPreview(async (e) => {
+            const arrayBuffer = await e.arrayBuffer()
+            const base64String = Buffer.from(arrayBuffer).toString('base64')
+            emitAction(input.id, { key: 'preview', data: { blob64: base64String } })
+          })
+          .onStart(() => {
+            emitAction(input.id, { key: 'start' })
+          })
+          .onFinished(async (outData) => {
+            emitAction(input.id, { key: 'downloading_output' })
+            const attachment = AttachmentService.getInstance()
+            const output = await parseOutput(api, data.workflow, outData)
+            emitAction(input.id, { key: 'uploading_output' })
+            const tmpOutput = cloneDeep(output) as Record<string, any>
+            // If key is array of Blob, convert it to base64
+            for (const key in tmpOutput) {
+              if (Array.isArray(tmpOutput[key])) {
+                tmpOutput[key] = (await Promise.all(
+                  tmpOutput[key].map(async (v, idx) => {
+                    if (v instanceof Blob) {
+                      const imgUtil = new ImageUtil(Buffer.from(await v.arrayBuffer()))
+                      const jpg = await imgUtil.intoJPG()
+                      const tmpName = `${uniqueId()}_${key}_${idx}.jpg`
+                      const uploaded = await attachment.uploadFile(jpg, `${tmpName}`)
+                      if (uploaded) {
+                        return await attachment.getFileURL(tmpName, undefined, ctx.baseUrl)
+                      }
+                    }
+                    return v
+                  })
+                )) as string[]
+              }
+            }
+            const outputConfig = data.workflow.mapOutput
+            const outputData = Object.keys(outputConfig || {}).reduce(
+              (acc, val) => {
+                if (tmpOutput[val] && outputConfig?.[val]) {
+                  acc[val] = {
+                    info: outputConfig[val],
+                    data: tmpOutput[val]
+                  }
+                }
+                return acc
+              },
+              {} as Record<
+                string,
+                {
+                  info: IMapperOutput
+                  data: number | boolean | string | Array<{ type: EAttachmentType; url: string }>
+                }
+              >
+            )
+            emitAction(input.id, { key: 'finished', data: { output: outputData } })
+          })
+          .onFailed((e) => {
+            console.warn(e)
+            emitAction(input.id, { key: 'failed', detail: (e.cause as any)?.error?.message || e.message })
+          })
+          .run()
+      })
       return true
     }),
   importWorkflow: editorProcedure
