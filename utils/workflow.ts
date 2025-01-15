@@ -7,7 +7,16 @@ const TSimpleValue = z.union([z.string(), z.number(), z.boolean()])
 
 const TNodeReference = z.tuple([z.string(), z.number()])
 
-const TInputValue = z.union([TSimpleValue, TNodeReference, z.array(z.union([TSimpleValue, TNodeReference]))])
+const TOtherExtension = z.record(
+  z.union([TSimpleValue, TNodeReference, z.array(z.union([TSimpleValue, TNodeReference, z.record(TSimpleValue)]))])
+)
+
+const TInputValue = z.union([
+  TSimpleValue, // Normal value
+  TNodeReference, // Reference to another node
+  TOtherExtension, // Custom node inputs
+  z.array(z.union([TSimpleValue, TNodeReference]))
+])
 
 const IInputs = z.record(TInputValue)
 
