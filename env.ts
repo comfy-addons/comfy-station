@@ -14,7 +14,12 @@ const ENVBackendSchema = z.object({
 
   OPENAI_BASE_URL: z.string().optional().default('https://api.openai.com/v1'),
   OPENAI_API_KEY: z.string().optional(),
-  OPENAI_MODEL: z.string().optional().default('gpt-4o-mini')
+  OPENAI_MODEL: z.string().optional().default('gpt-4o-mini'),
+
+  // Redis configuration
+  REDIS_PORT: z.number({ coerce: true }).optional(),
+  REDIS_HOST: z.string().optional(),
+  REDIS_PASSWORD: z.string().optional()
 })
 
 export const BackendENV = ENVBackendSchema.parse({
@@ -30,5 +35,8 @@ export const BackendENV = ENVBackendSchema.parse({
   S3_SECRET_KEY: process.env.S3_SECRET_KEY,
   OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-  OPENAI_MODEL: process.env.OPENAI_MODEL
+  OPENAI_MODEL: process.env.OPENAI_MODEL,
+  REDIS_PORT: process.env.REDIS_PORT,
+  REDIS_HOST: process.env.REDIS_HOST,
+  REDIS_PASSWORD: process.env.REDIS_PASSWORD
 })

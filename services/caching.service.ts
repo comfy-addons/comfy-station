@@ -2,9 +2,8 @@ import { EClientStatus } from '@/entities/enum'
 import { TMonitorEvent } from '@saintno/comfyui-sdk'
 import { Logger } from '@saintno/needed-tools'
 import { LRUCache } from 'lru-cache'
-import { createClient, RedisClientType } from 'redis' // Assuming you have the Redis package installed
 
-const REDIS_CONF = process.env.REDIS
+import { RedisService } from './redis.service'
 
 export type TCachingKeyMap = {
   CLIENT_STATUS: CustomEvent<EClientStatus>
@@ -22,7 +21,7 @@ export type TCachingKeyMap = {
 
 class CachingService extends EventTarget {
   private logger: Logger
-  private cache: RedisClientType<any> | LRUCache<string, string>
+  private cache: RedisService | LRUCache<string, string>
 
   static getInstance() {
     if (!(global as any).__CachingService__) {
@@ -35,7 +34,8 @@ class CachingService extends EventTarget {
     if (this.cache instanceof LRUCache) {
       this.cache.clear()
     } else {
-      await this.cache.quit()
+      await this.cache.redis.quit()
+      await this.cache.subRedis.quit()
     }
   }
 
@@ -56,13 +56,14 @@ class CachingService extends EventTarget {
 
   private constructor() {
     super()
+    const rdInst = RedisService.getInstance()
     this.logger = new Logger('CachingService')
-    if (REDIS_CONF) {
+    if (rdInst) {
       // Use Redis as the caching mechanism
-      this.cache = createClient()
+      this.cache = rdInst
       this.logger.i('init', 'Use Redis as the caching mechanism')
-      this.cache.connect().then(() => {
-        this.logger.i('init', 'Redis connection established')
+      rdInst.subRedis.on('message', (channel, message) => {
+        this.dispatchEvent(new CustomEvent(channel, { detail: JSON.parse(message) }))
       })
     } else {
       // Use in-memory cache
@@ -87,11 +88,14 @@ class CachingService extends EventTarget {
           }
         })
       )
+      this.cache.set(key, JSON.stringify(value))
     } else {
-      await this.cache.publish(key, JSON.stringify(value))
-      await this.cache.publish(category, JSON.stringify({ id, value }))
+      await Promise.all([
+        this.cache.redis.publish(key, JSON.stringify(value)),
+        this.cache.redis.publish(category, JSON.stringify({ id, value })),
+        this.cache.redis.set(key, JSON.stringify(value))
+      ])
     }
-    await this.cache.set(key, JSON.stringify(value))
   }
 
   async get<K extends keyof TCachingKeyMap>(
@@ -99,7 +103,7 @@ class CachingService extends EventTarget {
     id: string | number
   ): Promise<TCachingKeyMap[K]['detail'] | null> {
     const key = `${category}:${id}`
-    const value = await this.cache.get(key)
+    const value = this.cache instanceof LRUCache ? this.cache.get(key) : await this.cache.redis.get(key)
     if (!value) return null
     return JSON.parse(value)
   }
@@ -125,13 +129,10 @@ class CachingService extends EventTarget {
     // If the cache is not an instance of LRUCache, we need to subscribe to the cache
     if (!(this.cache instanceof LRUCache)) {
       const cacher = this.cache
-      const fn = (value: string) => {
-        this.dispatchEvent(new CustomEvent(key, { detail: JSON.parse(value) }))
-      }
-      cacher.subscribe(key, fn)
+      this.cache.subRedis.subscribe(key)
       return () => {
         this.off(category, id, callback)
-        cacher.unsubscribe(key, fn)
+        !(this.cache instanceof LRUCache) && cacher.subRedis.unsubscribe(key)
       }
     }
     return () => {
@@ -152,13 +153,10 @@ class CachingService extends EventTarget {
     this.addEventListener(category, callback as any, options)
     if (!(this.cache instanceof LRUCache)) {
       const cacher = this.cache
-      const fn = (value: string) => {
-        this.dispatchEvent(new CustomEvent(category, { detail: JSON.parse(value) }))
-      }
-      cacher.subscribe(category, fn)
+      cacher.subRedis.subscribe(category)
       return () => {
         this.offCategory(category, callback)
-        cacher.unsubscribe(category, fn)
+        !(this.cache instanceof LRUCache) && cacher.subRedis.unsubscribe(category)
       }
     }
     return () => {
@@ -193,6 +191,53 @@ class CachingService extends EventTarget {
   ) {
     const key = `${category}:${id}`
     this.removeEventListener(key, callback as any)
+  }
+
+  onGenerator = async function* <T extends keyof TCachingKeyMap>(
+    key: T,
+    id: string | number,
+    signal?: AbortSignal
+  ): AsyncGenerator<TCachingKeyMap[T]> {
+    while (!signal?.aborted) {
+      // Create a promise that resolves when the event occurs
+      const event = await new Promise<TCachingKeyMap[T]>((resolve, reject) => {
+        if (signal?.aborted) {
+          reject(new Error('Generator aborted'))
+          return
+        }
+        signal?.addEventListener('abort', () => reject(new Error('Generator aborted')))
+        CachingService.getInstance().on(key, id, resolve, { once: true })
+      })
+      yield event
+    }
+  }
+
+  onCategoryGenerator = async function* x<T extends keyof TCachingKeyMap>(
+    key: T,
+    signal?: AbortSignal
+  ): AsyncGenerator<
+    CustomEvent<{
+      id: string | number
+      value: TCachingKeyMap[T]['detail']
+    }>
+  > {
+    while (!signal?.aborted) {
+      // Create a promise that resolves when the event occurs
+      const event = await new Promise<
+        CustomEvent<{
+          id: string | number
+          value: TCachingKeyMap[T]['detail']
+        }>
+      >((resolve, reject) => {
+        if (signal?.aborted) {
+          reject(new Error('Generator aborted'))
+          return
+        }
+        signal?.addEventListener('abort', () => reject(new Error('Generator aborted')))
+        CachingService.getInstance().onCategory(key, resolve, { once: true })
+      })
+      yield event
+    }
   }
 }
 
