@@ -19,7 +19,7 @@ import {
   DocumentArrowUpIcon,
   LanguageIcon,
   PhotoIcon,
-  SparklesIcon,
+  PlayCircleIcon,
   VariableIcon
 } from '@heroicons/react/24/outline'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -73,6 +73,9 @@ export const CreateOutputNode: IComponent<{
         break
       case EValueType.Image:
         form.setValue('icon', 'PhotoIcon')
+        break
+      case EValueType.Video:
+        form.setValue('icon', 'PlayCircleIcon')
         break
       case EValueType.File:
         form.setValue('icon', 'DocumentArrowUpIcon')
@@ -190,6 +193,12 @@ export const CreateOutputNode: IComponent<{
                             <div className='flex items-center'>
                               <PhotoIcon className='mr-2 h-4 w-4' />
                               Image
+                            </div>
+                          </SelectItem>
+                          <SelectItem value={EValueType.Video}>
+                            <div className='flex items-center'>
+                              <PlayCircleIcon className='mr-2 h-4 w-4' />
+                              Video
                             </div>
                           </SelectItem>
                           <SelectItem value={EValueType.File}>

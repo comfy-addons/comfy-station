@@ -5,7 +5,7 @@ import { Attachment } from '@/entities/attachment'
 import { cn } from '@/lib/utils'
 import { PhotoView } from 'react-photo-view'
 import { Button } from './ui/button'
-import { Download, MoreHorizontal, Star } from 'lucide-react'
+import { Download, ImageIcon, MoreHorizontal, Star } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
 import LoadableImage from './LoadableImage'
@@ -24,6 +24,8 @@ import useCurrentMousePosRef from '@/hooks/useCurrentMousePos'
 import { useScrollingStatusRef } from '@/hooks/useScrollingStatus'
 import useCopyAction from '@/hooks/useCopyAction'
 import { useActionDebounce } from '@/hooks/useAction'
+import { EValueType } from '@/entities/enum'
+import { PlayCircleIcon } from '@heroicons/react/24/outline'
 
 const AttachmentTooltipPopup: IComponent<{
   taskId?: string
@@ -108,6 +110,8 @@ export const AttachmentReview: IComponent<{
     }
   )
 
+  const isVideo = image?.type === EValueType.Video
+
   const downloadFn = (mode: 'jpg' | 'raw' = 'raw') => {
     if (mode === 'raw') {
       window.open(image?.raw?.url, '_blank')
@@ -191,6 +195,20 @@ export const AttachmentReview: IComponent<{
                       'rounded-lg outline outline-white shadow cursor-pointer': isPop
                     })}
                   />
+                  {isPop && (
+                    <m.div className='mt-2' onClick={(e) => e.stopPropagation()}>
+                      {!!image && (
+                        <div className='px-2 py-1 text-xs bg-background/50 border backdrop-blur w-min rounded flex justify-center gap-1'>
+                          {image.type === EValueType.Video ? (
+                            <PlayCircleIcon className='w-4 h-4' />
+                          ) : (
+                            <ImageIcon className='w-4 h-4' />
+                          )}
+                          <code>{image?.type}</code>
+                        </div>
+                      )}
+                    </m.div>
+                  )}
                 </m.div>
                 {isPop && (
                   <m.div
@@ -220,21 +238,32 @@ export const AttachmentReview: IComponent<{
                         <AttachmentTooltipPopup taskId={taskId} active={hoverSync && isHovering} />
                       </div>
                       <div className='w-full mt-2 h-10 flex justify-end gap-2'>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild className='flex items-center'>
-                            <Button variant='secondary' className='bg-background/50 backdrop-blur-lg'>
-                              <code>DOWNLOAD</code> <Download width={16} height={16} className='ml-2' />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent side='left' className='bg-background/80 backdrop-blur-lg'>
-                            <DropdownMenuItem onClick={() => downloadFn('jpg')} className='cursor-pointer text-sm'>
-                              <span>Download compressed JPG</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => downloadFn()} className='cursor-pointer text-sm'>
-                              <span>Download Raw</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        {isVideo ? (
+                          <Button
+                            variant='secondary'
+                            onClick={() => downloadFn()}
+                            className='bg-background/50 backdrop-blur-lg'
+                          >
+                            <code>DOWNLOAD</code> <Download width={16} height={16} className='ml-2' />
+                          </Button>
+                        ) : (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild className='flex items-center'>
+                              <Button variant='secondary' className='bg-background/50 backdrop-blur-lg'>
+                                <code>DOWNLOAD</code> <Download width={16} height={16} className='ml-2' />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent side='left' className='bg-background/80 backdrop-blur-lg'>
+                              <DropdownMenuItem onClick={() => downloadFn('jpg')} className='cursor-pointer text-sm'>
+                                <span>Download compressed JPG</span>
+                              </DropdownMenuItem>
+
+                              <DropdownMenuItem onClick={() => downloadFn()} className='cursor-pointer text-sm'>
+                                <span>Download Raw</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
                         {!!onPressFavorite && (
                           <Button
                             onClick={() => onPressFavorite?.(data?.id!)}
@@ -302,6 +331,19 @@ export const AttachmentReview: IComponent<{
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+          </div>
+        )}
+        {!!image && (
+          <div
+            className={cn(
+              'z-10 group-hover:block absolute bottom-2 left-2 bg-black/50 text-white backdrop-blur rounded p-1'
+            )}
+          >
+            {image.type === EValueType.Video ? (
+              <PlayCircleIcon className='w-4 h-4' />
+            ) : (
+              <ImageIcon className='w-4 h-4' />
+            )}
           </div>
         )}
         {!!onPressFavorite && (

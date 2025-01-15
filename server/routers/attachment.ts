@@ -16,6 +16,7 @@ const getAttachmentURL = async (attachment: Attachment, baseUrl = 'http://localh
     AttachmentService.getInstance().getFileURL(highName, 3600 * 24, baseUrl)
   ])
   return {
+    type: attachment.type,
     raw: imageInfo,
     preview: imagePreviewInfo || imageInfo,
     high: imageHighInfo || imageInfo

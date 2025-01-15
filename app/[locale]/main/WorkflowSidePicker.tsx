@@ -83,7 +83,7 @@ export const WorkflowSidePicker: IComponent = () => {
       if (crrInput.type === EValueType.Number) {
         inputRecord[key] = Number(inputData[key] || crrInput.default)
       }
-      if ([EValueType.File, EValueType.Image].includes(crrInput.type as EValueType)) {
+      if ([EValueType.File, EValueType.Video, EValueType.Image].includes(crrInput.type as EValueType)) {
         const files = inputData[key] as File[]
         if (!files || files.length === 0) {
           toast({

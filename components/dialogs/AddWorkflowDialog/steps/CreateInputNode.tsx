@@ -24,6 +24,7 @@ import {
   LanguageIcon,
   ListBulletIcon,
   PhotoIcon,
+  PlayCircleIcon,
   PuzzlePieceIcon,
   SparklesIcon,
   VariableIcon
@@ -106,6 +107,9 @@ export const CreateInputNode: IComponent<{
       case EValueType.Image:
         form.setValue('icon', 'PhotoIcon')
         break
+      case EValueType.Video:
+        form.setValue('icon', 'PlayCircleIcon')
+        break
       case EValueType.File:
         form.setValue('icon', 'DocumentArrowUpIcon')
         break
@@ -146,6 +150,8 @@ export const CreateInputNode: IComponent<{
         return 'Use for string input like positive, negative, caption,...'
       case EValueType.Image:
         return 'Use for image input like load_image, load_mask,...'
+      case EValueType.Video:
+        return 'Use for video input like load_video,...'
       case EValueType.File:
         return 'Use for file input like load_audio, load_text,...'
       case EValueType.Boolean:
@@ -286,6 +292,12 @@ export const CreateInputNode: IComponent<{
                             <div className='flex items-center'>
                               <PhotoIcon className='mr-2 h-4 w-4' />
                               Image
+                            </div>
+                          </SelectItem>
+                          <SelectItem value={EValueType.Video}>
+                            <div className='flex items-center'>
+                              <PlayCircleIcon className='mr-2 h-4 w-4' />
+                              Video
                             </div>
                           </SelectItem>
                           <SelectItem value={EValueType.File}>

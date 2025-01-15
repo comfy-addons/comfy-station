@@ -7,6 +7,7 @@ import { Button } from '../ui/button'
 import { Download } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { trpc } from '@/utils/trpc'
+import { EValueType } from '@/entities/enum'
 
 const DownloadImagesButton: IComponent<{
   workflowTaskId?: string
@@ -19,19 +20,45 @@ const DownloadImagesButton: IComponent<{
       refetchOnWindowFocus: false
     }
   )
+  const haveVideo = !!attachments?.some((a) => a?.type === EValueType.Video)
+  const haveImage = !!attachments?.some((a) => a?.type === EValueType.Image)
+
   const { bundleImages, isLoading, progress, error } = useImageBundler()
 
-  const downloadFn = async (mode: 'jpg' | 'raw' = 'jpg') => {
+  const downloadRawOutput = () => {
     if (isLoading) return
     try {
       const images = attachments
         ?.filter((a) => !!a)
         .filter((a) => !!a.raw?.url)
-        .map((v) => {
-          if (mode === 'jpg') return v.high!.url
-          return v.raw!.url
-        }) as string[]
-      await bundleImages(images)
+        .map((v) => v.raw!.url) as string[]
+      bundleImages(images)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const downloadCompressedJpg = () => {
+    if (isLoading) return
+    try {
+      const images = attachments
+        ?.filter((a) => !!a && a.type === EValueType.Image)
+        .filter((a) => !!a.high?.url)
+        .map((v) => v.high!.url) as string[]
+      bundleImages(images)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const downloadVideos = () => {
+    if (isLoading) return
+    try {
+      const videos = attachments
+        ?.filter((a) => !!a && a.type === EValueType.Video)
+        .filter((a) => !!a.raw?.url)
+        .map((v) => v.raw!.url) as string[]
+      bundleImages(videos)
     } catch (e) {
       console.error(e)
     }
@@ -58,11 +85,18 @@ const DownloadImagesButton: IComponent<{
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent side='left' align='center'>
-        <DropdownMenuItem onClick={() => downloadFn('jpg')} className='cursor-pointer text-sm'>
-          <span>Download compressed JPG</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => downloadFn()} className='cursor-pointer text-sm'>
-          <span>Download Raw</span>
+        {haveVideo && (
+          <DropdownMenuItem onClick={downloadVideos} className='cursor-pointer text-sm'>
+            <span>Download video files</span>
+          </DropdownMenuItem>
+        )}
+        {haveImage && (
+          <DropdownMenuItem onClick={downloadCompressedJpg} className='cursor-pointer text-sm'>
+            <span>Download compressed JPG</span>
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem onClick={downloadRawOutput} className='cursor-pointer text-sm'>
+          <span>Download raw output</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -31,7 +31,7 @@ export const AttachmentDetail: IComponent<{
 
   const renderMapperInput = useCallback((config: IMapperInput, inputVal: any) => {
     const value = inputVal || config.default
-    if (config.type === EValueType.Image) {
+    if ([EValueType.Image, EValueType.Video].includes(config.type as EValueType)) {
       let src = value
       if (isArray(src) && src.length === 1) {
         src = src[0]

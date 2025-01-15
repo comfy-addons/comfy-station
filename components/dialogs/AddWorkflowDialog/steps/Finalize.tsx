@@ -75,7 +75,7 @@ export const FinalizeStep: IComponent = () => {
     for (const key of inputKeys) {
       const input = workflow?.mapInput?.[key as keyof typeof workflow.mapInput]
       if (!input) continue
-      if (input.type === EValueType.File || input.type === EValueType.Image) {
+      if (input.type === EValueType.File || input.type === EValueType.Image || input.type === EValueType.Video) {
         const files = wfObj[key] as File[]
         if (files.length > 0) {
           const file = files[0]
@@ -140,7 +140,7 @@ export const FinalizeStep: IComponent = () => {
                 defaultValue={String(input.default ?? '')}
               />
             )}
-            {[EValueType.File, EValueType.Image].includes(input.type as EValueType) && (
+            {[EValueType.File, EValueType.Image, EValueType.Video].includes(input.type as EValueType) && (
               <DropFileInput
                 disabled={loading}
                 defaultFiles={inputWorkflowTest.current[val]}
@@ -240,6 +240,7 @@ export const FinalizeStep: IComponent = () => {
                 const data = progressEv.data.output[key as keyof typeof progressEv.data]
                 let items: ReactNode[] = []
                 switch (data.info.type) {
+                  case EValueType.Video:
                   case EValueType.Image:
                     const imageURLs = data.data as { url: string }[]
                     items.push(

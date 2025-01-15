@@ -7,7 +7,7 @@ export const AttachmentSchema = t.Object({
   fileName: t.String(),
   size: t.Number(),
   ratio: t.Number(),
-  type: t.UnionEnum([EValueType.File, EValueType.Image]),
+  type: t.UnionEnum([EValueType.File, EValueType.Image, EValueType.Video]),
   status: t.Enum(EAttachmentStatus),
   storageType: t.String(),
   taskEvent: t.Optional(t.Null()),

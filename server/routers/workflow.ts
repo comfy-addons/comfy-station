@@ -257,15 +257,16 @@ export const workflowRouter = router({
                 builder.input(key, String(inputData))
                 break
               case EValueType.File:
+              case EValueType.Video:
               case EValueType.Image:
                 const file = inputData as Attachment
                 const fileBlob = await AttachmentService.getInstance().getFileBlob(file.fileName)
                 if (!fileBlob) {
-                  return subscriber.next({ key: 'failed', detail: 'missing image' })
+                  return subscriber.next({ key: 'failed', detail: 'missing file' })
                 }
                 const uploadedImg = await api.uploadImage(fileBlob, file.fileName)
                 if (!uploadedImg) {
-                  subscriber.next({ key: 'failed', detail: 'failed to upload image' })
+                  subscriber.next({ key: 'failed', detail: 'failed to upload file' })
                   return
                 }
                 builder.input(key, uploadedImg.info.filename)

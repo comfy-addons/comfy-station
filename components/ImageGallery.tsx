@@ -102,7 +102,7 @@ export const ImageGallery: IComponent<{
                   left: `${(virtualRow.lane * 100) / imgPerRow}%`,
                   width: `calc(100%/${imgPerRow})`,
                   height: 'fit-content',
-                  aspectRatio: 'loading' in item ? 1 : item.ratio,
+                  aspectRatio: 'loading' in item ? 1 : item.ratio || 1,
                   transform: `translateY(${virtualRow.start}px)`
                 }}
               >
@@ -129,7 +129,7 @@ export const ImageGallery: IComponent<{
           id='bottom'
           ref={bottomRef}
           className={cn('w-full flex items-center justify-center mt-4 pt-4 pb-24 text-gray-400', {
-            'hidden': items.length === 0
+            hidden: items.length === 0
           })}
         >
           {hasNextPage && <div className='flex'>More data...</div>}

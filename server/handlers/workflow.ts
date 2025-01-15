@@ -126,7 +126,11 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
             throw new Error(`Value of <${key}> is greater than max value (max ${keyConfig.max})`)
           }
         }
-        if (keyConfig.type === EValueType.File || keyConfig.type === EValueType.Image) {
+        if (
+          keyConfig.type === EValueType.File ||
+          keyConfig.type === EValueType.Image ||
+          keyConfig.type === EValueType.Video
+        ) {
           const temp = input[key]
           if (Array.isArray(temp) && temp.length === 0) {
             set.status = 400

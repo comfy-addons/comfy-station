@@ -148,13 +148,13 @@ export const workflowTaskRouter = router({
   }),
   getOutputAttachmentUrls: privateProcedure.input(z.string()).query(async ({ input, ctx }) => {
     const task = await ctx.em.findOneOrFail(WorkflowTask, { id: input }, { populate: ['subTasks.events'] })
-    let fileNames: string[] = []
+    let fileNames: { filename: string; type?: EValueType }[] = []
 
     if (task.status !== ETaskStatus.Parent) {
       const attachments = await ctx.em.find(Attachment, {
         task
       })
-      fileNames = attachments.map((a) => a.fileName)
+      fileNames = attachments.map((a) => ({ filename: a.fileName, type: a.type }))
     } else {
       const subTaskIds = task.subTasks.map((t) => t.id)
       const attachments = await ctx.em.find(Attachment, {
@@ -164,18 +164,20 @@ export const workflowTaskRouter = router({
           }
         }
       })
-      fileNames = attachments.map((a) => a.fileName)
+      fileNames = attachments.map((a) => ({ filename: a.fileName, type: a.type }))
     }
     return Promise.all(
-      fileNames.map(async (fileName) => {
-        const prevName = `${fileName}_preview.jpg`
-        const highName = `${fileName}_high.jpg`
+      fileNames.map(async (info) => {
+        const { filename, type } = info
+        const prevName = `${filename}_preview.jpg`
+        const highName = `${filename}_high.jpg`
         const [imageInfo, imagePreviewInfo, imageHighInfo] = await Promise.all([
-          AttachmentService.getInstance().getFileURL(fileName, 3600 * 24, ctx.baseUrl),
+          AttachmentService.getInstance().getFileURL(filename, 3600 * 24, ctx.baseUrl),
           AttachmentService.getInstance().getFileURL(prevName, 3600 * 24, ctx.baseUrl),
           AttachmentService.getInstance().getFileURL(highName, 3600 * 24, ctx.baseUrl)
         ])
         return {
+          type,
           raw: imageInfo,
           preview: imagePreviewInfo || imageInfo,
           high: imageHighInfo || imageInfo

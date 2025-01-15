@@ -22,7 +22,9 @@ export const snippetRouter = router({
       const inputBody: Record<string, string | number | boolean> = {}
       for (const inputKey in workflow.mapInput) {
         if (workflow.mapInput[inputKey].type === EValueUtilityType.Prefixer) continue
-        if ([EValueType.File, EValueType.Image].includes(workflow.mapInput[inputKey].type as EValueType)) {
+        if (
+          [EValueType.File, EValueType.Image, EValueType.Video].includes(workflow.mapInput[inputKey].type as EValueType)
+        ) {
           inputBody[inputKey] = '<attachment_id>'
           needUpload = true
           continue

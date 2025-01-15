@@ -92,10 +92,32 @@ export const parseOutput = async (api: ComfyApi, workflow: Workflow, data: any) 
         }
         break
       case EValueType.Image:
-        if (!tmp && 'images' in output) {
-          const { images } = output
-          tmp = await Promise.all(images.map((img: any) => api.getImage(img)))
-          break
+        if (tmp) {
+          if (Array.isArray(tmp)) {
+            tmp = await Promise.all(tmp.map((img: any) => api.getImage(img)))
+          } else {
+            tmp = await api.getImage(tmp)
+          }
+        } else {
+          if ('images' in output) {
+            const { images } = output
+            tmp = await Promise.all(images.map((img: any) => api.getImage(img)))
+            break
+          }
+        }
+      case EValueType.Video:
+        if (tmp) {
+          if (Array.isArray(tmp)) {
+            tmp = await Promise.all(tmp.map((img: any) => api.getImage(img)))
+          } else {
+            tmp = await api.getImage(tmp)
+          }
+        } else {
+          if ('gifs' in output) {
+            const { gifs } = output
+            tmp = await Promise.all(gifs.map((img: any) => api.getImage(img)))
+            break
+          }
         }
       case EValueType.File:
         if (tmp) {

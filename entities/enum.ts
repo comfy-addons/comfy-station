@@ -51,6 +51,7 @@ export enum EValueType {
   File = 'File',
   String = 'String',
   Number = 'Number',
+  Video = 'Video',
   Image = 'Image',
   Boolean = 'Boolean'
 }

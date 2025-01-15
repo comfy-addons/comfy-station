@@ -24,7 +24,7 @@ export class Attachment {
   ratio?: number //  width / height, only for image
 
   @Property({ type: 'varchar', default: EValueType.Image, nullable: true })
-  type?: EValueType.Image | EValueType.File
+  type?: EValueType.Image | EValueType.Video | EValueType.File
 
   @Property({ type: 'varchar', default: EAttachmentStatus.PENDING, index: true })
   status!: EAttachmentStatus

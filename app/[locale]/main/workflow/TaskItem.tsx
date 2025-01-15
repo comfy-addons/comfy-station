@@ -241,7 +241,7 @@ export const TaskItem: IComponent<{
               />
               {runningTime >= 0 && <MiniBadge Icon={Hourglass} title='Take' count={`${runningTime}s`} />}
               {task.repeatCount > 1 && <MiniBadge Icon={Repeat} title='Repeat' count={task.repeatCount} />}
-              {!!attachments?.length && <MiniBadge Icon={Image} title='Images' count={attachments.length} />}
+              {!!attachments?.length && <MiniBadge Icon={Image} title='Files' count={attachments.length} />}
               {task.computedCost > 0 && (
                 <MiniBadge Icon={DollarSign} title='Credits' count={task.computedCost.toFixed(2)} />
               )}

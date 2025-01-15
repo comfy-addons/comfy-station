@@ -27,6 +27,9 @@ import AttachmentService, { EAttachmentType } from './attachment.service'
 import { ImageUtil } from '@/server/utils/ImageUtil'
 import { delay } from '@/utils/tools'
 import { User } from '@/entities/user'
+import { classifyBlob } from '@/server/utils/file'
+import { Workflow } from '@/entities/workflow'
+import mine from 'mime'
 
 const MONITOR_INTERVAL = 5000
 
@@ -144,6 +147,104 @@ export class ComfyPoolInstance {
     await em.flush()
   }
 
+  private handleImageOutput = async (
+    imgBlob: Blob,
+    info: {
+      key: string
+      idx: number
+      task: WorkflowTask
+      workflow: Workflow
+    },
+    attachment: AttachmentService,
+    em: Awaited<ReturnType<Awaited<ReturnType<typeof MikroORMInstance.getInstance>['getEM']>>>
+  ) => {
+    const { key, idx, task, workflow } = info
+    const imgUtil = new ImageUtil(Buffer.from(await imgBlob.arrayBuffer()))
+    const [preview, high, raw] = await Promise.all([
+      // For thumbnail
+      imgUtil
+        .clone()
+        .resizeMax(1024)
+        .intoPreviewJPG()
+        .catch((e) => {
+          this.logger.w('Error while converting to preview', e)
+          return null
+        }),
+      // For on click into thumbnail preview
+      imgUtil
+        .clone()
+        .intoPreviewJPG()
+        .catch((e) => {
+          this.logger.w('Error while converting to preview', e)
+          return null
+        }),
+      // Raw image, use for download
+      imgUtil.intoPNG()
+    ])
+    const tmpName = `${task.id}_${key}_${idx}.png`
+    const [uploaded] = await Promise.all([
+      attachment.uploadFile(raw, `${tmpName}`),
+      preview ? attachment.uploadFile(preview, `${tmpName}_preview.jpg`) : Promise.resolve(false),
+      high ? attachment.uploadFile(high, `${tmpName}_high.jpg`) : Promise.resolve(false)
+    ])
+    if (uploaded) {
+      const fileInfo = await attachment.getFileURL(tmpName)
+      const ratio = await imgUtil.getRatio()
+      const outputAttachment = em.create(
+        Attachment,
+        {
+          fileName: tmpName,
+          size: raw.byteLength,
+          storageType: fileInfo?.type === EAttachmentType.LOCAL ? EStorageType.LOCAL : EStorageType.S3,
+          status: EAttachmentStatus.UPLOADED,
+          ratio,
+          task,
+          workflow
+        },
+        { partial: true }
+      )
+      em.persist(outputAttachment)
+      return outputAttachment.id
+    }
+  }
+
+  private handleVideoOutput = async (
+    videoBlob: Blob,
+    info: {
+      key: string
+      idx: number
+      task: WorkflowTask
+      workflow: Workflow
+    },
+    attachment: AttachmentService,
+    em: Awaited<ReturnType<Awaited<ReturnType<typeof MikroORMInstance.getInstance>['getEM']>>>
+  ) => {
+    const { key, idx, task, workflow } = info
+    const buff = Buffer.from(await videoBlob.arrayBuffer())
+    const extension = mine.getExtension(videoBlob.type) || 'mp4'
+    const tmpName = `${task.id}_${key}_${idx}.${extension}`
+
+    const uploaded = await attachment.uploadFile(buff, `${tmpName}`)
+    if (uploaded) {
+      const fileInfo = await attachment.getFileURL(tmpName)
+      const outputAttachment = em.create(
+        Attachment,
+        {
+          fileName: tmpName,
+          size: buff.byteLength,
+          type: EValueType.Video,
+          storageType: fileInfo?.type === EAttachmentType.LOCAL ? EStorageType.LOCAL : EStorageType.S3,
+          status: EAttachmentStatus.UPLOADED,
+          task,
+          workflow
+        },
+        { partial: true }
+      )
+      em.persist(outputAttachment)
+      return outputAttachment.id
+    }
+  }
+
   private async pickingJob() {
     const pool = this.pool
     const em = await MikroORMInstance.getInstance().getEM()
@@ -215,6 +316,7 @@ export class ComfyPoolInstance {
                       builder.input(key, String(inputData))
                       break
                     case EValueType.File:
+                    case EValueType.Video:
                     case EValueType.Image:
                       const attachmentId = inputData as string
                       const file = await em.findOneOrFail(Attachment, { id: attachmentId })
@@ -243,7 +345,7 @@ export class ComfyPoolInstance {
                       break
                   }
                 }
-
+                console.log(JSON.stringify(builder.workflow))
                 return new CallWrapper(api, builder)
                   .onPending(async () => {
                     await this.updateTaskEventFn(task, ETaskStatus.Running, {
@@ -289,56 +391,21 @@ export class ComfyPoolInstance {
                         if (Array.isArray(tmpOutput[key])) {
                           tmpOutput[key] = (await Promise.all(
                             tmpOutput[key].map(async (v, idx) => {
+                              console.log('out', key, v)
                               if (v instanceof Blob) {
-                                const imgUtil = new ImageUtil(Buffer.from(await v.arrayBuffer()))
-                                const [preview, high, raw] = await Promise.all([
-                                  // For thumbnail
-                                  imgUtil
-                                    .clone()
-                                    .resizeMax(1024)
-                                    .intoPreviewJPG()
-                                    .catch((e) => {
-                                      this.logger.w('Error while converting to preview', e)
-                                      return null
-                                    }),
-                                  // For on click into thumbnail preview
-                                  imgUtil
-                                    .clone()
-                                    .intoPreviewJPG()
-                                    .catch((e) => {
-                                      this.logger.w('Error while converting to preview', e)
-                                      return null
-                                    }),
-                                  // Raw image, use for download
-                                  imgUtil.intoPNG()
-                                ])
-                                const tmpName = `${task.id}_${key}_${idx}.png`
-                                const [uploaded] = await Promise.all([
-                                  attachment.uploadFile(raw, `${tmpName}`),
-                                  preview
-                                    ? attachment.uploadFile(preview, `${tmpName}_preview.jpg`)
-                                    : Promise.resolve(false),
-                                  high ? attachment.uploadFile(high, `${tmpName}_high.jpg`) : Promise.resolve(false)
-                                ])
-                                if (uploaded) {
-                                  const fileInfo = await attachment.getFileURL(tmpName)
-                                  const ratio = await imgUtil.getRatio()
-                                  const outputAttachment = em.create(
-                                    Attachment,
-                                    {
-                                      fileName: tmpName,
-                                      size: raw.byteLength,
-                                      storageType:
-                                        fileInfo?.type === EAttachmentType.LOCAL ? EStorageType.LOCAL : EStorageType.S3,
-                                      status: EAttachmentStatus.UPLOADED,
-                                      ratio,
-                                      task,
-                                      workflow
-                                    },
-                                    { partial: true }
-                                  )
-                                  em.persist(outputAttachment)
-                                  return outputAttachment.id
+                                // Check if v is Video, Image or others
+                                const blobType = classifyBlob(v)
+                                switch (blobType) {
+                                  case 'image': {
+                                    await this.handleImageOutput(v, { key, idx, task, workflow }, attachment, em)
+                                    break
+                                  }
+                                  case 'video': {
+                                    await this.handleVideoOutput(v, { key, idx, task, workflow }, attachment, em)
+                                    break
+                                  }
+                                  default: {
+                                  }
                                 }
                               }
                               return v
