@@ -7,7 +7,7 @@ import {
   EValueUtilityType,
   EWorkflowActiveStatus
 } from '@/entities/enum'
-import { EnsureTokenPlugin } from '../plugins/ensure-token.plugin'
+import { EnsureTokenPlugin } from '../plugins/ensure-token-plugin'
 import { WorkflowInputSchema, WorkflowOutputSchema } from '../schemas/workflow'
 import { EnsureMikroORMPlugin } from '../plugins/ensure-mikro-orm.plugin'
 import { convertObjectToArrayOfObjects, delay, seed } from '@/utils/tools'

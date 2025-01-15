@@ -7,16 +7,17 @@ import { TaskPlugin } from './handlers/task'
 import { TokenPlugin } from './handlers/token'
 import { WorkflowPlugin } from './handlers/workflow'
 import { CleanUpJobPlugin } from './plugins/cleanup-jobs.plugin'
+import { EnsureLogPlugin } from './plugins/ensure-log-plugin'
 
 export const ElysiaHandler = new Elysia()
+  .use(EnsureLogPlugin)
   .decorate(() => {
     return {
-      logger: new Logger('Elysia'),
       start: performance.now()
     }
   })
-  .onAfterResponse(({ logger, start, request }) => {
-    logger.i(request.method, request.url, {
+  .onAfterResponse(({ log, start, request }) => {
+    log.i(request.method, request.url, {
       time: Math.round((performance.now() - start) / 1000) + 'ms'
     })
   })

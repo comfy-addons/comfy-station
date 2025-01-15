@@ -1,5 +1,5 @@
 import Elysia, { NotFoundError, t } from 'elysia'
-import { EnsureTokenPlugin } from '../plugins/ensure-token.plugin'
+import { EnsureTokenPlugin } from '../plugins/ensure-token-plugin'
 import { EnsureMikroORMPlugin } from '../plugins/ensure-mikro-orm.plugin'
 import { WorkflowTask } from '@/entities/workflow_task'
 import { WorkflowTaskEvent } from '@/entities/workflow_task_event'

@@ -4,7 +4,7 @@ import { Attachment } from '@/entities/attachment'
 import AttachmentService from '@/services/attachment.service'
 import { AttachmentSchema, AttachmentURLSchema } from '../schemas/attachment'
 import { EAttachmentStatus } from '@/entities/enum'
-import { EnsureTokenPlugin } from '../plugins/ensure-token.plugin'
+import { EnsureTokenPlugin } from '../plugins/ensure-token-plugin'
 import { EnsureBaseURL } from '../plugins/ensure-baseurl-plugin'
 
 export const AttachmentPlugin = new Elysia({ prefix: '/attachment', detail: { tags: ['Attachment'] } })

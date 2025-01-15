@@ -1,6 +1,6 @@
 import Elysia, { t } from 'elysia'
 import { EnsureMikroORMPlugin } from '../plugins/ensure-mikro-orm.plugin'
-import { EnsureTokenPlugin } from '../plugins/ensure-token.plugin'
+import { EnsureTokenPlugin } from '../plugins/ensure-token-plugin'
 import { TokenInformationSchema } from '../schemas/token'
 
 export const TokenPlugin = new Elysia({ prefix: '/token', detail: { tags: ['Others'] } })
