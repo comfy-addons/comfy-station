@@ -1,7 +1,7 @@
 import { useDropzone } from 'react-dropzone'
 
 import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { X } from 'lucide-react'
 import { PhotoView } from 'react-photo-view'

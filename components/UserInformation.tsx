@@ -4,7 +4,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { signOut, useSession } from 'next-auth/react'
 import { trpc } from '@/utils/trpc'
 import { EDeviceStatus, EUserRole } from '@/entities/enum'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { useState } from 'react'
 import { MiniBadge } from './MiniBadge'
 import { UserNotificationCenter } from './UserNotificationCenter'

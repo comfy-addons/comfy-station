@@ -2,7 +2,7 @@
 
 import { RouteConf } from '@/constants/route'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline'
 import { Link } from '@routing'
 import { useSession } from 'next-auth/react'

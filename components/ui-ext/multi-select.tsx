@@ -4,7 +4,7 @@ import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { CheckIcon, XCircle, ChevronDown, XIcon, WandSparkles, Plus } from 'lucide-react'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'

@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 
 interface Props {
   max: number
@@ -89,7 +89,11 @@ export default function AnimatedCircularProgressBar({
       </svg>
       <span
         data-current-value={currentPercent}
-        className='duration-[var(--transition-length)] delay-[var(--delay)] absolute inset-0 m-auto size-fit ease-linear animate-in fade-in'
+        style={{
+          animationDuration: 'var(--transition-length)',
+          animationDelay: 'var(--delay)'
+        }}
+        className='absolute inset-0 m-auto size-fit ease-linear animate-in fade-in'
       >
         {currentPercent}
       </span>

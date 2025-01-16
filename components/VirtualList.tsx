@@ -2,7 +2,7 @@ import React, { CSSProperties, useCallback, useEffect, useRef } from 'react'
 import { VirtualItem, useVirtualizer } from '@tanstack/react-virtual'
 import { delay } from '@/utils/tools'
 import { useActionDebounce, useActionThreshold } from '@/hooks/useAction'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 
 export type VirtualListProps<T> = {
   className?: string

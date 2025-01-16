@@ -6,7 +6,7 @@ import { createContext, useState } from 'react'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { CheckingFeatureStep } from './CheckingFeatureStep'
 import { InformationCheckingStep } from './InformationCheckingStep'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { ImportClientStep } from './ImportClientStep'
 
 export enum EImportStep {

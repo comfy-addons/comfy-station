@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { createContext, Dispatch, SetStateAction, useState } from 'react'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { UploadWorkflow } from './UploadWorkflow'
 import { WorkflowVisualize } from '@/components/WorkflowVisualize'
 import { Trash, XIcon } from 'lucide-react'

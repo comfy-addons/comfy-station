@@ -25,6 +25,7 @@
     ],
     "paths": {
       "@/*": ["./*"],
+      "@services/*": ["./server/services/*"],
       "@routing": ["./i18n/routing"]
     },
     "target": "es2017"

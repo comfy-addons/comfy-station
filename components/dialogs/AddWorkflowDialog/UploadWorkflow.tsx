@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { UploadIcon } from 'lucide-react'
 import { useCallback, useContext } from 'react'
 import { useDropzone } from 'react-dropzone'

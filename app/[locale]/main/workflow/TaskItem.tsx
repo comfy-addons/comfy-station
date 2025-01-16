@@ -11,7 +11,7 @@ import { Check, Copy, DollarSign, Hourglass, Image, Repeat, Trash2 } from 'lucid
 import { useMemo, useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { LoadableButton } from '@/components/LoadableButton'
 import DownloadImagesButton from '@/components/ui-ext/download-button'

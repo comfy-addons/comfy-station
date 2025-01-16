@@ -1,6 +1,6 @@
 import { useContext, useMemo } from 'react'
 import { AddWorkflowDialogContext, EImportStep } from '.'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { WorkflowInformation } from './steps/WorkflowInformation'
 import { MappingInput } from './steps/MappingInput'

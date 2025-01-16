@@ -2,7 +2,7 @@ import { EntityRepository } from '@mikro-orm/core'
 import type { User } from '../user'
 import { ENotificationType } from '../enum'
 import { INotificationData, UserNotification } from '../user_notifications'
-import CachingService from '@/services/caching.service'
+import CachingService from '@services/caching.service'
 
 export class UserRepository extends EntityRepository<User> {
   public async makeNotify(

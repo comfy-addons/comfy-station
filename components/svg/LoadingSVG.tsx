@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import React from 'react'
 
 export const LoadingSVG: ISvgComponent = ({ width = '100%', height = '100%', className }) => {

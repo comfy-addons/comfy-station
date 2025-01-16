@@ -4,7 +4,7 @@ import { router } from '../trpc'
 import { z } from 'zod'
 import { observable } from '@trpc/server/observable'
 import { ETaskStatus, ETriggerBy, EUserRole } from '@/entities/enum'
-import CachingService from '@/services/caching.service'
+import CachingService from '@services/caching.service'
 import { WorkflowTask } from '@/entities/workflow_task'
 
 export const watchRouter = router({

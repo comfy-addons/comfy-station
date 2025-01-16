@@ -21,7 +21,7 @@ import { cx } from 'class-variance-authority'
 import * as Icons from '@heroicons/react/16/solid'
 import { IMapperInput } from '@/entities/workflow'
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 
 export const ViewInputNode: IComponent<{
   readonly?: boolean

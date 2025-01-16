@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react'
 
 import { ETaskStatus } from '@/entities/enum'
 import { WorkflowTask } from '@/entities/workflow_task'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { Skeleton } from '@/components/ui/skeleton'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'

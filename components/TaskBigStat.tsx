@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { useMemo } from 'react'
 
 export const TaskBigStat: IComponent<{

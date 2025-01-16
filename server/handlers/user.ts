@@ -1,6 +1,6 @@
 import { User } from '@/entities/user'
 import { BackendENV } from '@/env'
-import { MikroORMInstance } from '@/services/mikro-orm.service'
+import { MikroORMInstance } from '@services/mikro-orm.service'
 import Elysia, { t } from 'elysia'
 
 const mikro = MikroORMInstance.getInstance()

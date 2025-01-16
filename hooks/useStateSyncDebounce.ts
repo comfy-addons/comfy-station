@@ -1,24 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react'
 
-const useStateSyncDebounce = <T = unknown>(
-  relayState: T,
-  delay: number
-): [T, boolean] => {
-  const [state, setState] = useState<T>(relayState);
-  const [debouncing, setDebouncing] = useState(false);
+const useStateSyncDebounce = <T = unknown>(relayState: T, delay: number): [T, boolean] => {
+  const [state, setState] = useState<T>(relayState)
+  const [debouncing, setDebouncing] = useState(false)
 
   useEffect(() => {
-    setDebouncing(true);
+    setDebouncing(true)
     const handler = setTimeout(() => {
-      setState(relayState);
-      setDebouncing(false);
-    }, delay);
+      setState(relayState)
+      setDebouncing(false)
+    }, delay)
     return () => {
-      clearTimeout(handler);
-    };
-  }, [relayState, delay]);
+      clearTimeout(handler)
+    }
+  }, [relayState, delay])
 
-  return [state, debouncing];
-};
+  return [state, debouncing]
+}
 
-export { useStateSyncDebounce };
+export { useStateSyncDebounce }

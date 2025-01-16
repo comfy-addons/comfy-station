@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { IconProps } from '@radix-ui/react-icons/dist/types'
 import { ForwardRefExoticComponent, RefAttributes, SVGProps } from 'react'
 

@@ -1,7 +1,7 @@
 import React from 'react'
 
 import useImageBundler from '@/hooks/useImageBundler'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import AnimatedCircularProgressBar from '../ui/animated-circular-progress-bar'
 import { Button } from '../ui/button'
 import { Download } from 'lucide-react'

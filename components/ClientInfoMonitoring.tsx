@@ -1,6 +1,6 @@
 import { Client } from '@/entities/client'
 import { EClientAction, EClientStatus } from '@/entities/enum'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { trpc } from '@/utils/trpc'
 import { TMonitorEvent } from '@saintno/comfyui-sdk'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -187,7 +187,11 @@ export const ClientInfoMonitoring: IComponent<{
               <OverflowText className='uppercase text-sm font-bold max-w-[170px] text-left'>
                 {client.name || `NODE #${client.id.slice(0, 4)}`}
               </OverflowText>
-              <a href={client.host} target='__blank' className='transition-all text-xs relative h-4 w-full justify-center items-center'>
+              <a
+                href={client.host}
+                target='__blank'
+                className='transition-all text-xs relative h-4 w-full justify-center items-center'
+              >
                 <OverflowText className='w-full absolute text-left'>{client.host}</OverflowText>
               </a>
             </div>

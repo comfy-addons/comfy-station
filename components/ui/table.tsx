@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 
 interface ExtendedTableProps extends React.HTMLAttributes<HTMLTableElement> {
   divClassname?: string

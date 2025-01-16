@@ -4,7 +4,7 @@ import { LoadableButton } from './LoadableButton'
 import { useId } from 'react'
 import { MagicWandIcon } from '@radix-ui/react-icons'
 import { useToast } from '@/hooks/useToast'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 
 export interface IGenerativeTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   generative?: boolean

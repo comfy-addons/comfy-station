@@ -1,4 +1,4 @@
-import { GenerativeFunctionMaker } from '@/utils/generative'
+import { GenerativeFunctionMaker } from '@/server/utils/generative'
 import { z } from 'zod'
 
 const InputSchema = z.object({

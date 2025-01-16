@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/libsql'
 
-import dbConfig from '../mikro-orm.config'
+import dbConfig from '@/mikro-orm.config'
 import { Logger } from '@saintno/needed-tools'
 
 export class MikroORMInstance {

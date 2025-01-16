@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { ReactNode, useRef, useState } from 'react'
 import { LoadingSVG } from './svg/LoadingSVG'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { Info } from 'lucide-react'
 

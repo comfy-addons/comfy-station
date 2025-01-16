@@ -10,7 +10,7 @@ import { EGlobalEvent, useGlobalEvent } from '@/hooks/useGlobalEvent'
 import { trpc } from '@/utils/trpc'
 import { DollarSign, Dumbbell, Play, Settings2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { UserUpdater } from './UserUpdater'
 
 export default function SettingUserPage() {

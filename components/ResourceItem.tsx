@@ -1,7 +1,7 @@
 import { CopyIcon } from '@radix-ui/react-icons'
 import { MiniBadge } from './MiniBadge'
 import { Card } from './ui/card'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 
 export const ResourceItem: IComponent<{
   title: string

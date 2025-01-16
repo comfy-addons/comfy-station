@@ -5,7 +5,7 @@ import { User } from '@/entities/user'
 import { EDeviceStatus, ETaskStatus, EUserRole } from '@/entities/enum'
 import { Attachment } from '@/entities/attachment'
 import { WorkflowTask } from '@/entities/workflow_task'
-import CachingService from '@/services/caching.service'
+import CachingService from '@services/caching.service'
 import { UserClient } from '@/entities/user_clients'
 
 export const userRouter = router({

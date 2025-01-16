@@ -5,7 +5,7 @@ import { EGlobalEvent, useGlobalEvent } from '@/hooks/useGlobalEvent'
 import { WorkflowCard } from '@/components/WorkflowCard'
 import { useMemo } from 'react'
 import { useDynamicValue } from '@/hooks/useDynamicValue'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { EWorkflowActiveStatus } from '@/entities/enum'
 import { PenOff } from 'lucide-react'
 

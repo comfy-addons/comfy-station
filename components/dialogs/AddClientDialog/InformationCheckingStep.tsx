@@ -1,6 +1,6 @@
 import { AnimateDiv } from '@/components/AnimateDiv'
 import { ResourceItem } from '@/components/ResourceItem'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { AddClientDialogContext, EImportStep } from '.'
 import { useCallback, useContext, useMemo, useRef, useState } from 'react'
 import { trpc } from '@/utils/trpc'

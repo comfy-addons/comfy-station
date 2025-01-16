@@ -4,7 +4,7 @@ import { ReactNode, useEffect, useRef } from 'react'
 import { AttachmentReview } from './AttachmentReview'
 import { useActionDebounce, useActionThreshold } from '@/hooks/useAction'
 import { useOnScreen } from '@/hooks/useOnScreen'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 
 type TLoadableAttachment = Attachment | { id: string; loading: boolean }
 

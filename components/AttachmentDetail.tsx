@@ -1,6 +1,6 @@
 import { trpc } from '@/utils/trpc'
 import { Attachment } from '@/entities/attachment'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { Button } from './ui/button'
 import { Download } from 'lucide-react'
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'

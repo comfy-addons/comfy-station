@@ -3,7 +3,7 @@ import { Token } from '@/entities/token'
 import { TokenPermission } from '@/entities/token_permission'
 import { User } from '@/entities/user'
 import { Workflow } from '@/entities/workflow'
-import { MikroORMInstance } from '@/services/mikro-orm.service'
+import { MikroORMInstance } from '@services/mikro-orm.service'
 import { defineCommand } from 'citty'
 import consola from 'consola'
 

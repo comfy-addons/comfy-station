@@ -10,7 +10,7 @@ import { useContext } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { AddWorkflowDialogContext, EImportStep } from '..'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 
 export const WorkflowInformation: IComponent<{
   readonly?: boolean

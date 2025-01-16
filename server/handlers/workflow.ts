@@ -17,7 +17,7 @@ import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
 import { Trigger } from '@/entities/trigger'
 import { Workflow } from '@/entities/workflow'
 import { repeat } from 'lodash'
-import CachingService from '@/services/caching.service'
+import CachingService from '@services/caching.service'
 
 export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: ['Workflow'] } })
   .use(EnsureMikroORMPlugin)

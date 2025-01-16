@@ -1,7 +1,7 @@
 /**
  * This component prevent text overflow outside and show tooltip when truncated
  */
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { ClipboardIcon } from '@heroicons/react/24/outline'
 import { useActionDebounce } from '@/hooks/useAction'
 import { useWindowResize } from '@/hooks/useWindowResize'
@@ -79,7 +79,9 @@ export const OverflowText: IComponent<
             </div>
           </div>
         </TooltipTrigger>
-        <TooltipContent className='max-w-sm bg-background text-foreground border'>{renderTooltip || props.children}</TooltipContent>
+        <TooltipContent className='max-w-sm bg-background text-foreground border'>
+          {renderTooltip || props.children}
+        </TooltipContent>
       </Tooltip>
       {showCopy && (
         <div className='px-1 md:hidden group-hover:flex'>

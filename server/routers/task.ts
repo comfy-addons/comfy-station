@@ -4,7 +4,7 @@ import { router } from '../trpc'
 import { WorkflowTask } from '@/entities/workflow_task'
 import { EClientStatus, ETaskStatus, ETriggerBy, EUserRole } from '@/entities/enum'
 import { observable } from '@trpc/server/observable'
-import CachingService from '@/services/caching.service'
+import CachingService from '@services/caching.service'
 
 const cacher = CachingService.getInstance()
 

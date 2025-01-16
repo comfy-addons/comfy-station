@@ -12,7 +12,7 @@ import { AttachmentReview } from './AttachmentReview'
 import { useSession } from 'next-auth/react'
 import { EUserRole, EWorkflowActiveStatus } from '@/entities/enum'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/style'
 import { AttachmentImage } from './AttachmentImage'
 import { Loaded } from '@mikro-orm/core'
 
