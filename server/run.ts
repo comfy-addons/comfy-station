@@ -115,7 +115,16 @@ const server = createServer(async (req, res) => {
 })
 
 const wss = new WebSocketServer({ server })
-const handlerWs = applyWSSHandler({ wss, router: appRouter, createContext: createContext as any })
+const handlerWs = applyWSSHandler({
+  wss,
+  router: appRouter,
+  createContext: createContext as any,
+  keepAlive: {
+    enabled: true,
+    pingMs: 30000,
+    pongWaitMs: 5000
+  }
+})
 
 process.on('SIGTERM', () => {
   console.log('SIGTERM')
