@@ -1,5 +1,7 @@
 export enum EAuthMode {
   Basic = 'Basic',
+  Token = 'Token',
+  Custom = 'Custom',
   None = 'None'
 }
 

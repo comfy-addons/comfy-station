@@ -1,5 +1,5 @@
 import { EAttachmentStatus, EValueType } from '@/entities/enum'
-import { EAttachmentType } from '@services/attachment.service'
+import { EAttachmentType } from '@/server/services/attachment'
 import { t } from 'elysia'
 
 export const AttachmentSchema = t.Object({

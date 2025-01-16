@@ -10,7 +10,7 @@ import { User } from '@/entities/user'
 import { v4 } from 'uuid'
 import { sign } from 'jsonwebtoken'
 import { BackendENV } from '@/env'
-import CachingService from '@services/caching.service'
+import CachingService from '@/server/services/caching'
 
 export const tokenRouter = router({
   list: privateProcedure.query(async ({ ctx }) => {

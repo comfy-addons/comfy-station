@@ -1,4 +1,4 @@
-import { CleanupService } from '@services/cleanup.service'
+import { CleanupService } from '@/server/services/cleanup'
 import { CLEANUP_CONFIG } from '../constants/cleanup'
 import { cron } from '@elysiajs/cron'
 import Elysia from 'elysia'

@@ -1,6 +1,6 @@
 import { EUserRole } from '@/entities/enum'
 import { User } from '@/entities/user'
-import { MikroORMInstance } from '@services/mikro-orm.service'
+import { MikroORMInstance } from '@/server/services/mikro-orm'
 import { defineCommand } from 'citty'
 import consola from 'consola'
 

@@ -12,8 +12,8 @@ export class ClientMonitorGpu {
   @Property({ type: 'int' })
   gpuIdx: number
 
-  @Property({ type: 'float', nullable: true })
-  utlization?: number
+  @Property({ name: 'utlization', type: 'float', nullable: true })
+  utilization?: number
 
   @Property({ type: 'float', nullable: true })
   temperature?: number

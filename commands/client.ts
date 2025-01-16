@@ -1,6 +1,6 @@
 import { Client } from '@/entities/client'
 import { EAuthMode } from '@/entities/enum'
-import { MikroORMInstance } from '@services/mikro-orm.service'
+import { MikroORMInstance } from '@/server/services/mikro-orm'
 import { ComfyApi } from '@saintno/comfyui-sdk'
 import { defineCommand } from 'citty'
 import consola from 'consola'

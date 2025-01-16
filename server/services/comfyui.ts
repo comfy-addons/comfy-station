@@ -1,6 +1,14 @@
-import { CallWrapper, ComfyApi, ComfyPool, TMonitorEvent } from '@saintno/comfyui-sdk'
+import {
+  BasicCredentials,
+  BearerTokenCredentials,
+  CallWrapper,
+  ComfyApi,
+  ComfyPool,
+  CustomCredentials,
+  TMonitorEvent
+} from '@saintno/comfyui-sdk'
 import { Logger } from '@saintno/needed-tools'
-import { MikroORMInstance } from './mikro-orm.service'
+import { MikroORMInstance } from './mikro-orm'
 import { Client } from '@/entities/client'
 import {
   EAttachmentStatus,
@@ -16,14 +24,14 @@ import {
 import { ClientStatusEvent } from '@/entities/client_status_event'
 import { ClientMonitorEvent } from '@/entities/client_monitor_event'
 import { ClientMonitorGpu } from '@/entities/client_monitor_gpu'
-import CachingService from './caching.service'
+import CachingService from './caching'
 
 import { cloneDeep, throttle } from 'lodash'
 import { WorkflowTask } from '@/entities/workflow_task'
 import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
 import { getBuilder, parseOutput } from '@/utils/workflow'
 import { Attachment } from '@/entities/attachment'
-import AttachmentService, { EAttachmentType } from './attachment.service'
+import AttachmentService, { EAttachmentType } from './attachment'
 import { ImageUtil } from '@/server/utils/ImageUtil'
 import { delay } from '@/utils/tools'
 import { User } from '@/entities/user'
@@ -58,17 +66,36 @@ export class ComfyPoolInstance {
     const clients = await em.find(Client, {}, { populate: ['password'] })
 
     for (const clientConf of clients) {
-      const client = new ComfyApi(clientConf.host, clientConf.id, {
-        credentials:
-          clientConf.auth === EAuthMode.Basic
-            ? {
-                type: 'basic',
-                username: clientConf.username ?? '',
-                password: clientConf.password ?? ''
-              }
-            : undefined
-      })
-      this.pool.addClient(client)
+      let credentials: BasicCredentials | BearerTokenCredentials | CustomCredentials | undefined = undefined
+      switch (clientConf.auth) {
+        case EAuthMode.Basic: {
+          credentials = {
+            type: 'basic',
+            username: clientConf.username ?? '',
+            password: clientConf.password ?? ''
+          }
+          break
+        }
+        case EAuthMode.Token: {
+          credentials = {
+            type: 'bearer_token',
+            token: clientConf.password ?? ''
+          }
+          break
+        }
+        case EAuthMode.Custom: {
+          credentials = {
+            type: 'custom',
+            headers: JSON.parse(clientConf.password ?? '{}')
+          }
+          break
+        }
+      }
+      this.pool.addClient(
+        new ComfyApi(clientConf.host, clientConf.id, {
+          credentials
+        })
+      )
     }
     this.cleanAllRunningTasks().then(() => delay(1000).then(() => this.pickingJob()))
   }
@@ -86,16 +113,18 @@ export class ComfyPoolInstance {
       data.gpus.forEach((gpu, idx) => {
         const gpuEv = new ClientMonitorGpu(monitorEv, idx, Math.round(gpu.vram_used / 1024), Math.round(gpu.vram_total))
         gpuEv.temperature = gpu.gpu_temperature
-        gpuEv.utlization = gpu.gpu_utilization
+        gpuEv.utilization = gpu.gpu_utilization
         gpus.push(gpuEv)
       })
       monitorEv.gpus.add(gpus)
       client.monitorEvents.add(monitorEv)
       await em.persist(monitorEv).flush()
+      em.clear()
     }
   }, MONITOR_INTERVAL)
 
   updateTaskEventFn = async (
+    em: Awaited<ReturnType<Awaited<ReturnType<typeof MikroORMInstance.getInstance>['getEM']>>>,
     task: WorkflowTask,
     status: ETaskStatus,
     extra?: {
@@ -104,7 +133,6 @@ export class ComfyPoolInstance {
       data?: any
     }
   ) => {
-    const em = await MikroORMInstance.getInstance().getEM()
     const taskEvent = new WorkflowTaskEvent(task)
     taskEvent.status = status
     if (extra?.details) {
@@ -272,7 +300,7 @@ export class ComfyPoolInstance {
           try {
             const input = task.inputValues
             let builder = getBuilder(workflow)
-            await this.updateTaskEventFn(task, ETaskStatus.Pending)
+            await this.updateTaskEventFn(em, task, ETaskStatus.Pending)
             if (user) {
               this.cachingService.set('USER_EXECUTING_TASK', user.id, Date.now())
             }
@@ -322,7 +350,7 @@ export class ComfyPoolInstance {
                       const file = await em.findOneOrFail(Attachment, { id: attachmentId })
                       const fileBlob = await AttachmentService.getInstance().getFileBlob(file.fileName)
                       if (!fileBlob) {
-                        await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+                        await this.updateTaskEventFn(em, task, ETaskStatus.Failed, {
                           details: `Can not load attachments ${file.fileName}`,
                           clientId: api.id
                         })
@@ -331,7 +359,7 @@ export class ComfyPoolInstance {
                       }
                       const uploadedImg = await api.uploadImage(fileBlob, file.fileName)
                       if (!uploadedImg) {
-                        await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+                        await this.updateTaskEventFn(em, task, ETaskStatus.Failed, {
                           details: `Failed to upload attachment into comfy server, ${file.fileName}`,
                           clientId: api.id
                         })
@@ -348,13 +376,13 @@ export class ComfyPoolInstance {
                 console.log(JSON.stringify(builder.workflow))
                 return new CallWrapper(api, builder)
                   .onPending(async () => {
-                    await this.updateTaskEventFn(task, ETaskStatus.Running, {
+                    await this.updateTaskEventFn(em, task, ETaskStatus.Running, {
                       details: 'LOADING RESOURCES',
                       clientId: api.id
                     })
                   })
                   .onProgress(async (e) => {
-                    await this.updateTaskEventFn(task, ETaskStatus.Running, {
+                    await this.updateTaskEventFn(em, task, ETaskStatus.Running, {
                       details: JSON.stringify({
                         key: 'progress',
                         data: { node: Number(e.node), max: Number(e.max), value: Number(e.value) }
@@ -368,20 +396,20 @@ export class ComfyPoolInstance {
                     await this.cachingService.set('PREVIEW', task.id, { blob64: base64String })
                   })
                   .onStart(async () => {
-                    await this.updateTaskEventFn(task, ETaskStatus.Running, {
+                    await this.updateTaskEventFn(em, task, ETaskStatus.Running, {
                       details: 'START RENDERING',
                       clientId: api.id
                     })
                   })
                   .onFinished((outData) => {
                     const backgroundFn = async () => {
-                      await this.updateTaskEventFn(task, ETaskStatus.Success, {
+                      await this.updateTaskEventFn(em, task, ETaskStatus.Success, {
                         details: 'DOWNLOADING OUTPUT',
                         clientId: api.id
                       })
                       const attachment = AttachmentService.getInstance()
                       const output = await parseOutput(api, workflow, outData)
-                      await this.updateTaskEventFn(task, ETaskStatus.Success, {
+                      await this.updateTaskEventFn(em, task, ETaskStatus.Success, {
                         details: 'UPLOADING OUTPUT',
                         clientId: api.id
                       })
@@ -447,7 +475,7 @@ export class ComfyPoolInstance {
                       }
                       await Promise.all([
                         em.flush(),
-                        this.updateTaskEventFn(task, ETaskStatus.Success, {
+                        this.updateTaskEventFn(em, task, ETaskStatus.Success, {
                           details: 'FINISHED',
                           clientId: api.id,
                           data: outData
@@ -458,7 +486,7 @@ export class ComfyPoolInstance {
                       setTimeout(() => reject(new Error('Task execution timed out')), 60000)
                     )
                     Promise.race([backgroundFn(), timeoutPromise]).catch(async (e) => {
-                      await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+                      await this.updateTaskEventFn(em, task, ETaskStatus.Failed, {
                         details: (e.cause as any)?.error?.message || e.message,
                         clientId: api.id
                       })
@@ -479,7 +507,7 @@ export class ComfyPoolInstance {
                       })
                       this.cachingService.set('USER_EXECUTING_TASK', user.id, Date.now())
                     }
-                    await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+                    await this.updateTaskEventFn(em, task, ETaskStatus.Failed, {
                       details: (e.cause as any)?.error?.message || e.message,
                       clientId: api.id
                     })
@@ -503,7 +531,7 @@ export class ComfyPoolInstance {
                   })
                   this.cachingService.set('USER_EXECUTING_TASK', user.id, Date.now())
                 }
-                await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+                await this.updateTaskEventFn(em, task, ETaskStatus.Failed, {
                   details: (e.cause as any)?.error?.message || e?.message || "Can't execute task",
                   clientId: api.id
                 })
@@ -513,7 +541,7 @@ export class ComfyPoolInstance {
             }, task.computedWeight)
           } catch (e) {
             console.error(e)
-            await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+            await this.updateTaskEventFn(em, task, ETaskStatus.Failed, {
               details: `Can't execute task ${task.id}`
             })
           }

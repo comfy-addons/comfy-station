@@ -1,5 +1,5 @@
 import { defineCommand, runMain } from 'citty'
-import { MikroORMInstance } from '@services/mikro-orm.service'
+import { MikroORMInstance } from '@/server/services/mikro-orm'
 
 const main = defineCommand({
   meta: {

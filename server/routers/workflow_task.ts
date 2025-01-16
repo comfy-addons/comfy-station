@@ -12,11 +12,11 @@ import {
 } from '@/entities/enum'
 import { Workflow } from '@/entities/workflow'
 import { Trigger } from '@/entities/trigger'
-import CachingService from '@services/caching.service'
+import CachingService from '@/server/services/caching'
 import { v4 } from 'uuid'
 import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
 import { convertObjectToArrayOfObjects, delay, seed } from '@/utils/tools'
-import AttachmentService from '@services/attachment.service'
+import AttachmentService from '@/server/services/attachment'
 import { Attachment } from '@/entities/attachment'
 
 export const workflowTaskRouter = router({

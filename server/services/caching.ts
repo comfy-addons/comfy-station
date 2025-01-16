@@ -3,7 +3,7 @@ import { TMonitorEvent } from '@saintno/comfyui-sdk'
 import { Logger } from '@saintno/needed-tools'
 import { LRUCache } from 'lru-cache'
 
-import { RedisService } from './redis.service'
+import { RedisService } from './redis'
 
 export type TCachingKeyMap = {
   CLIENT_STATUS: CustomEvent<EClientStatus>
@@ -19,9 +19,22 @@ export type TCachingKeyMap = {
   USER_EXECUTING_TASK: CustomEvent<number>
 }
 
+enum ECachingType {
+  MEMORY = 'memory',
+  REDIS = 'redis'
+}
+
 class CachingService extends EventTarget {
   private logger: Logger
-  private cache: RedisService | LRUCache<string, string>
+  private cache:
+    | {
+        type: ECachingType.MEMORY
+        client: LRUCache<string, string>
+      }
+    | {
+        type: ECachingType.REDIS
+        client: RedisService
+      }
 
   static getInstance() {
     if (!(global as any).__CachingService__) {
@@ -30,71 +43,59 @@ class CachingService extends EventTarget {
     return (global as any).__CachingService__ as CachingService
   }
 
-  private async destroy() {
-    if (this.cache instanceof LRUCache) {
-      this.cache.clear()
-    } else {
-      await this.cache.redis.quit()
-      await this.cache.subRedis.quit()
-    }
-  }
-
-  private listenSystemKilled() {
-    // process.on('SIGINT', () => {
-    //   this.logger.i('listenSystemKilled', 'SIGINT signal received.')
-    //   this.destroy().then(() => {
-    //     process.exit(0)
-    //   })
-    // })
-    // process.on('SIGTERM', () => {
-    //   this.logger.i('listenSystemKilled', 'SIGTERM signal received.')
-    //   this.destroy().then(() => {
-    //     process.exit(0)
-    //   })
-    // })
-  }
-
   private constructor() {
     super()
-    const rdInst = RedisService.getInstance()
     this.logger = new Logger('CachingService')
+
+    // Check if Redis is available
+    const rdInst = RedisService.getInstance()
     if (rdInst) {
       // Use Redis as the caching mechanism
-      this.cache = rdInst
+      this.cache = {
+        type: ECachingType.REDIS,
+        client: rdInst
+      }
       this.logger.i('init', 'Use Redis as the caching mechanism')
       rdInst.subRedis.on('message', (channel, message) => {
         this.dispatchEvent(new CustomEvent(channel, { detail: JSON.parse(message) }))
       })
     } else {
       // Use in-memory cache
-      this.cache = new LRUCache({
-        ttl: 1000 * 60 * 60, // 1 Hour cache
-        ttlAutopurge: true
-      })
+      this.cache = {
+        type: ECachingType.MEMORY,
+        client: new LRUCache({
+          ttl: 1000 * 60 * 60, // 1 Hour cache
+          max: 1000, // Maximum 1000 items
+          ttlAutopurge: true
+        })
+      }
       this.logger.i('init', 'Use memory as the caching mechanism')
     }
-    this.listenSystemKilled()
   }
 
   async set(category: keyof TCachingKeyMap, id: string | number, value: any) {
     const key = `${category}:${id}`
-    if (this.cache instanceof LRUCache) {
-      this.dispatchEvent(new CustomEvent(key, { detail: value }))
-      this.dispatchEvent(
-        new CustomEvent(category, {
-          detail: {
-            id,
-            value
-          }
-        })
-      )
-      this.cache.set(key, JSON.stringify(value))
-    } else {
-      await Promise.all([
-        this.cache.redis.publish(key, JSON.stringify(value)),
-        this.cache.redis.publish(category, JSON.stringify({ id, value })),
-        this.cache.redis.set(key, JSON.stringify(value))
-      ])
+    switch (this.cache.type) {
+      case ECachingType.MEMORY: {
+        this.dispatchEvent(new CustomEvent(key, { detail: value }))
+        this.dispatchEvent(
+          new CustomEvent(category, {
+            detail: {
+              id,
+              value
+            }
+          })
+        )
+        this.cache.client.set(key, JSON.stringify(value))
+        break
+      }
+      case ECachingType.REDIS: {
+        await Promise.all([
+          this.cache.client.redis.publish(key, JSON.stringify(value)),
+          this.cache.client.redis.publish(category, JSON.stringify({ id, value })),
+          this.cache.client.redis.set(key, JSON.stringify(value))
+        ])
+      }
     }
   }
 
@@ -103,7 +104,8 @@ class CachingService extends EventTarget {
     id: string | number
   ): Promise<TCachingKeyMap[K]['detail'] | null> {
     const key = `${category}:${id}`
-    const value = this.cache instanceof LRUCache ? this.cache.get(key) : await this.cache.redis.get(key)
+    const value =
+      this.cache.type === ECachingType.MEMORY ? this.cache.client.get(key) : await this.cache.client.redis.get(key)
     if (!value) return null
     return JSON.parse(value)
   }
@@ -126,13 +128,14 @@ class CachingService extends EventTarget {
   ): () => void {
     const key = `${category}:${id}`
     this.addEventListener(key, callback as any, options)
+
     // If the cache is not an instance of LRUCache, we need to subscribe to the cache
-    if (!(this.cache instanceof LRUCache)) {
-      const cacher = this.cache
-      this.cache.subRedis.subscribe(key)
+    if (this.cache.type === ECachingType.REDIS) {
+      const cacher = this.cache.client
+      cacher.subRedis.subscribe(key)
       return () => {
         this.off(category, id, callback)
-        !(this.cache instanceof LRUCache) && cacher.subRedis.unsubscribe(key)
+        cacher.subRedis.unsubscribe(key)
       }
     }
     return () => {
@@ -151,12 +154,12 @@ class CachingService extends EventTarget {
     options?: AddEventListenerOptions | boolean
   ): () => void {
     this.addEventListener(category, callback as any, options)
-    if (!(this.cache instanceof LRUCache)) {
-      const cacher = this.cache
+    if (this.cache.type === ECachingType.REDIS) {
+      const cacher = this.cache.client
       cacher.subRedis.subscribe(category)
       return () => {
         this.offCategory(category, callback)
-        !(this.cache instanceof LRUCache) && cacher.subRedis.unsubscribe(category)
+        cacher.subRedis.unsubscribe(category)
       }
     }
     return () => {

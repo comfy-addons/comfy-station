@@ -1,9 +1,9 @@
-import { MikroORMInstance } from '@services/mikro-orm.service'
+import { MikroORMInstance } from '@/server/services/mikro-orm'
 import { verify } from 'jsonwebtoken'
 import type { CreateNextContextOptions } from '@trpc/server/adapters/next'
 import { User } from '@/entities/user'
 import { BackendENV } from '@/env'
-import { UserManagement } from '@services/user.service'
+import { UserManagement } from '@/server/services/user'
 import { Logger } from '@saintno/needed-tools'
 
 const logger = new Logger('tRPC')

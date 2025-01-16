@@ -1,6 +1,6 @@
 import { Logger } from '@saintno/needed-tools'
-import CachingService from './caching.service'
-import { MikroORMInstance } from './mikro-orm.service'
+import CachingService from './caching'
+import { MikroORMInstance } from './mikro-orm'
 import { WorkflowTask } from '@/entities/workflow_task'
 import { User } from '@/entities/user'
 import { UserNotification } from '@/entities/user_notifications'

@@ -1,7 +1,7 @@
 import Elysia, { NotFoundError, t } from 'elysia'
 import { EnsureMikroORMPlugin } from '../plugins/ensure-mikro-orm.plugin'
 import { Attachment } from '@/entities/attachment'
-import AttachmentService from '@services/attachment.service'
+import AttachmentService from '@/server/services/attachment'
 import { AttachmentSchema, AttachmentURLSchema } from '../schemas/attachment'
 import { EAttachmentStatus } from '@/entities/enum'
 import { EnsureTokenPlugin } from '../plugins/ensure-token-plugin'
