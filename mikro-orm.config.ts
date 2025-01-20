@@ -47,7 +47,7 @@ export default defineConfig({
     WorkflowEditEvent,
     Attachment
   ],
-  dbName: 'storage/comfyui.manager.db',
+  dbName: process.cwd() + '/storage/comfyui.manager.db',
   debug: process.env.NODE_ENV === 'development',
   discovery: { disableDynamicFileAccess: false }
 })
