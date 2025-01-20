@@ -353,5 +353,22 @@ export const clientRouter = router({
         console.error(e)
         yield EImportingClient.FAILED
       }
-    })
+    }),
+  getTerminalLogs: adminProcedure.input(z.string()).query(async ({ input }) => {
+    const client = ComfyPoolInstance.getInstance().pool.pickById(input)
+    if (!client) {
+      throw new Error('Client not found')
+    }
+    return client.getTerminalLogs()
+  }),
+  watchTerminalLogs: adminProcedure.input(z.string()).subscription(async function* ({ input, signal }) {
+    const client = ComfyPoolInstance.getInstance().pool.pickById(input)
+    const cache = CachingService.getInstance()
+    if (!client) {
+      throw new Error('Client not found')
+    }
+    for await (const log of cache.onGenerator('CLIENT_LOG', input, signal)) {
+      yield log.detail
+    }
+  })
 })

@@ -93,7 +93,8 @@ export class ComfyPoolInstance {
       }
       this.pool.addClient(
         new ComfyApi(clientConf.host, clientConf.id, {
-          credentials
+          credentials,
+          listenTerminal: true
         })
       )
     }
@@ -591,6 +592,12 @@ export class ComfyPoolInstance {
       .on('have_job', async (ev) => {
         this.logger.i('have_job', 'Have job', ev.detail.client.id)
         this.setClientStatus(ev.detail.client.id, EClientStatus.Executing)
+      })
+      .on('terminal', async (ev) => {
+        const clientId = this.pool.pick(ev.detail.clientIdx)?.id
+        if (clientId) {
+          this.cachingService.set('CLIENT_LOG', clientId, { m: ev.detail.m, t: ev.detail.t })
+        }
       })
       .on('idle', async (ev) => {
         this.logger.i('idle', 'Idle', ev.detail.client.id)

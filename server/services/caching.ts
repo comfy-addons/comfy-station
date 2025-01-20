@@ -7,6 +7,7 @@ import { RedisService } from './redis'
 
 export type TCachingKeyMap = {
   CLIENT_STATUS: CustomEvent<EClientStatus>
+  CLIENT_LOG: CustomEvent<{ m: string; t: number }>
   SYSTEM_MONITOR: CustomEvent<TMonitorEvent>
   LAST_TASK_CLIENT: CustomEvent<number>
   PREVIEW: CustomEvent<{ blob64: string }>
