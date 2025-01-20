@@ -8,6 +8,7 @@ import { TokenPlugin } from './handlers/token'
 import { WorkflowPlugin } from './handlers/workflow'
 import { CleanUpJobPlugin } from './plugins/cleanup-jobs.plugin'
 import { EnsureLogPlugin } from './plugins/ensure-log-plugin'
+import { SystemPlugin } from './handlers/system'
 
 export const ElysiaHandler = new Elysia()
   .use(EnsureLogPlugin)
@@ -82,5 +83,7 @@ export const ElysiaHandler = new Elysia()
             .use(TaskPlugin)
             // Attachment plugin
             .use(AttachmentPlugin)
+            // System Plugin
+            .use(SystemPlugin)
       )
   )

@@ -120,8 +120,8 @@ export class ComfyPoolInstance {
       monitorEv.gpus.add(gpus)
       client.monitorEvents.add(monitorEv)
       await em.persist(monitorEv).flush()
-      em.clear()
     }
+    em.clear()
   }, MONITOR_INTERVAL)
 
   updateTaskEventFn = async (
@@ -555,6 +555,8 @@ export class ComfyPoolInstance {
         }
       } catch (e) {
         console.warn(e)
+      } finally {
+        em.clear()
       }
       await delay(tries * 10)
     }
@@ -572,6 +574,7 @@ export class ComfyPoolInstance {
       await em.persist(statusEvent).flush()
       await this.cachingService.set('CLIENT_STATUS', client.id, status)
     }
+    em.clear()
   }
 
   private bindEvents() {
