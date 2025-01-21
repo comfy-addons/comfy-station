@@ -7,7 +7,7 @@ import { RedisService } from './redis'
 
 export type TCachingKeyMap = {
   CLIENT_STATUS: CustomEvent<EClientStatus>
-  CLIENT_LOG: CustomEvent<{ m: string; t: number }>
+  CLIENT_LOG: CustomEvent<{ m: string; t: string }>
   SYSTEM_MONITOR: CustomEvent<TMonitorEvent>
   LAST_TASK_CLIENT: CustomEvent<number>
   PREVIEW: CustomEvent<{ blob64: string }>
@@ -24,6 +24,7 @@ enum ECachingType {
   MEMORY = 'memory',
   REDIS = 'redis'
 }
+const PERSISTENT_KEYS: (keyof TCachingKeyMap)[] = ['CLIENT_STATUS', 'LAST_TASK_CLIENT', 'USER_BALANCE']
 
 class CachingService extends EventTarget {
   private logger: Logger
@@ -74,7 +75,7 @@ class CachingService extends EventTarget {
     }
   }
 
-  async set(category: keyof TCachingKeyMap, id: string | number, value: any) {
+  async emit<K extends keyof TCachingKeyMap>(category: K, id: string | number, value: TCachingKeyMap[K]['detail']) {
     const key = `${category}:${id}`
     switch (this.cache.type) {
       case ECachingType.MEMORY: {
@@ -87,17 +88,31 @@ class CachingService extends EventTarget {
             }
           })
         )
-        this.cache.client.set(key, JSON.stringify(value))
         break
       }
       case ECachingType.REDIS: {
         await Promise.all([
           this.cache.client.redis.publish(key, JSON.stringify(value)),
-          this.cache.client.redis.publish(category, JSON.stringify({ id, value })),
-          this.cache.client.redis.set(key, JSON.stringify(value))
+          this.cache.client.redis.publish(category, JSON.stringify({ id, value }))
         ])
       }
     }
+  }
+
+  async set<K extends keyof TCachingKeyMap>(category: K, id: string | number, value: TCachingKeyMap[K]['detail']) {
+    const key = `${category}:${id}`
+    if (PERSISTENT_KEYS.includes(category)) {
+      switch (this.cache.type) {
+        case ECachingType.MEMORY: {
+          this.cache.client.set(key, JSON.stringify(value))
+          break
+        }
+        case ECachingType.REDIS: {
+          await this.cache.client.redis.set(key, JSON.stringify(value))
+        }
+      }
+    }
+    this.emit(category, id, value)
   }
 
   async get<K extends keyof TCachingKeyMap>(

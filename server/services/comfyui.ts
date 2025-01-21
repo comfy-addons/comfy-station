@@ -274,6 +274,43 @@ export class ComfyPoolInstance {
     }
   }
 
+  private handleFileOutput = async (
+    fileBlob: Blob,
+    info: {
+      key: string
+      idx: number
+      task: WorkflowTask
+      workflow: Workflow
+    },
+    attachment: AttachmentService,
+    em: Awaited<ReturnType<Awaited<ReturnType<typeof MikroORMInstance.getInstance>['getEM']>>>
+  ) => {
+    const { key, idx, task, workflow } = info
+    const buff = Buffer.from(await fileBlob.arrayBuffer())
+    const extension = mine.getExtension(fileBlob.type)
+    const tmpName = extension ? `${task.id}_${key}_${idx}.${extension}` : `${task.id}_${key}_${idx}`
+
+    const uploaded = await attachment.uploadFile(buff, `${tmpName}`)
+    if (uploaded) {
+      const fileInfo = await attachment.getFileURL(tmpName)
+      const outputAttachment = em.create(
+        Attachment,
+        {
+          fileName: tmpName,
+          size: buff.byteLength,
+          type: EValueType.File,
+          storageType: fileInfo?.type === EAttachmentType.LOCAL ? EStorageType.LOCAL : EStorageType.S3,
+          status: EAttachmentStatus.UPLOADED,
+          task,
+          workflow
+        },
+        { partial: true }
+      )
+      em.persist(outputAttachment)
+      return outputAttachment.id
+    }
+  }
+
   private async pickingJob() {
     let tries = 1
     const pool = this.pool
@@ -421,20 +458,33 @@ export class ComfyPoolInstance {
                           if (Array.isArray(tmpOutput[key])) {
                             tmpOutput[key] = (await Promise.all(
                               tmpOutput[key].map(async (v, idx) => {
-                                console.log('out', key, v)
                                 if (v instanceof Blob) {
                                   // Check if v is Video, Image or others
                                   const blobType = classifyBlob(v)
                                   switch (blobType) {
                                     case 'image': {
-                                      await this.handleImageOutput(v, { key, idx, task, workflow }, attachment, em)
-                                      break
+                                      return await this.handleImageOutput(
+                                        v,
+                                        { key, idx, task, workflow },
+                                        attachment,
+                                        em
+                                      )
                                     }
                                     case 'video': {
-                                      await this.handleVideoOutput(v, { key, idx, task, workflow }, attachment, em)
-                                      break
+                                      return await this.handleVideoOutput(
+                                        v,
+                                        { key, idx, task, workflow },
+                                        attachment,
+                                        em
+                                      )
                                     }
                                     default: {
+                                      return await this.handleFileOutput(
+                                        v,
+                                        { key, idx, task, workflow },
+                                        attachment,
+                                        em
+                                      )
                                     }
                                   }
                                 }
@@ -444,7 +494,7 @@ export class ComfyPoolInstance {
                           }
                         }
                         const outputConfig = workflow.mapOutput
-                        const outputData = Object.keys(outputConfig || {}).reduce(
+                        let outputData = Object.keys(outputConfig || {}).reduce(
                           (acc, val) => {
                             if (tmpOutput[val] && outputConfig?.[val]) {
                               acc[val] = {
