@@ -1,27 +1,30 @@
 import { useState, useEffect } from 'react'
 
-// Detect if the user is using a touch device
+/**
+ * useIsTouchDevice - A hook to detect if the user is on a touch device
+ *
+ * @returns {boolean} `true` if the user is on a touch device, `false` otherwise
+ */
 export const useTouchDevice = () => {
-  const [isTouchDevice, setIsTouchDevice] = useState<boolean | null>(null)
+  const [isTouchDevice, setIsTouchDevice] = useState(false)
 
   useEffect(() => {
-    const handleTouch = () => {
-      setIsTouchDevice(true)
+    // Function to check if the device supports touch
+    const checkTouchDevice = () => {
+      return (
+        'ontouchstart' in window || // Most modern devices
+        navigator.maxTouchPoints > 0 // For Windows devices
+      )
     }
 
-    const handleMouse = () => {
-      setIsTouchDevice(false)
-    }
+    // Update the state
+    setIsTouchDevice(checkTouchDevice())
 
-    handleTouch() // Check on mount
-    window.addEventListener('touchstart', handleTouch)
-    window.addEventListener('mousemove', handleMouse)
-
+    // Clean up any potential effects in the future
     return () => {
-      window.removeEventListener('touchstart', handleTouch)
-      window.removeEventListener('mousemove', handleMouse)
+      setIsTouchDevice(false) // Reset in case of unmount or reuse
     }
-  }, [])
+  }, []) // Run only once on mount
 
   return isTouchDevice
 }
