@@ -9,7 +9,15 @@ export const authChecker = middleware(({ next, ctx }) => {
     throw new TRPCError({ code: 'UNAUTHORIZED' })
   }
 
-  return next()
+  return next({
+    ctx: {
+      ...ctx,
+      session: {
+        ...ctx.session,
+        user: user.user
+      }
+    }
+  })
 })
 
 export const editorChecker = middleware(({ next, ctx }) => {
@@ -23,7 +31,15 @@ export const editorChecker = middleware(({ next, ctx }) => {
     throw new TRPCError({ code: 'FORBIDDEN' })
   }
 
-  return next()
+  return next({
+    ctx: {
+      ...ctx,
+      session: {
+        ...ctx.session,
+        user: user.user
+      }
+    }
+  })
 })
 
 export const adminChecker = middleware(({ next, ctx }) => {
@@ -37,5 +53,13 @@ export const adminChecker = middleware(({ next, ctx }) => {
     throw new TRPCError({ code: 'FORBIDDEN' })
   }
 
-  return next()
+  return next({
+    ctx: {
+      ...ctx,
+      session: {
+        ...ctx.session,
+        user: user.user
+      }
+    }
+  })
 })

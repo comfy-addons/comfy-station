@@ -45,6 +45,7 @@ export class ComfyPoolInstance {
   public pool: ComfyPool
   private cachingService: CachingService
   private logger: Logger
+  private updateTime: Record<string, number> = {} // ClientId -> Last update time
 
   static getInstance() {
     if (!(global as any).__ComfyPool__) {
@@ -101,10 +102,13 @@ export class ComfyPoolInstance {
     this.cleanAllRunningTasks().then(() => delay(1000).then(() => this.pickingJob()))
   }
 
-  private addClientMonitoring = throttle(async (clientId: string, data: TMonitorEvent) => {
+  private addClientMonitoring = async (clientId: string, data: TMonitorEvent) => {
+    if (!this.updateTime[clientId]) {
+      this.updateTime[clientId] = Date.now()
+    }
+    if (Date.now() - this.updateTime[clientId] < MONITOR_INTERVAL) return
     const em = await MikroORMInstance.getInstance().getEM()
     const client = await em.findOne(Client, { id: clientId })
-
     if (client) {
       const gpus: ClientMonitorGpu[] = []
       const monitorEv = new ClientMonitorEvent(client)
@@ -122,7 +126,8 @@ export class ComfyPoolInstance {
       await em.persist(monitorEv).flush()
     }
     em.clear()
-  }, MONITOR_INTERVAL)
+    this.updateTime[clientId] = Date.now()
+  }
 
   updateTaskEventFn = async (
     em: Awaited<ReturnType<Awaited<ReturnType<typeof MikroORMInstance.getInstance>['getEM']>>>,

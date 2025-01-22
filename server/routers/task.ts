@@ -3,7 +3,6 @@ import { adminProcedure, privateProcedure } from '../procedure'
 import { router } from '../trpc'
 import { WorkflowTask } from '@/entities/workflow_task'
 import { EClientStatus, ETaskStatus, ETriggerBy, EUserRole } from '@/entities/enum'
-import { observable } from '@trpc/server/observable'
 import CachingService from '@/server/services/caching'
 
 const cacher = CachingService.getInstance()
@@ -19,19 +18,13 @@ export const taskRouter = router({
     .subscription(async function* ({ ctx, input, signal }) {
       let trigger: any = {}
       const fn = async () => {
-        if (ctx.session.user!.role !== EUserRole.Admin) {
-          trigger = {
-            type: ETriggerBy.User,
-            user: { id: ctx.session.user!.id }
-          }
-        }
         if (!input.clientId) {
           return await ctx.em.find(
             WorkflowTask,
             {
               trigger,
               status: {
-                $nin: [ETaskStatus.Parent]
+                $not: ETaskStatus.Parent
               }
             },
             { limit: input.limit, orderBy: { createdAt: 'DESC' }, populate: ['trigger', 'trigger.user'] }
@@ -42,9 +35,9 @@ export const taskRouter = router({
           {
             trigger,
             status: {
-              $nin: [ETaskStatus.Parent]
+              $not: ETaskStatus.Parent
             },
-            client: { id: input.clientId }
+            client: input.clientId
           },
           { limit: input.limit, orderBy: { createdAt: 'DESC' }, populate: ['trigger', 'trigger.user'] }
         )

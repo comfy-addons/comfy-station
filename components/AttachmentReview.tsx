@@ -15,7 +15,6 @@ import { forceRecalculatePortal, Portal } from './Portal'
 import { useStateSyncDebounce } from '@/hooks/useStateSyncDebounce'
 
 import { AddonDiv } from './AddonDiv'
-import useMobile from '@/hooks/useMobile'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { AttachmentDetail } from './AttachmentDetail'
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogHeader } from './ui/dialog'
@@ -26,6 +25,7 @@ import useCopyAction from '@/hooks/useCopyAction'
 import { useActionDebounce } from '@/hooks/useAction'
 import { EValueType } from '@/entities/enum'
 import { PlayCircleIcon } from '@heroicons/react/24/outline'
+import { useTouchDevice } from '@/hooks/useTouchDevice'
 
 const AttachmentTooltipPopup: IComponent<{
   taskId?: string
@@ -83,7 +83,7 @@ export const AttachmentReview: IComponent<{
   onPressFavorite
 }) => {
   const enabled = !!data?.id
-  const isMobile = useMobile()
+  const isTouchDevice = useTouchDevice()
   const {
     current: { x }
   } = useCurrentMousePosRef()
@@ -148,7 +148,7 @@ export const AttachmentReview: IComponent<{
   }, [isHovering, scrollingRef])
 
   const imageLoaded = !loading && (!isLoading || !enabled)
-  const isPop = hoverSync && isHovering && !isMobile
+  const isPop = hoverSync && isHovering && !isTouchDevice
 
   useEffect(() => {
     if (ref.current) {
@@ -289,7 +289,7 @@ export const AttachmentReview: IComponent<{
             </Portal>
           </div>
         </PhotoView>
-        {isMobile && (
+        {isTouchDevice && (
           <div className={cn('z-10 absolute bottom-1 right-1')}>
             <div className='relative w-fit h-fit'>
               <Dialog modal>

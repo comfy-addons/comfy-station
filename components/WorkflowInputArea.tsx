@@ -232,7 +232,7 @@ export const WorkflowInputArea: IComponent<{
             </div>
           </div>
         )}
-        <div className='flex md:hidden flex-col border-t pb-2 px-2'>
+        <div className='flex flex-col border-t py-2 px-2'>
           <div>
             <Label>Description</Label>
             <OverflowText className='text-sm w-full line-clamp-3 text-start'>{workflow?.description}</OverflowText>
@@ -245,20 +245,6 @@ export const WorkflowInputArea: IComponent<{
             <Label>Author</Label>
             <p className='text-sm'>@{workflow?.author?.email.split('@')[0]}</p>
           </div>
-        </div>
-      </div>
-      <div className='flex-col border-t pb-2 px-2 hidden md:flex'>
-        <div>
-          <Label>Description</Label>
-          <OverflowText className='text-sm w-full line-clamp-3 text-start'>{workflow?.description}</OverflowText>
-        </div>
-        <div>
-          <Label>Base cost per run</Label>
-          <p className='text-sm'>{workflow?.cost} Credits</p>
-        </div>
-        <div>
-          <Label>Author</Label>
-          <p className='text-sm'>@{workflow?.author?.email.split('@')[0]}</p>
         </div>
       </div>
     </div>

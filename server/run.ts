@@ -121,7 +121,7 @@ const handlerWs = applyWSSHandler({
   createContext: createContext as any,
   keepAlive: {
     enabled: true,
-    pingMs: 30000,
+    pingMs: 10000,
     pongWaitMs: 5000
   }
 })
