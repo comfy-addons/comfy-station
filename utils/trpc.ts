@@ -83,14 +83,29 @@ const trpc = createTRPCNext<AppRouter>({
                   }
                 }
               }),
-              false: httpBatchLink({
-                url: getBaseUrl() + '/api/trpc',
-                transformer: superjson,
-                async headers() {
-                  return {
-                    authorization: `Bearer ${AuthToken}`
+              false: splitLink({
+                condition(op) {
+                  // check for context property `skipBatch`
+                  return op.context.skipBatch === true
+                },
+                true: httpLink({
+                  url: getBaseUrl() + '/api/trpc',
+                  transformer: superjson,
+                  async headers() {
+                    return {
+                      authorization: `Bearer ${AuthToken}`
+                    }
                   }
-                }
+                }),
+                false: httpBatchLink({
+                  url: getBaseUrl() + '/api/trpc',
+                  transformer: superjson,
+                  async headers() {
+                    return {
+                      authorization: `Bearer ${AuthToken}`
+                    }
+                  }
+                })
               })
             })
           })

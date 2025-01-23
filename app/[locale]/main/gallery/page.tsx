@@ -5,16 +5,24 @@ import { useDynamicValue } from '@/hooks/useDynamicValue'
 import { trpc } from '@/utils/trpc'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { ImageOff } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 export default function GalleryPage() {
   const infoLoader = trpc.workflow.attachments.useInfiniteQuery(
     {
       limit: 20
     },
-    { getNextPageParam: (lastPage) => lastPage.nextCursor }
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      trpc: {
+        context: {
+          skipBatch: true
+        }
+      }
+    }
   )
-  const dyn = useDynamicValue([720, 1200, 1800])
+  const containerRef = useRef<HTMLDivElement>(null)
+  const dyn = useDynamicValue([720, 1200, 1800], undefined, containerRef)
 
   const runningTask = trpc.workflowTask.getRunning.useQuery({})
 
@@ -32,7 +40,7 @@ export default function GalleryPage() {
   const images = infoLoader.data ? infoLoader.data.pages.flatMap((d) => d.items) : []
 
   return (
-    <div className='absolute top-0 left-0 w-full h-full flex flex-col'>
+    <div ref={containerRef} className='absolute top-0 left-0 w-full h-full flex flex-col'>
       <ImageGallery
         imgPerRow={dyn([2, 3, 4, 5])}
         items={[...pending, ...images]}

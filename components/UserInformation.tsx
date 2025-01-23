@@ -42,7 +42,7 @@ export const UserInformation: IComponent = () => {
   return (
     <div className='w-full flex gap-2 items-center px-2'>
       <DropdownMenu>
-        <DropdownMenuTrigger className='flex items-center order-1'>
+        <DropdownMenuTrigger className='hidden md:flex items-center order-1'>
           <Avatar className='order-1'>
             <AvatarImage src={avatarInfo?.raw?.url || undefined} alt={session.data?.user?.email || '@user'} />
             <AvatarFallback>{shortUsername}</AvatarFallback>

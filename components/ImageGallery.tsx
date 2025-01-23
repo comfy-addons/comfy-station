@@ -87,7 +87,7 @@ export const ImageGallery: IComponent<{
             position: 'relative'
           }}
         >
-          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+          {rowVirtualizer.getVirtualItems().map((virtualRow, idx) => {
             const item = items[virtualRow.index]!
             return (
               <div
@@ -96,7 +96,7 @@ export const ImageGallery: IComponent<{
                 ref={rowVirtualizer.measureElement}
                 className={'animate-fade duration-200 p-1 hover:z-10 isolate'}
                 style={{
-                  animationDelay: `${virtualRow.index * 34}ms`,
+                  animationDelay: `${idx * 34}ms`,
                   position: 'absolute',
                   top: 0,
                   left: `${(virtualRow.lane * 100) / imgPerRow}%`,

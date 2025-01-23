@@ -20,6 +20,8 @@ export const WorkflowSidePicker: IComponent = () => {
   const { router, slug } = useCurrentRoute()
   const [loading, setLoading] = useState(false)
   const [repeat, setRepeat] = useState(1)
+
+  const [balance, setBalance] = useState(0)
   const [randomSeedEnabled, setRandomSeedEnabled] = useState(true)
   const { toast } = useToast()
   const [inputData, setInputData, reload] = useStorageState<Record<string, any>>(`input-wf-${slug}`, {})
@@ -30,6 +32,12 @@ export const WorkflowSidePicker: IComponent = () => {
   const handlePickWorkflow = (id: string) => {
     router.push(`/main/workflow/${id}`)
   }
+
+  trpc.watch.balance.useSubscription(undefined, {
+    onData: (data) => {
+      setBalance(data)
+    }
+  })
 
   const workflowListLoader = trpc.workflow.listWorkflowSelections.useQuery()
   const runner = trpc.workflowTask.executeTask.useMutation()
@@ -224,9 +232,14 @@ export const WorkflowSidePicker: IComponent = () => {
             Run
             <Play className='w-4 h-4 ml-1' />
             {!!cost && (
-              <span className='absolute right-4 text-xs text-white/80 ml-1 block md:hidden'>
-                Cost {cost.value} credits
-              </span>
+              <div
+                className={cn('absolute right-4 text-xs text-white/80 ml-1 flex flex-col md:hidden', {
+                  'mt-1': balance !== -1
+                })}
+              >
+                <span>Cost {cost.value} credits</span>
+                {balance !== -1 && <code className='text-[8px] -mt-1'>(Have {balance})</code>}
+              </div>
             )}
           </LoadableButton>
         </div>

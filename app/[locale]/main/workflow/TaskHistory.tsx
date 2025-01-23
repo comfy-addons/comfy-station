@@ -11,12 +11,17 @@ export const TaskHistory: IComponent = () => {
       limit: 10
     },
     {
-      getNextPageParam: (lastPage) => lastPage.nextCursor
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      trpc: {
+        context: {
+          skipBatch: true
+        }
+      }
     }
   )
 
   const { toast } = useToast()
-  const remover = trpc.workflowTask.delete.useMutation()
+  const remover = trpc.workflowTask.delete.useMutation(undefined)
 
   trpc.watch.historyList.useSubscription(undefined, {
     onData: () => tasker.refetch()

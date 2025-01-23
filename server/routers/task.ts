@@ -16,15 +16,13 @@ export const taskRouter = router({
       })
     )
     .subscription(async function* ({ ctx, input, signal }) {
-      let trigger: any = {}
       const fn = async () => {
         if (!input.clientId) {
           return await ctx.em.find(
             WorkflowTask,
             {
-              trigger,
               status: {
-                $not: ETaskStatus.Parent
+                $ne: ETaskStatus.Parent
               }
             },
             { limit: input.limit, orderBy: { createdAt: 'DESC' }, populate: ['trigger', 'trigger.user'] }
@@ -33,9 +31,8 @@ export const taskRouter = router({
         return await ctx.em.find(
           WorkflowTask,
           {
-            trigger,
             status: {
-              $not: ETaskStatus.Parent
+              $ne: ETaskStatus.Parent
             },
             client: input.clientId
           },

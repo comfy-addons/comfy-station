@@ -3,7 +3,7 @@
 import { trpc } from '@/utils/trpc'
 import { EGlobalEvent, useGlobalEvent } from '@/hooks/useGlobalEvent'
 import { WorkflowCard } from '@/components/WorkflowCard'
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { useDynamicValue } from '@/hooks/useDynamicValue'
 import { cn } from '@/utils/style'
 import { EWorkflowActiveStatus } from '@/entities/enum'
@@ -25,7 +25,8 @@ export default function Home() {
   useGlobalEvent(EGlobalEvent.RLOAD_WORKFLOW, () => {
     query.refetch()
   })
-  const dyn = useDynamicValue([1230, 1656])
+  const containerRef = useRef<HTMLDivElement>(null)
+  const dyn = useDynamicValue([950, 1256], undefined, containerRef)
 
   const renderCards = useMemo(() => {
     const items = query.data?.pages
@@ -53,6 +54,7 @@ export default function Home() {
   return (
     <div className='absolute w-full h-full overflow-y-auto pb-16'>
       <div
+        ref={containerRef}
         className={cn('w-full h-fit p-2 gap-2 grid', {
           'grid-cols-4': dyn([false, false, true]),
           'grid-cols-3': dyn([false, true, false]),

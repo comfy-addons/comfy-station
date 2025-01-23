@@ -103,7 +103,7 @@ export default function AccountPage() {
         alt='User avatar'
         data={user.avatar}
         onClick={() => fileRef.current?.click()}
-        containerClassName='md:w-64 md:h-64 w-full rounded-lg overflow-hidden btn border'
+        containerClassName='aspect-square md:w-64 md:h-64 w-full rounded-lg overflow-hidden btn border'
       />
       <div className='flex flex-col flex-1 md:max-w-sm mt-4'>
         <label className='text-sm'>Email</label>

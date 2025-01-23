@@ -176,7 +176,7 @@ export const UserNotificationCenter: IComponent<{
           {isRunning && <LoadingSVG width={36} height={36} className='absolute -z-0 opacity-30 pointer-events-none' />}
         </div>
       </PopoverTrigger>
-      <PopoverContent className='min-w-96 p-0'>
+      <PopoverContent className='w-screen md:w-auto md:min-w-96 p-0'>
         <div className='w-full h-[400px] flex flex-col'>
           <div className='px-4 py-2 border-b flex items-center justify-between'>
             <code className='font-bold text-sm'>NOTIFICATION CENTER</code>

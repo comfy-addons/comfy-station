@@ -8,6 +8,7 @@ import { useDynamicValue } from '@/hooks/useDynamicValue'
 import { trpc } from '@/utils/trpc'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { useSession } from 'next-auth/react'
+import { useRef } from 'react'
 
 export default function WorkflowGallery() {
   const { slug, router } = useCurrentRoute()
@@ -18,9 +19,18 @@ export default function WorkflowGallery() {
       workflowId: slug!,
       limit: 20
     },
-    { getNextPageParam: (lastPage) => lastPage.nextCursor, enabled: !!slug }
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      enabled: !!slug,
+      trpc: {
+        context: {
+          skipBatch: true
+        }
+      }
+    }
   )
-  const dyn = useDynamicValue([1200, 1800, 2400])
+  const containerRef = useRef<HTMLDivElement>(null)
+  const dyn = useDynamicValue([720, 1200, 1800], undefined, containerRef)
 
   const avatarSetter = trpc.workflow.setAvatar.useMutation()
 
@@ -59,7 +69,7 @@ export default function WorkflowGallery() {
   }
 
   return (
-    <div className='absolute top-0 left-0 w-full h-full flex flex-col shadow-inner'>
+    <div ref={containerRef} className='absolute top-0 left-0 w-full h-full flex flex-col shadow-inner'>
       <div className='p-2 w-full md:hidden'>
         <Select defaultValue={slug} onValueChange={handlePickWorkflow}>
           <SelectTrigger>

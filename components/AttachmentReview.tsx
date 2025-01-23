@@ -98,6 +98,7 @@ export const AttachmentReview: IComponent<{
   const [hoverSync, setHoverSync] = useState(isHovering)
   const [mouseSync] = useStateSyncDebounce(isHovering, 400)
   const [previewUrl, setPreviewUrl] = useState<string>()
+
   const debounce = useActionDebounce(250, true)
 
   const { data: image, isLoading } = trpc.attachment.get.useQuery(

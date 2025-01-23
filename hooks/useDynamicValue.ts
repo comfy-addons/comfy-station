@@ -8,12 +8,14 @@ import { useCallback, useEffect, useState } from 'react'
  */
 export const useDynamicValue = (
   breakPoints: [number, number] | [number, number, number] = [720, 960],
-  mode: 'width' | 'height' = 'width'
+  mode: 'width' | 'height' = 'width',
+  ref?: React.RefObject<HTMLDivElement | null>
 ): (<T = undefined>(values: [T, T, T] | [T, T, T, T], fallBack?: T) => T) => {
   const [sel, setSel] = useState(-1)
 
   const handleResize = useCallback(() => {
-    const currentSize = mode === 'width' ? document.documentElement.clientWidth : document.documentElement.clientHeight
+    const ele = ref?.current ?? document.documentElement
+    const currentSize = mode === 'width' ? ele.clientWidth : ele.clientHeight
     const thirdBreakpoint = breakPoints[2] ?? breakPoints[1]
 
     if (currentSize > thirdBreakpoint) {
@@ -25,7 +27,7 @@ export const useDynamicValue = (
     } else {
       setSel(0)
     }
-  }, [breakPoints, mode])
+  }, [breakPoints, mode, ref])
 
   useEffect(() => {
     handleResize()
