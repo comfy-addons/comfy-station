@@ -6,7 +6,7 @@ WORKDIR /usr/src/app
 # this will cache them and speed up future builds
 FROM base AS install
 RUN mkdir -p /temp/prod
-COPY package.prod.json bun.lockb /temp/prod/
+COPY package.prod.json bun.lock /temp/prod/
 RUN mv /temp/prod/package.prod.json /temp/prod/package.json
 RUN --mount=type=cache,target=/root/.bun/install/cache cd /temp/prod && bun install
 

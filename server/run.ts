@@ -1,21 +1,15 @@
-import { createServer, IncomingMessage, ServerResponse } from 'http'
-import cors from 'cors'
-import { WebSocketServer } from 'ws'
-import type { Socket } from 'net'
-import { applyWSSHandler } from '@trpc/server/adapters/ws'
+import { IncomingMessage, ServerResponse } from 'http'
 import AttachmentService from '@/server/services/attachment'
 import CachingService from '@/server/services/caching'
 import { ComfyPoolInstance } from '@/server/services/comfyui'
 import { MikroORMInstance } from '@/server/services/mikro-orm'
-import { createHTTPHandler } from '@trpc/server/adapters/standalone'
-
-import { convertIMessToRequest } from './utils/request'
 import { ElysiaHandler } from './elysia'
 import { appRouter } from './routers/_app'
 import { createContext } from './context'
 import { UserManagement } from '@/server/services/user'
 import { CleanupService } from '@/server/services/cleanup'
-import { createPrefixedHandler } from './utils/handler'
+import { createBunWSHandler } from 'trpc-bun-adapter'
+import { fetchRequestHandler } from '@trpc/server/adapters/fetch'
 
 /**
  * Initialize all services
@@ -31,13 +25,6 @@ UserManagement.getInstance()
 setTimeout(() => {
   CleanupService.getInstance().handleCleanupClientEvents()
 }, 5000)
-
-export const tRPCHandler = createHTTPHandler({
-  middleware: cors(),
-  router: appRouter,
-  createContext: createContext as any
-})
-const prefixedTRPCHandler = createPrefixedHandler('/api/trpc', tRPCHandler)
 
 const handleStaticFile = async (req: IncomingMessage, res: ServerResponse) => {
   if (!req.url) {
@@ -63,86 +50,65 @@ const handleStaticFile = async (req: IncomingMessage, res: ServerResponse) => {
   }
 }
 
-const handleElysia = async (req: IncomingMessage, res: ServerResponse) => {
-  const request = await convertIMessToRequest(req)
-  const output = await ElysiaHandler.handle(request)
-  // If the response is 404, then passthrough request to tRPC's handler
-  if (output.status !== 404) {
-    res.writeHead(output.status, {
-      'Content-Type': output.headers.get('content-type') ?? 'application/json'
-    })
-    const contentType = output.headers.get('content-type') ?? 'application/json'
-    res.writeHead(output.status, { 'Content-Type': contentType })
-
-    if (contentType.startsWith('text/') || contentType === 'application/json') {
-      const data = await output.text()
-      res.write(data)
-    } else {
-      const data = await output.arrayBuffer()
-      res.write(Buffer.from(data))
-    }
-
-    res.end()
+const websocket = createBunWSHandler({
+  router: appRouter,
+  // optional arguments:
+  createContext,
+  onError: () => {
     return true
+  },
+  batching: {
+    enabled: false
   }
-  return false
-}
+})
 
-const server = createServer(async (req, res) => {
-  try {
-    if (req.url?.startsWith('/attachments')) {
-      await handleStaticFile(req, res)
-      return
-    }
-    /**
-     * Handle the request using Elysia
-     */
-    if (req.url?.startsWith('/swagger') || req.url?.startsWith('/api/user') || req.url?.startsWith('/api/ext')) {
-      const handled = await handleElysia(req, res)
-      if (handled) {
+Bun.serve({
+  async fetch(req, server) {
+    const url = new URL(req.url, 'http://localhost:3001')
+    const pathName = url.pathname
+    const clientOrigin = req.headers.get('origin') || 'http://localhost:3000'
+    if (pathName.startsWith('/ws')) {
+      if (server.upgrade(req, { data: { req: req } })) {
         return
       }
     }
-  } catch (e) {
-    console.error(e)
-    res.writeHead(500)
-    res.end()
-  }
-  /**
-   * Handle the request using tRPC
-   */
-  prefixedTRPCHandler(req, res)
+    if (req.method === 'OPTIONS') {
+      return new Response(null, {
+        headers: {
+          'Access-Control-Allow-Origin': clientOrigin,
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, trpc-accept',
+          'Access-Control-Allow-Credentials': 'true'
+        }
+      })
+    }
+    if (pathName.startsWith('/attachments')) {
+      const fileName = req.url.split('/attachments/')[1]
+      const decodedFileName = decodeURIComponent(fileName)
+      const fileBlob = await AttachmentService.getInstance().getFileBlob(decodedFileName)
+      return new Response(fileBlob)
+    }
+    if (pathName.startsWith('/swagger') || pathName.startsWith('/api/user') || pathName.startsWith('/api/ext')) {
+      const output = await ElysiaHandler.handle(req)
+      if (output.status !== 404) {
+        return output
+      }
+    }
+    return fetchRequestHandler({
+      endpoint: '/api/trpc',
+      req: req,
+      router: appRouter,
+      createContext: createContext as any,
+      responseMeta: () => ({
+        headers: {
+          'Access-Control-Allow-Origin': clientOrigin,
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, trpc-accept',
+          'Access-Control-Allow-Credentials': 'true'
+        }
+      })
+    })
+  },
+  websocket,
+  port: 3001
 })
-
-const wss = new WebSocketServer({ server })
-const handlerWs = applyWSSHandler({
-  wss,
-  router: appRouter,
-  createContext: createContext as any,
-  keepAlive: {
-    enabled: true,
-    pingMs: 10000,
-    pongWaitMs: 5000
-  }
-})
-
-process.on('SIGTERM', () => {
-  console.log('SIGTERM')
-  handlerWs.broadcastReconnectNotification()
-})
-
-server.on('upgrade', (req, socket, head) => {
-  wss.handleUpgrade(req, socket as Socket, head, (ws) => {
-    wss.emit('connection', ws, req)
-  })
-})
-
-const originalOn = server.on.bind(server)
-server.on = function (event, listener) {
-  return event !== 'upgrade' ? originalOn(event, listener) : server
-}
-
-/**
- * Start the server
- */
-server.listen(3001, '0.0.0.0')

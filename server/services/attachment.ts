@@ -1,19 +1,8 @@
 import { Attachment } from '@/entities/attachment'
 import { BackendENV } from '@/env'
-import {
-  S3Client,
-  PutObjectCommand,
-  DeleteObjectCommand,
-  PutObjectCommandInput,
-  GetObjectCommand,
-  HeadObjectCommand,
-  ListBucketsCommand
-} from '@aws-sdk/client-s3'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { S3Client } from 'bun'
 import { Logger } from '@saintno/needed-tools'
 import { LRUCache } from 'lru-cache'
-import { NodeHttpHandler } from '@aws-sdk/node-http-handler'
-import { Agent } from 'https'
 import fs from 'fs'
 import mime from 'mime'
 
@@ -21,10 +10,6 @@ export enum EAttachmentType {
   S3 = 's3',
   LOCAL = 'local'
 }
-
-const sslAgent = new Agent({
-  rejectUnauthorized: false // Not recommended for production environments
-})
 
 class AttachmentService {
   private static instance: AttachmentService
@@ -51,15 +36,10 @@ class AttachmentService {
       // Initialize S3 client with the provided config
       this.s3 = new S3Client({
         endpoint: BackendENV.S3_ENDPOINT,
-        forcePathStyle: true,
-        credentials: {
-          accessKeyId: BackendENV.S3_ACCESS_KEY,
-          secretAccessKey: BackendENV.S3_SECRET_KEY
-        },
+        accessKeyId: BackendENV.S3_ACCESS_KEY,
+        secretAccessKey: BackendENV.S3_SECRET_KEY,
         region: BackendENV.S3_REGION,
-        requestHandler: new NodeHttpHandler({
-          httpsAgent: sslAgent
-        })
+        bucket: BackendENV.S3_BUCKET_NAME
       })
       this.logger.i('init', 'Using S3 for file storage', {
         endpoint: BackendENV.S3_ENDPOINT,
@@ -81,7 +61,8 @@ class AttachmentService {
   async checkS3Connection() {
     if (!this.s3) return false
     try {
-      await this.s3.send(new ListBucketsCommand({}))
+      const file = this.s3.file('ping')
+      await file.write('HelloWorld!')
       return true
     } catch (error: any) {
       this.logger.w('checkS3Connection', 'Error checking S3 connection', { error })
@@ -129,13 +110,9 @@ class AttachmentService {
     const place = await this.getExistObjectPlace(fileName)
     switch (place) {
       case EAttachmentType.S3: {
-        // Generate a signed URL for the file in the S3 bucket
-        const params = {
-          Bucket: BackendENV.S3_BUCKET_NAME,
-          Key: fileName
-        }
-        const command = new GetObjectCommand(params)
-        return getSignedUrl(this.s3!, command, { expiresIn })
+        return this.s3!.presign(fileName, {
+          expiresIn
+        })
       }
       default:
         return undefined
@@ -147,21 +124,10 @@ class AttachmentService {
     switch (place) {
       case EAttachmentType.S3: {
         try {
-          const params = {
-            Bucket: BackendENV.S3_BUCKET_NAME,
-            Key: fileName
-          }
-          const command = new GetObjectCommand(params)
-          const response = await this.s3!.send(command)
-          const streamToBuffer = (stream: any): Promise<Buffer> =>
-            new Promise((resolve, reject) => {
-              const chunks: any[] = []
-              stream.on('data', (chunk: any) => chunks.push(chunk))
-              stream.on('error', reject)
-              stream.on('end', () => resolve(Buffer.concat(chunks)))
-            })
-          const buffer = await streamToBuffer(response.Body)
-          return new Blob([buffer], { type: response.ContentType })
+          const file = this.s3!.file(fileName)
+          const arrBuffer = await file.arrayBuffer()
+          const buffer = Buffer.from(arrBuffer)
+          return new Blob([buffer], { type: file.type })
         } catch (error) {
           this.logger.w('getFileBlob', 'Error fetching file from S3', { error })
           return null
@@ -183,21 +149,11 @@ class AttachmentService {
   async uploadFile(file: Buffer, fileName: string) {
     try {
       if (this.s3) {
-        const meta: Record<string, string> = {}
         const mimeType = mime.getType(fileName)
-        if (mimeType) {
-          meta['Content-Type'] = mimeType
-        }
-        // Upload file to S3 bucket
-        const uploadParams: PutObjectCommandInput = {
-          Bucket: BackendENV.S3_BUCKET_NAME,
-          Key: fileName,
-          Body: file,
-          Metadata: meta,
-          ContentType: mimeType ?? undefined
-        }
-        const command = new PutObjectCommand(uploadParams)
-        await this.s3.send(command)
+        const s3File = this.s3.file(fileName)
+        await s3File.write(file, {
+          type: mimeType ?? undefined
+        })
         return true
       } else {
         if (!fs.existsSync(this.localPath)) {
@@ -221,16 +177,11 @@ class AttachmentService {
 
   async deleteFile(fileUrl: string): Promise<void> {
     if (this.s3) {
-      // Delete file from S3 bucket
-      const bucketName = process.env.S3_BUCKET_NAME
       const fileName = fileUrl.split('/').pop()
-      const deleteParams = {
-        Bucket: bucketName,
-        Key: fileName
+      if (fileName) {
+        const s3File = this.s3.file(fileName)
+        await s3File.delete()
       }
-
-      const command = new DeleteObjectCommand(deleteParams)
-      await this.s3.send(command)
     } else {
       // Delete file from local storage
       fs.unlinkSync(fileUrl)
@@ -243,9 +194,7 @@ class AttachmentService {
    */
   getExistObjectPlace = async (fileName: string): Promise<EAttachmentType | null> => {
     if (this.s3) {
-      const result = await this.s3
-        ?.send(new HeadObjectCommand({ Bucket: BackendENV.S3_BUCKET_NAME, Key: fileName }))
-        .catch(() => false)
+      const result = await this.s3.exists(fileName)
       if (!!result) {
         return EAttachmentType.S3
       }

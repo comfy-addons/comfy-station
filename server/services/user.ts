@@ -43,32 +43,34 @@ export class UserManagement {
       } = ctx
       if (!user) return
 
-      const parser = new UAParser(userAgent)
-      const device = parser.getDevice()
       let deviceType = EDeviceType.PC
-      switch (device.type) {
-        case 'mobile':
-          deviceType = EDeviceType.PHONE
-          break
-        case 'tablet':
-          deviceType = EDeviceType.TABLET
-          break
-        case 'console':
-        case 'smarttv':
-        case 'wearable':
-        case 'xr':
-        case 'embedded':
-          deviceType = EDeviceType.OTHER
-          break
-        default:
-          deviceType = EDeviceType.PC
-          break
+      if (userAgent) {
+        const parser = new UAParser(userAgent)
+        const device = parser.getDevice()
+        switch (device.type) {
+          case 'mobile':
+            deviceType = EDeviceType.PHONE
+            break
+          case 'tablet':
+            deviceType = EDeviceType.TABLET
+            break
+          case 'console':
+          case 'smarttv':
+          case 'wearable':
+          case 'xr':
+          case 'embedded':
+            deviceType = EDeviceType.OTHER
+            break
+          default:
+            deviceType = EDeviceType.PC
+            break
+        }
       }
 
       const client = await em.findOne(UserClient, { user, userAgent })
       if (client) {
         client.lastActiveAt = new Date()
-        client.ipAddress = userIp
+        client.ipAddress = userIp ?? undefined
         client.deviceType = deviceType
       } else {
         const client = em.create(

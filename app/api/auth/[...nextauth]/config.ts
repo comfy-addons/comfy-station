@@ -72,7 +72,10 @@ export const NextAuthOptions: AuthOptions = {
         const user = await getUserInformationByEmail(token.email)
         if (user) {
           session.user = user
-          session.accessToken = jwt.sign({ email: user.email }, BackendENV.NEXTAUTH_SECRET)
+          session.accessToken = {
+            token: jwt.sign({ email: user.email, isWs: false }, BackendENV.NEXTAUTH_SECRET),
+            wsToken: jwt.sign({ email: user.email, isWs: true }, BackendENV.NEXTAUTH_SECRET)
+          }
         } else {
           throw new Error('User not found')
         }

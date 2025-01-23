@@ -10,6 +10,10 @@ export const EnsureTokenPlugin = new Elysia()
   })
   .use(EnsureMikroORMPlugin)
   .resolve({ as: 'scoped' }, async ({ headers: { authorization }, set, em }) => {
+    if (!authorization) {
+      set.status = 401
+      throw new Error('Unauthorized')
+    }
     const bearerToken = authorization.split(' ')[1]
     const token = await em!.findOne(Token, { id: bearerToken }, { populate: ['grantedWorkflows.*', 'createdBy'] })
 

@@ -72,7 +72,8 @@ export const ImageGallery: IComponent<{
         style={{
           height: `100%`,
           width: `100%`,
-          overflow: 'auto'
+          overflow: 'auto',
+          scrollBehavior: 'smooth'
         }}
       >
         {items.length === 0 && (

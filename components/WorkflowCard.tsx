@@ -72,7 +72,8 @@ export const WorkflowCard: IComponent<{
   }
 
   trpc.watch.workflow.useSubscription(data.id, {
-    onData: () => stator.refetch()
+    onData: () => stator.refetch(),
+    enabled: data.status === EWorkflowActiveStatus.Activated
   })
 
   return (

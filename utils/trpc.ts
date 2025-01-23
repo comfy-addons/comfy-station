@@ -1,20 +1,33 @@
 import superjson from 'superjson'
 
-import { createWSClient, httpBatchLink, httpLink, isNonJsonSerializable, splitLink, wsLink } from '@trpc/client'
+import {
+  createWSClient,
+  httpBatchLink,
+  httpLink,
+  isNonJsonSerializable,
+  splitLink,
+  unstable_httpBatchStreamLink,
+  wsLink
+} from '@trpc/client'
 import { createTRPCNext } from '@trpc/next'
 import { ssrPrepass } from '@trpc/next/ssrPrepass'
 import type { AppRouter } from '@/server/routers/_app'
 import { BackendENV } from '@/env'
 
 let AuthToken = ''
+let wsAuthToken = ''
 
-export function setAuthToken(newToken: string) {
+export function setAuthToken(newToken: string, wsToken: string) {
   /**
    * You can also save the token to cookies, and initialize from
    * cookies above.
    */
   AuthToken = newToken
-  wsClient.reconnect(null)
+  wsAuthToken = wsToken
+  if (wsToken) {
+    wsClient.close()
+    wsClient.reconnect(null)
+  }
 }
 
 export function getBaseUrl() {
@@ -40,12 +53,7 @@ function getBaseWsUrl() {
 }
 
 const wsClient = createWSClient({
-  url: `${getBaseWsUrl()}/api/trpc`,
-  connectionParams() {
-    return {
-      Authorization: `Bearer ${AuthToken}`
-    }
-  }
+  url: () => `${getBaseWsUrl()}/ws?connectionParams=${encodeURIComponent(wsAuthToken)}`
 })
 
 const trpc = createTRPCNext<AppRouter>({
@@ -97,7 +105,7 @@ const trpc = createTRPCNext<AppRouter>({
                     }
                   }
                 }),
-                false: httpBatchLink({
+                false: unstable_httpBatchStreamLink({
                   url: getBaseUrl() + '/api/trpc',
                   transformer: superjson,
                   async headers() {
