@@ -43,7 +43,7 @@ export default function Home() {
 
   if (!renderCards.length) {
     return (
-      <div className='flex h-full flex-col items-center justify-center text-foreground/50'>
+      <div ref={containerRef} className='flex h-full flex-col items-center justify-center text-foreground/50'>
         <PenOff className='w-6 h-6 mx-auto my-2' />
         <span className='uppercase'>Workflow is empty</span>
         <p className='text-xs'>Create your first workflow</p>
