@@ -51,6 +51,10 @@ export const Portal: IComponent<{
    * Scrollable element that contain this portal (DEFAULT `body`)
    */
   scrollElement?: RefObject<HTMLDivElement | HTMLSpanElement | null>
+  /**
+   * Callback when user clicks outside of portal
+   */
+  onClickOutside?: () => void
 }> = ({
   to,
   disabled,
@@ -60,7 +64,8 @@ export const Portal: IComponent<{
   followScroll = false,
   scrollElement = null,
   interactive = true,
-  castOverlay
+  castOverlay,
+  onClickOutside
 }) => {
   const portalID = useId()
   const toRefReady = useWaitRef(to)
@@ -208,6 +213,21 @@ export const Portal: IComponent<{
       portalContainerRef.current.style.backgroundColor = 'transparent'
     }
   }, [disabled, castOverlay])
+
+  useEffect(() => {
+    if (disabled || !onClickOutside) return
+    
+    const handleClickOutside = (event: MouseEvent) => {
+      if (cloneEleRef.current && !cloneEleRef.current.contains(event.target as Node)) {
+        onClickOutside()
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [disabled, onClickOutside])
 
   if (disabled) return children
   return result

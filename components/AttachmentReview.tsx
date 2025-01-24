@@ -26,6 +26,7 @@ import { useActionDebounce } from '@/hooks/useAction'
 import { EValueType } from '@/entities/enum'
 import { PlayCircleIcon } from '@heroicons/react/24/outline'
 import { useTouchDevice } from '@/hooks/useTouchDevice'
+import { EKeyboardKey, useShortcutKeyEvent } from '@/hooks/useShortcutKeyEvent'
 
 const AttachmentTooltipPopup: IComponent<{
   taskId?: string
@@ -89,17 +90,12 @@ export const AttachmentReview: IComponent<{
   } = useCurrentMousePosRef()
 
   const ref = useRef<HTMLDivElement>(null)
-  const scrollingRef = useScrollingStatusRef()
   const portalRef = useTargetRefById<HTMLDivElement>('portal-me')
 
   const [floatLeft, setFloatLeft] = useState(false)
-  const [isHovering, setIsHovering] = useState(false)
-
-  const [hoverSync, setHoverSync] = useState(isHovering)
-  const [mouseSync] = useStateSyncDebounce(isHovering, 400)
+  const [showDetail, setShowDetail] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string>()
-
-  const debounce = useActionDebounce(250, true)
+  const [mouseSync] = useStateSyncDebounce(showDetail, 0)
 
   const { data: image, isLoading } = trpc.attachment.get.useQuery(
     {
@@ -132,24 +128,12 @@ export const AttachmentReview: IComponent<{
     }
   )
 
-  useEffect(() => {
-    forceRecalculatePortal()
-  }, [hoverSync])
-
-  useEffect(() => {
-    const timeOut = setTimeout(() => {
-      if (scrollingRef.current || (ref.current && !ref.current.matches(':hover'))) {
-        setIsHovering(false)
-        setHoverSync(false)
-      } else {
-        setHoverSync(isHovering)
-      }
-    }, 500)
-    return () => clearTimeout(timeOut)
-  }, [isHovering, scrollingRef])
+  useShortcutKeyEvent(EKeyboardKey.Escape, () => {
+    setShowDetail(false)
+  })
 
   const imageLoaded = !loading && (!isLoading || !enabled)
-  const isPop = hoverSync && isHovering && !isTouchDevice
+  const isPop = showDetail && !isTouchDevice
 
   useEffect(() => {
     if (ref.current) {
@@ -162,13 +146,9 @@ export const AttachmentReview: IComponent<{
     return (
       <div
         ref={ref}
-        onMouseMove={() => {
-          debounce(() => {
-            if (!scrollingRef.current && !isHovering) setIsHovering(true)
-          })
-        }}
-        onMouseLeave={() => {
-          setIsHovering(false)
+        onContextMenu={(e) => {
+          e.preventDefault()
+          setShowDetail(true)
         }}
         className={cn(
           'w-16 h-16 rounded-xl cursor-pointer transition-all bg-secondary overflow-hidden relative group hover:outline',
@@ -177,7 +157,15 @@ export const AttachmentReview: IComponent<{
       >
         <PhotoView src={image?.high?.url}>
           <div className='w-full h-full'>
-            <Portal to={portalRef} disabled={!isPop} target={ref} castOverlay wrapperCls='w-full h-full'>
+            <Portal
+              onClickOutside={() => setShowDetail(false)}
+              to={portalRef}
+              disabled={!isPop}
+              target={ref}
+              castOverlay
+              followScroll
+              wrapperCls='w-full h-full'
+            >
               <div className='w-full h-full relative'>
                 <m.div
                   className={cn('w-full h-full', {
@@ -214,8 +202,8 @@ export const AttachmentReview: IComponent<{
                 {isPop && (
                   <m.div
                     className={cn('absolute min-h-full -z-10', {
-                      'pr-[100%]': floatLeft,
-                      'pl-[100%]': !floatLeft
+                      'mr-[100%]': floatLeft,
+                      'ml-[100%]': !floatLeft
                     })}
                     style={{
                       top: -(ref.current?.clientHeight ?? 100) * 0.075,
@@ -236,7 +224,7 @@ export const AttachmentReview: IComponent<{
                         style={{ height: (ref.current?.clientHeight ?? 100) * 1.15 }}
                         className='relative w-[340px] overflow-auto min-h-[400px] bg-background/50 backdrop-blur-xl rounded-lg border'
                       >
-                        <AttachmentTooltipPopup taskId={taskId} active={hoverSync && isHovering} />
+                        <AttachmentTooltipPopup taskId={taskId} active={showDetail} />
                       </div>
                       <div className='w-full mt-2 h-10 flex justify-end gap-2'>
                         {isVideo ? (
