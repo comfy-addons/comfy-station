@@ -22,7 +22,7 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
   let user: User | null = null
   const headers = opts.req.headers
   const rawAuthorization =
-    headers.get('authorization') || opts.info?.connectionParams?.Authorization || queries.get('connectionParams')
+    headers.get('authorization') || opts.info?.connectionParams?.Authorization || queries.get('auth')
   const accessToken = rawAuthorization?.replace('Bearer', '').trim()
   try {
     if (accessToken && accessToken.length > 0) {

@@ -53,7 +53,7 @@ function getBaseWsUrl() {
 }
 
 const wsClient = createWSClient({
-  url: () => `${getBaseWsUrl()}/ws?connectionParams=${encodeURIComponent(wsAuthToken)}`
+  url: () => `${getBaseWsUrl()}/ws?auth=${encodeURIComponent(wsAuthToken)}`
 })
 
 const trpc = createTRPCNext<AppRouter>({

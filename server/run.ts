@@ -52,13 +52,17 @@ const handleStaticFile = async (req: IncomingMessage, res: ServerResponse) => {
 
 const websocket = createBunWSHandler({
   router: appRouter,
-  // optional arguments:
   createContext,
   onError: () => {
     return true
   },
   batching: {
-    enabled: false
+    enabled: true
+  },
+  keepAlive: {
+    enabled: true,
+    pingMs: 15000,
+    pongWaitMs: 5000
   }
 })
 
@@ -68,6 +72,11 @@ Bun.serve({
     const pathName = url.pathname
     const clientOrigin = req.headers.get('origin') || 'http://localhost:3000'
     if (pathName.startsWith('/ws')) {
+      // Queries have auth
+      if (!url.searchParams.get('auth')) {
+        // auth required
+        return new Response('UNAUTHORIZED', { status: 401 })
+      }
       if (server.upgrade(req, { data: { req: req } })) {
         return
       }
