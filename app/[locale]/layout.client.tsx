@@ -17,15 +17,21 @@ import 'react-photo-view/dist/react-photo-view.css'
 import { trpc } from '@/utils/trpc'
 import { EDeviceStatus } from '@/entities/enum'
 import { useActionDebounce } from '@/hooks/useAction'
+import { useConnectionStore } from '@/states/connection'
 
 export const ClientLayout: IComponent = ({ children }) => {
   const pathname = usePathname()
   const session = useSession()
   const router = useRouter()
   const isDarkMode = useDarkMode()
+  const { wsConnected } = useConnectionStore()
   const debounce = useActionDebounce(500, true)
   const keepAlive = trpc.userClient.ping.useMutation()
   const userStatusUpdater = trpc.userClient.updateStatus.useMutation()
+
+  const isMain = pathname.includes('/main')
+
+  const isLoading = session.status === 'loading' || (isMain && !wsConnected)
 
   const updateStatus = useCallback(
     (status: EDeviceStatus) => {
@@ -48,14 +54,14 @@ export const ClientLayout: IComponent = ({ children }) => {
   }, [isDarkMode])
 
   useEffect(() => {
-    if (session.status === 'authenticated' && !pathname.includes('/main')) {
+    if (session.status === 'authenticated' && !isMain) {
       router.replace('/main')
     }
     if (session.status === 'unauthenticated' && !pathname.includes('/auth')) {
       router.replace('/auth/basic')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session])
+  }, [session, isMain])
 
   useEffect(() => {
     // Update status to online when component is mounted
@@ -121,7 +127,7 @@ export const ClientLayout: IComponent = ({ children }) => {
       onIdle={() => updateStatus(EDeviceStatus.IDLE)}
       onActive={() => updateStatus(EDeviceStatus.ONLINE)}
     >
-      {session.status === 'loading' && (
+      {isLoading && (
         <div className='top-0 left-0 fixed w-screen h-[100dvh] md:h-screen z-10 bg-popover/50 flex justify-end items-end p-8'>
           <Card className='p-4 flex gap-4 items-center bg-background'>
             <LoadingSVG width={32} height={32} />
@@ -136,7 +142,7 @@ export const ClientLayout: IComponent = ({ children }) => {
             </div>
           }
         >
-          {children}
+          {((wsConnected && isMain) || (!wsConnected && !isMain)) && children}
         </PhotoProvider>
       </ReactFlowProvider>
       <Toaster />

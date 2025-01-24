@@ -72,11 +72,6 @@ Bun.serve({
     const pathName = url.pathname
     const clientOrigin = req.headers.get('origin') || 'http://localhost:3000'
     if (pathName.startsWith('/ws')) {
-      // Queries have auth
-      if (!url.searchParams.get('auth')) {
-        // auth required
-        return new Response('UNAUTHORIZED', { status: 401 })
-      }
       if (server.upgrade(req, { data: { req: req } })) {
         return
       }

@@ -18,16 +18,35 @@ let AuthToken = ''
 let wsAuthToken = ''
 
 export function setAuthToken(newToken: string, wsToken: string) {
-  /**
-   * You can also save the token to cookies, and initialize from
-   * cookies above.
-   */
-  AuthToken = newToken
-  wsAuthToken = wsToken
-  if (wsToken) {
-    wsClient.close()
-    wsClient.reconnect(null)
-  }
+  return new Promise<boolean>((resolve, rj) => {
+    /**
+     * You can also save the token to cookies, and initialize from
+     * cookies above.
+     */
+    AuthToken = newToken
+    if (!wsAuthToken && wsToken) {
+      wsAuthToken = wsToken
+      let checkThreshold = 0
+      if (wsClient.connection?.state === 'open') {
+        wsClient.close()
+      }
+      wsClient.reconnect(null)
+      const checkConnection = setInterval(() => {
+        if (checkThreshold === 100) {
+          // Around 20 seconds
+          clearInterval(checkConnection)
+          rj('Connection timeout')
+        }
+        if (wsClient.connection?.state === 'open') {
+          clearInterval(checkConnection)
+          resolve(true)
+        }
+        checkThreshold++
+      }, 200)
+    } else {
+      resolve(!!wsAuthToken && wsClient.connection?.state === 'open')
+    }
+  })
 }
 
 export function getBaseUrl() {
