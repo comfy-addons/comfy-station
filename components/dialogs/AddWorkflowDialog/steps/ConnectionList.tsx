@@ -8,25 +8,25 @@ import { AddWorkflowDialogContext } from '..'
 import { ConnectionPicker } from './ConnectionPicker'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { ArrowLongRightIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { EHightlightType, useWorkflowVisStore } from '@/components/WorkflowVisualize/state'
+import { EHighlightType, useWorkflowVisStore } from '@/components/WorkflowVisualize/state'
 
 export const ConnectionList: IComponent<{
   connections: Array<IMapTarget>
   onUpdate: (connections: Array<IMapTarget>, nodeCrrVal?: string | number | boolean) => void
 }> = ({ connections, onUpdate }) => {
   const [openInput, setOpenInput] = useState(false)
-  const { hightlightArr, updateHightlightArr } = useWorkflowVisStore()
+  const { highlightArr, updateHighlightArr } = useWorkflowVisStore()
   const { rawWorkflow } = useContext(AddWorkflowDialogContext)
   const { gen } = useKeygen()
   const handleAddConnection = (connection: IMapTarget, nodeCrrVal?: string | number | boolean) => {
-    const oldData = hightlightArr.find((hl) => hl.id === connection.nodeName)
+    const oldData = highlightArr.find((hl) => hl.id === connection.nodeName)
     if (!oldData) {
-      updateHightlightArr([...hightlightArr, { id: connection.nodeName, type: EHightlightType.INPUT }])
+      updateHighlightArr([...highlightArr, { id: connection.nodeName, type: EHighlightType.INPUT }])
     } else {
-      updateHightlightArr(
-        hightlightArr.map((hl) => {
+      updateHighlightArr(
+        highlightArr.map((hl) => {
           if (hl.id === connection.nodeName) {
-            return { id: connection.nodeName, type: EHightlightType.INPUT }
+            return { id: connection.nodeName, type: EHighlightType.INPUT }
           }
           return hl
         })
@@ -38,13 +38,13 @@ export const ConnectionList: IComponent<{
 
   const handleDeleteConnection = useCallback(
     (connection: IMapTarget) => {
-      const oldData = hightlightArr.find((hl) => hl.id === connection.nodeName)
+      const oldData = highlightArr.find((hl) => hl.id === connection.nodeName)
       if (oldData) {
-        updateHightlightArr(hightlightArr.filter((hl) => hl.id !== connection.nodeName))
+        updateHighlightArr(highlightArr.filter((hl) => hl.id !== connection.nodeName))
       }
       onUpdate(connections.filter((c) => c !== connection))
     },
-    [connections, hightlightArr, onUpdate, updateHightlightArr]
+    [connections, highlightArr, onUpdate, updateHighlightArr]
   )
 
   const renderConnections = useMemo(() => {

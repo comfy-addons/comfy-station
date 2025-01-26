@@ -26,6 +26,7 @@ import { cloneDeep } from 'lodash'
 import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/hooks/useToast'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
+import { useWorkflowStore } from '@/states/workflow'
 
 const SelectionSchema = z.nativeEnum(EValueSelectionType)
 
@@ -41,7 +42,8 @@ export const FinalizeStep: IComponent = () => {
 
   const { uploadAttachment } = useAttachmentUploader()
   const { toast } = useToast()
-  const { updateProcessing, recenter, updateHightlightArr } = useWorkflowVisStore()
+  const { updateProcessing, recenter, updateHighlightArr } = useWorkflowVisStore()
+  const { targetWfId } = useWorkflowStore()
 
   const isEnd = progressEv?.key === 'finished' || progressEv?.key === 'failed'
 
@@ -66,6 +68,7 @@ export const FinalizeStep: IComponent = () => {
   })
   const { mutateAsync } = trpc.workflow.startTestWorkflow.useMutation()
   const submitter = trpc.workflow.importWorkflow.useMutation()
+  const updater = trpc.workflow.updateWorkflow.useMutation()
 
   const handlePressTest = async () => {
     if (!workflow) return
@@ -98,16 +101,27 @@ export const FinalizeStep: IComponent = () => {
     if (rawWorkflow) {
       try {
         setLoading(true)
-        await submitter.mutateAsync({
-          ...workflow,
-          rawWorkflow: JSON.stringify(rawWorkflow)
-        })
-        toast({
-          title: 'Workflow submitted successfully'
-        })
+        if (targetWfId) {
+          await updater.mutateAsync({
+            id: targetWfId,
+            ...workflow,
+            rawWorkflow: JSON.stringify(rawWorkflow)
+          })
+          toast({
+            title: 'Workflow updated successfully'
+          })
+        } else {
+          await submitter.mutateAsync({
+            ...workflow,
+            rawWorkflow: JSON.stringify(rawWorkflow)
+          })
+          toast({
+            title: 'Workflow submitted successfully'
+          })
+        }
         setRawWorkflow?.(undefined)
         setWorkflow?.(undefined)
-        updateHightlightArr([])
+        updateHighlightArr([])
         setStep?.(EImportStep.S0_UPLOAD_WORKFLOW)
         setDialog?.(false)
         dispatchGlobalEvent(EGlobalEvent.RLOAD_WORKFLOW)
@@ -313,7 +327,7 @@ export const FinalizeStep: IComponent = () => {
               Test workflow <Play className='w-4 h-4 ml-1' />
             </Button>
             <LoadableButton onClick={handlePressSubmitWorkflow}>
-              Submit <Save className='w-4 h-4 ml-1' />
+              {!!targetWfId ? 'Update' : 'Submit'} <Save className='w-4 h-4 ml-1' />
             </LoadableButton>
           </>
         )}

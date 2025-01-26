@@ -4,12 +4,12 @@ import '@xyflow/react/dist/style.css'
 
 import { applyLayout, transformEdges, transformNodes } from './tools'
 import useDarkMode from '@/hooks/useDarkmode'
-import { EHightlightType, useWorkflowVisStore } from './state'
+import { EHighlightType, useWorkflowVisStore } from './state'
 
 export const WorkflowVisualize: IComponent<{
   workflow: IWorkflow
 }> = ({ workflow }) => {
-  const { hightlightArr, setRecenterFn } = useWorkflowVisStore()
+  const { highlightArr, setRecenterFn } = useWorkflowVisStore()
   const isDark = useDarkMode()
   const reactFlowInstance = useReactFlow()
 
@@ -35,7 +35,7 @@ export const WorkflowVisualize: IComponent<{
   useEffect(() => {
     setNodes((nds) =>
       nds.map((node) => {
-        const hlData = hightlightArr
+        const hlData = highlightArr
           ?.sort((a, b) => {
             // PROCESSING have highest order
             if (a.processing) return -1
@@ -48,14 +48,14 @@ export const WorkflowVisualize: IComponent<{
           zoomToNode(node.id)
         } else {
           switch (hlData?.type) {
-            case EHightlightType.INPUT:
+            case EHighlightType.INPUT:
               borderColor = '#10B981'
               break
-            case EHightlightType.OUTPUT:
+            case EHighlightType.OUTPUT:
               // Blue
               borderColor = '#3B82F6'
               break
-            case EHightlightType.SELECTING:
+            case EHighlightType.SELECTING:
               borderColor = '#F59E0B'
               zoomToNode(node.id)
               break
@@ -73,7 +73,7 @@ export const WorkflowVisualize: IComponent<{
       })
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hightlightArr])
+  }, [highlightArr])
 
   useEffect(() => {
     setNodes((nds) => applyLayout(nds, edges))

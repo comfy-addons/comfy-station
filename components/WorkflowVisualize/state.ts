@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export enum EHightlightType {
+export enum EHighlightType {
   INPUT,
   OUTPUT,
   SELECTING,
@@ -10,50 +10,50 @@ export enum EHightlightType {
 interface IWorkflowVisState {
   recenter?: () => void
   setRecenterFn: (fn: () => void) => void
-  hightlightArr: { id: string; type: EHightlightType; processing?: boolean }[]
-  updateHightlightArr: (arr: { id: string; type: EHightlightType; processing?: boolean }[]) => void
+  highlightArr: { id: string; type: EHighlightType; processing?: boolean }[]
+  updateHighlightArr: (arr: { id: string; type: EHighlightType; processing?: boolean }[]) => void
   clearSelecting: () => void
   updateProcessing: (id?: string) => void
   updateSelecting: (id?: string) => void
 }
 
 export const useWorkflowVisStore = create<IWorkflowVisState, any>((set, get) => ({
-  hightlightArr: [],
+  highlightArr: [],
   setRecenterFn: (fn) => set({ recenter: fn }),
   updateSelecting: (id) => {
     if (!id) {
-      if (get().hightlightArr.some((item) => item.type === EHightlightType.SELECTING)) {
-        set({ hightlightArr: get().hightlightArr.filter((item) => item.type !== EHightlightType.SELECTING) })
+      if (get().highlightArr.some((item) => item.type === EHighlightType.SELECTING)) {
+        set({ highlightArr: get().highlightArr.filter((item) => item.type !== EHighlightType.SELECTING) })
       }
     } else {
-      if (get().hightlightArr.some((item) => item.type === EHightlightType.SELECTING)) {
+      if (get().highlightArr.some((item) => item.type === EHighlightType.SELECTING)) {
         set({
-          hightlightArr: get().hightlightArr.map((item) =>
-            item.type === EHightlightType.SELECTING ? { ...item, id } : item
+          highlightArr: get().highlightArr.map((item) =>
+            item.type === EHighlightType.SELECTING ? { ...item, id } : item
           )
         })
       } else {
-        set({ hightlightArr: [...get().hightlightArr, { id, type: EHightlightType.SELECTING }] })
+        set({ highlightArr: [...get().highlightArr, { id, type: EHighlightType.SELECTING }] })
       }
     }
   },
-  updateHightlightArr: (arr) => set({ hightlightArr: arr }),
+  updateHighlightArr: (arr) => set({ highlightArr: arr }),
   clearSelecting: () =>
-    set({ hightlightArr: get().hightlightArr.filter((item) => item.type !== EHightlightType.SELECTING) }),
+    set({ highlightArr: get().highlightArr.filter((item) => item.type !== EHighlightType.SELECTING) }),
   updateProcessing: (id) => {
-    const haveProcessing = get().hightlightArr.some((item) => item.processing)
-    const clean = get().hightlightArr.filter((item) => !item.processing)
+    const haveProcessing = get().highlightArr.some((item) => item.processing)
+    const clean = get().highlightArr.filter((item) => !item.processing)
     if (!id) {
       if (!haveProcessing) return
-      set({ hightlightArr: clean })
+      set({ highlightArr: clean })
     } else {
-      const found = get().hightlightArr.find((item) => item.id === id)
+      const found = get().highlightArr.find((item) => item.id === id)
       if (found?.processing) return
       if (!found) {
-        set({ hightlightArr: [...clean, { id, type: EHightlightType.NONE, processing: true }] })
+        set({ highlightArr: [...clean, { id, type: EHighlightType.NONE, processing: true }] })
       } else {
         set({
-          hightlightArr: get().hightlightArr.map((item) => (item.id === id ? { ...item, processing: true } : item))
+          highlightArr: get().highlightArr.map((item) => (item.id === id ? { ...item, processing: true } : item))
         })
       }
     }

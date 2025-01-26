@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
-import { EHightlightType, useWorkflowVisStore } from '@/components/WorkflowVisualize/state'
+import { EHighlightType, useWorkflowVisStore } from '@/components/WorkflowVisualize/state'
 import { useEffect, useMemo } from 'react'
 import { LoadableButton } from '@/components/LoadableButton'
 import { Button } from '@/components/ui/button'
@@ -20,7 +20,7 @@ export const ConnectionPicker: IComponent<{
   onChange?: (connection: IMapTarget) => void
   onPicked?: (connection: IMapTarget, defaultVal?: string | number | boolean) => void
 }> = ({ workflow, isOutput, connection, onChange, onCanceled, onPicked }) => {
-  const { hightlightArr, updateHightlightArr, recenter } = useWorkflowVisStore()
+  const { highlightArr, updateHighlightArr, recenter } = useWorkflowVisStore()
   const formSchema = z.object({
     nodeName: z.string(),
     keyName: z.string().optional(),
@@ -46,14 +46,14 @@ export const ConnectionPicker: IComponent<{
 
   const handlePicking = (node: string) => {
     debounce(() => {
-      const oldData = hightlightArr.find((hl) => hl.type === EHightlightType.SELECTING)
+      const oldData = highlightArr.find((hl) => hl.type === EHighlightType.SELECTING)
       if (!oldData) {
-        updateHightlightArr([...hightlightArr, { id: node, type: EHightlightType.SELECTING }])
+        updateHighlightArr([...highlightArr, { id: node, type: EHighlightType.SELECTING }])
       } else {
-        updateHightlightArr(
-          hightlightArr.map((hl) => {
-            if (hl.type === EHightlightType.SELECTING) {
-              return { id: node, type: EHightlightType.SELECTING }
+        updateHighlightArr(
+          highlightArr.map((hl) => {
+            if (hl.type === EHighlightType.SELECTING) {
+              return { id: node, type: EHighlightType.SELECTING }
             }
             return hl
           })

@@ -2,7 +2,7 @@ import { PlusIcon } from '@radix-ui/react-icons'
 import { Button } from '../../ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../../ui/dialog'
 
-import { createContext, Dispatch, SetStateAction, useState } from 'react'
+import { createContext, Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 
 import { cn } from '@/utils/style'
@@ -12,6 +12,8 @@ import { Trash, XIcon } from 'lucide-react'
 import { WorkflowConfiguration } from './WorkflowConfiguration'
 import { Workflow } from '@/entities/workflow'
 import { useWorkflowVisStore } from '@/components/WorkflowVisualize/state'
+import { useWorkflowStore } from '@/states/workflow'
+import { trpc } from '@/utils/trpc'
 
 export enum EImportStep {
   'S0_UPLOAD_WORKFLOW',
@@ -37,25 +39,46 @@ export const AddWorkflowDialogContext = createContext<IAddWorkflowContext>({
 })
 
 export const AddWorkflowDialog: IComponent = () => {
-  const [show, setShow] = useState(false)
-  const { updateHightlightArr } = useWorkflowVisStore()
+  const { showDialog, setShowDialog, targetWfId, setTargetWfId } = useWorkflowStore()
+  const { updateHighlightArr } = useWorkflowVisStore()
   const [rawWorkflow, setRawWorkflow] = useState<IWorkflow>()
   const [workflow, setWorkflow] = useState<Partial<Workflow>>()
   const [currentStep, setCurrentStep] = useState(EImportStep.S0_UPLOAD_WORKFLOW)
 
-  const handlePressCancel = () => {
+  const { data: wfDetail } = trpc.workflow.detailed.useQuery(targetWfId!, {
+    enabled: !!targetWfId,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false
+  })
+
+  const handlePressCancel = useCallback(() => {
+    setTargetWfId(null)
     setRawWorkflow(undefined)
     setWorkflow(undefined)
-    updateHightlightArr([])
+    updateHighlightArr([])
     setCurrentStep(EImportStep.S0_UPLOAD_WORKFLOW)
-  }
+  }, [setTargetWfId, updateHighlightArr])
+
+  useEffect(() => {
+    if (wfDetail) {
+      setWorkflow(wfDetail)
+      setRawWorkflow(JSON.parse(wfDetail.rawWorkflow))
+      setCurrentStep(EImportStep.S1_WORKFLOW_INFO)
+    }
+  }, [wfDetail])
+
+  useEffect(() => {
+    if (!showDialog) {
+      handlePressCancel()
+    }
+  }, [handlePressCancel, setTargetWfId, showDialog])
 
   return (
-    <Dialog open={show} modal onOpenChange={setShow}>
+    <Dialog open={showDialog} modal onOpenChange={setShowDialog}>
       <DialogTrigger asChild>
         <Button
           onClick={() => {
-            setShow(true)
+            setShowDialog(true)
           }}
           size='icon'
           className='rounded-full'
@@ -67,10 +90,15 @@ export const AddWorkflowDialog: IComponent = () => {
         onEscapeKeyDown={(e) => {
           e.preventDefault()
         }}
+        onInteractOutside={(e) => {
+          e.preventDefault()
+        }}
         className='max-w-full w-[calc(100vw-20px)] h-[calc(100vh-20px)] pt-4 bg-background flex flex-col [&>button]:hidden'
       >
         <DialogHeader className='flex-row items-center gap-2'>
-          <DialogTitle className='text-base font-bold flex-auto'>CREATE NEW WORKFLOW</DialogTitle>
+          <DialogTitle className='text-base font-bold flex-auto'>
+            {targetWfId ? 'UPDATE' : 'CREATE NEW'} WORKFLOW
+          </DialogTitle>
           {currentStep !== EImportStep.S0_UPLOAD_WORKFLOW && (
             <Button
               onClick={handlePressCancel}
@@ -82,7 +110,7 @@ export const AddWorkflowDialog: IComponent = () => {
               <Trash width={16} height={16} />
             </Button>
           )}
-          <Button onClick={() => setShow(false)} size='icon' variant='secondary' className='rounded-full !mt-0'>
+          <Button onClick={() => setShowDialog(false)} size='icon' variant='secondary' className='rounded-full !mt-0'>
             <XIcon width={16} height={16} />
           </Button>
         </DialogHeader>
@@ -93,7 +121,7 @@ export const AddWorkflowDialog: IComponent = () => {
             workflow,
             setWorkflow,
             setRawWorkflow,
-            setDialog: setShow,
+            setDialog: setShowDialog,
             setStep: setCurrentStep
           }}
         >

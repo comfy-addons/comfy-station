@@ -6,9 +6,16 @@ import { EventEmitter, on } from 'node:events'
 import { observable } from '@trpc/server/observable'
 import { ComfyPoolInstance } from '@/server/services/comfyui'
 import { CallWrapper } from '@saintno/comfyui-sdk'
-import { cloneDeep, uniqueId } from 'lodash'
+import { cloneDeep, isEqual, uniqueId } from 'lodash'
 import AttachmentService, { EAttachmentType } from '@/server/services/attachment'
-import { EUserRole, EValueSelectionType, EValueType, EValueUtilityType, EWorkflowActiveStatus } from '@/entities/enum'
+import {
+  EUserRole,
+  EValueSelectionType,
+  EValueType,
+  EValueUtilityType,
+  EWorkflowActiveStatus,
+  EWorkflowEditType
+} from '@/entities/enum'
 import { Attachment } from '@/entities/attachment'
 import { TWorkflowProgressMessage } from '@/types/task'
 import { ImageUtil } from '../utils/ImageUtil'
@@ -219,6 +226,15 @@ export const workflowRouter = router({
       { populate: ['author.email', 'avatar'], exclude: ['rawWorkflow'] }
     )
   }),
+  detailed: editorProcedure.input(z.string()).query(async ({ input, ctx }) => {
+    return ctx.em.findOneOrFail(
+      Workflow,
+      {
+        id: input
+      },
+      { populate: ['author.email', 'avatar', 'rawWorkflow'] }
+    )
+  }),
   getRawWorkflow: editorProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
     const workflow = await ctx.em.findOneOrFail(Workflow, { id: input }, { populate: ['rawWorkflow'] })
     const raw = JSON.parse(workflow.rawWorkflow)
@@ -396,6 +412,48 @@ export const workflowRouter = router({
       workflow.author = ctx.session.user!
       workflow.editedActions.add(action)
       await ctx.em.persist(action).persist(workflow).flush()
+      return workflow
+    }),
+  updateWorkflow: editorProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string().optional(),
+        description: z.string().optional(),
+        rawWorkflow: z.string().optional(),
+        hideWorkflow: z.boolean().optional(),
+        allowLocalhost: z.boolean().optional(),
+        mapInput: InputSchema.optional(),
+        mapOutput: OutputSchema.optional(),
+        cost: z.number().optional(),
+        baseWeight: z.number().optional(),
+        status: z.nativeEnum(EWorkflowActiveStatus).optional()
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const workflow = await ctx.em.findOneOrFail(Workflow, { id: input.id }, { populate: ['rawWorkflow'] })
+
+      // Compare the difference between the input and the current workflow
+      const diff: { [key: string]: { key: string; from: any; to: any } } = {}
+      for (const key in input) {
+        if (key === 'id') {
+          continue
+        }
+        const keyInput = (input as any)[key]
+        const workflowVal = (workflow as any)[key]
+        if (!isEqual(workflowVal, keyInput)) {
+          diff[key] = { key, from: JSON.stringify(workflowVal), to: JSON.stringify(keyInput) }
+        }
+      }
+
+      const action = ctx.em.create(
+        WorkflowEditEvent,
+        { workflow, user: ctx.session.user!, type: EWorkflowEditType.Update, info: diff },
+        { partial: true }
+      )
+      workflow.editedActions.add(action)
+      ctx.em.assign(workflow, input)
+      await ctx.em.persist(action).flush()
       return workflow
     }),
   setAvatar: editorProcedure

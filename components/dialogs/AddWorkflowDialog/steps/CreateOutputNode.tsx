@@ -31,14 +31,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { AddWorkflowDialogContext } from '..'
 import { Input } from '@/components/ui/input'
 import { ConnectionPicker } from './ConnectionPicker'
-import { EHightlightType, useWorkflowVisStore } from '@/components/WorkflowVisualize/state'
+import { EHighlightType, useWorkflowVisStore } from '@/components/WorkflowVisualize/state'
 
 export const CreateOutputNode: IComponent<{
   config?: IMapperOutput
   onHide: () => void
 }> = ({ onHide, config }) => {
   const isUpdating = !!config
-  const { hightlightArr, updateHightlightArr, recenter } = useWorkflowVisStore()
+  const { highlightArr, updateHighlightArr, recenter } = useWorkflowVisStore()
   const { workflow, setWorkflow, rawWorkflow } = useContext(AddWorkflowDialogContext)
   const [connection, setConnection] = useState<IMapTarget | undefined>(config?.target)
   const formSchema = z.object({
@@ -118,10 +118,10 @@ export const CreateOutputNode: IComponent<{
         }
       }))
     }
-    updateHightlightArr(
-      hightlightArr.map((hl) => {
+    updateHighlightArr(
+      highlightArr.map((hl) => {
         if (hl.id === connection.nodeName) {
-          return { id: connection.nodeName, type: EHightlightType.OUTPUT }
+          return { id: connection.nodeName, type: EHighlightType.OUTPUT }
         }
         return hl
       })
@@ -139,8 +139,8 @@ export const CreateOutputNode: IComponent<{
           mapOutput: rest
         }
       })
-      updateHightlightArr(
-        hightlightArr.filter((hl) => {
+      updateHighlightArr(
+        highlightArr.filter((hl) => {
           return hl.id !== connection?.nodeName
         })
       )

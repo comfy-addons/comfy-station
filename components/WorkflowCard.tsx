@@ -3,18 +3,19 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { trpc } from '@/utils/trpc'
 import { MiniBadge } from './MiniBadge'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from './ui/context-menu'
-import { DownloadCloud, PenBox, Trash2 } from 'lucide-react'
+import { DownloadCloud, PenBox, Pencil, Trash2 } from 'lucide-react'
 import { LoadableButton } from './LoadableButton'
 import { useToast } from '@/hooks/useToast'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
 import { useRouter } from 'next/navigation'
-import { AttachmentReview } from './AttachmentReview'
 import { useSession } from 'next-auth/react'
 import { EUserRole, EWorkflowActiveStatus } from '@/entities/enum'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 import { cn } from '@/utils/style'
 import { AttachmentImage } from './AttachmentImage'
 import { Loaded } from '@mikro-orm/core'
+import { useWorkflowStore } from '@/states/workflow'
+import { DropdownMenuSeparator } from './ui/dropdown-menu'
 
 export const WorkflowCard: IComponent<{
   data: Loaded<Workflow, 'avatar' | 'author', '*', 'rawWorkflow'>
@@ -22,6 +23,7 @@ export const WorkflowCard: IComponent<{
   const stator = trpc.workflowTask.workflowTaskStats.useQuery(data.id)
   const statusChanger = trpc.workflow.changeStatus.useMutation()
   const downloader = trpc.workflow.getRawWorkflow.useMutation()
+  const { setShowDialog, setTargetWfId } = useWorkflowStore()
   const router = useRouter()
   const session = useSession()
   const { toast } = useToast()
@@ -58,6 +60,11 @@ export const WorkflowCard: IComponent<{
       title: 'Workflow Deleted'
     })
     dispatchGlobalEvent(EGlobalEvent.RLOAD_WORKFLOW)
+  }
+
+  const handlePressEdit = () => {
+    setTargetWfId(data.id)
+    setShowDialog(true)
   }
 
   const handlePresHide = async () => {
@@ -133,12 +140,20 @@ export const WorkflowCard: IComponent<{
         </Card>
       </ContextMenuTrigger>
       <ContextMenuContent>
-        {/* <ContextMenuItem>
-          <LoadableButton variant='ghost' size='sm' className='justify-start p-0 w-full'>
-            <PenBox className='w-4 h-4 mr-2' />
-            Edit
-          </LoadableButton>
-        </ContextMenuItem> */}
+        {data.status !== EWorkflowActiveStatus.Deleted && (
+          <ContextMenuItem>
+            <LoadableButton
+              onClick={handlePressEdit}
+              loading={statusChanger.isPending}
+              variant='ghost'
+              size='sm'
+              className='justify-start p-0 w-full'
+            >
+              <PenBox className='w-4 h-4 mr-2' />
+              Edit workflow
+            </LoadableButton>
+          </ContextMenuItem>
+        )}
         {session.data?.user.role !== EUserRole.User && (
           <ContextMenuItem>
             <LoadableButton
@@ -149,10 +164,11 @@ export const WorkflowCard: IComponent<{
               className='justify-start p-0 w-full'
             >
               <DownloadCloud className='w-4 h-4 mr-2' />
-              Download Workflow
+              Download workflow
             </LoadableButton>
           </ContextMenuItem>
         )}
+        <DropdownMenuSeparator />
         {data.status !== EWorkflowActiveStatus.Activated && (
           <ContextMenuItem className='text-primary'>
             <LoadableButton
@@ -181,6 +197,7 @@ export const WorkflowCard: IComponent<{
             </LoadableButton>
           </ContextMenuItem>
         )}
+
         {data.status !== EWorkflowActiveStatus.Deleted && (
           <ContextMenuItem className='text-destructive'>
             <LoadableButton

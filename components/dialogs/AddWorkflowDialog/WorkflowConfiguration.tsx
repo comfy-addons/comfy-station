@@ -15,14 +15,12 @@ export const WorkflowConfiguration: IComponent = () => {
       return (
         <div
           key={index}
-          onClick={() => setStep?.(index + 1)}
-          className={cn(
-            'transition-all duration-500 group-hover:scale-90 hover:!scale-105 cursor-pointer active:!scale-75',
-            {
-              'text-foreground': index === currentStep - 1,
-              'text-border': index !== currentStep - 1
-            }
-          )}
+          onClick={() => index < currentStep - 1 && setStep?.(index + 1)}
+          className={cn('transition-all duration-500', {
+            'text-foreground': index === currentStep - 1,
+            'text-border': index !== currentStep - 1,
+            'group-hover:scale-90 hover:!scale-105 cursor-pointer active:!scale-75': index < currentStep - 1
+          })}
         >
           STEP {index + 1}
         </div>

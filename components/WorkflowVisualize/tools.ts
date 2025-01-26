@@ -1,6 +1,6 @@
 import { Node, Edge } from '@xyflow/react'
 import dagre from 'dagre'
-import { EHightlightType } from './state'
+import { EHighlightType } from './state'
 
 export function applyLayout(nodes: Node[], edges: Edge[]): Node[] {
   const dagreGraph = new dagre.graphlib.Graph()
@@ -38,19 +38,19 @@ export function applyLayout(nodes: Node[], edges: Edge[]): Node[] {
 
 export function transformNodes(
   workflowData: IWorkflow,
-  hightlightArr?: { id: string; type: EHightlightType }[]
+  highlightArr?: { id: string; type: EHighlightType }[]
 ): Node[] {
   return Object.entries(workflowData).map(([nodeId, nodeData], index) => {
-    const hlData = hightlightArr?.find((hl) => hl.id === nodeId)
+    const hlData = highlightArr?.find((hl) => hl.id === nodeId)
     let borderColor = undefined
     switch (hlData?.type) {
-      case EHightlightType.INPUT:
+      case EHighlightType.INPUT:
         borderColor = '#10B981'
         break
-      case EHightlightType.OUTPUT:
+      case EHighlightType.OUTPUT:
         borderColor = '#3B82F6'
         break
-      case EHightlightType.SELECTING:
+      case EHighlightType.SELECTING:
         borderColor = '#F59E0B'
         break
       default:
