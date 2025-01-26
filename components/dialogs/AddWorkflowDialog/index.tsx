@@ -8,7 +8,7 @@ import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { cn } from '@/utils/style'
 import { UploadWorkflow } from './UploadWorkflow'
 import { WorkflowVisualize } from '@/components/WorkflowVisualize'
-import { Trash, XIcon } from 'lucide-react'
+import { Replace, Trash, XIcon } from 'lucide-react'
 import { WorkflowConfiguration } from './WorkflowConfiguration'
 import { Workflow } from '@/entities/workflow'
 import { useWorkflowVisStore } from '@/components/WorkflowVisualize/state'
@@ -59,6 +59,11 @@ export const AddWorkflowDialog: IComponent = () => {
     setCurrentStep(EImportStep.S0_UPLOAD_WORKFLOW)
   }, [setTargetWfId, updateHighlightArr])
 
+  const handlePressChangeRawWorkflow = useCallback(() => {
+    setRawWorkflow(undefined)
+    setCurrentStep(EImportStep.S0_UPLOAD_WORKFLOW)
+  }, [])
+
   useEffect(() => {
     if (wfDetail) {
       setWorkflow(wfDetail)
@@ -99,6 +104,18 @@ export const AddWorkflowDialog: IComponent = () => {
           <DialogTitle className='text-base font-bold flex-auto'>
             {targetWfId ? 'UPDATE' : 'CREATE NEW'} WORKFLOW
           </DialogTitle>
+          {currentStep !== EImportStep.S0_UPLOAD_WORKFLOW && (
+            <Button
+              onClick={handlePressChangeRawWorkflow}
+              size='sm'
+              title='Change raw workflow'
+              variant='secondary'
+              className='rounded-full !mt-0 flex gap-1 items-center'
+            >
+              <span>CHANGE RAW</span>
+              <Replace width={16} height={16} />
+            </Button>
+          )}
           {currentStep !== EImportStep.S0_UPLOAD_WORKFLOW && (
             <Button
               onClick={handlePressCancel}

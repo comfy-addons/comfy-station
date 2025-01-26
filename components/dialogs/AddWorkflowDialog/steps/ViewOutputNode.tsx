@@ -20,6 +20,11 @@ export const ViewOutputNode: IComponent<{
   const { setStep, workflow, rawWorkflow } = useContext(AddWorkflowDialogContext)
   const mappedOutput = workflow?.mapOutput
 
+  const isValid = useMemo(() => {
+    const output = Object.values(mappedOutput || {})
+    return output.every((output) => rawWorkflow?.[output.target.nodeName])
+  }, [mappedOutput, rawWorkflow])
+
   const renderMappedOutput = useMemo(() => {
     const outputs = Object.entries(mappedOutput || {})
     if (!outputs.length) {
@@ -35,6 +40,8 @@ export const ViewOutputNode: IComponent<{
       const Icon = output.iconName ? Icons[output.iconName as keyof typeof Icons] : ChevronsLeftRight
       const target = output.target
       const node = rawWorkflow?.[target.nodeName]
+      const isValid = !!node
+
       return (
         <Alert
           key={key}
@@ -44,7 +51,8 @@ export const ViewOutputNode: IComponent<{
             }
           }}
           className={cn('hover:opacity-70 transition-all', {
-            'cursor-pointer': !readonly
+            'cursor-pointer': !readonly,
+            'border-destructive bg-red-50': !isValid
           })}
         >
           <Icon className='w-4 h-4' />
@@ -71,6 +79,9 @@ export const ViewOutputNode: IComponent<{
                 {output.type}
               </Badge>
             </div>
+            {!isValid && (
+              <span className='text-xs font-bold text-destructive mt-1'>Some target node is not exist in workflow</span>
+            )}
           </AlertDescription>
         </Alert>
       )
@@ -98,7 +109,7 @@ export const ViewOutputNode: IComponent<{
                 Back
                 <ChevronLeft width={16} height={16} className='ml-2' />
               </Button>
-              <LoadableButton onClick={() => setStep?.(EImportStep.S4_FINALIZE)}>
+              <LoadableButton disabled={!isValid} onClick={() => setStep?.(EImportStep.S4_FINALIZE)}>
                 Continue
                 <ArrowRight width={16} height={16} className='ml-2' />
               </LoadableButton>

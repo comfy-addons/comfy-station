@@ -22,6 +22,7 @@ import * as Icons from '@heroicons/react/16/solid'
 import { IMapperInput } from '@/entities/workflow'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/utils/style'
+import { AlertDialogFooter } from '@/components/ui/alert-dialog'
 
 export const ViewInputNode: IComponent<{
   readonly?: boolean
@@ -31,6 +32,12 @@ export const ViewInputNode: IComponent<{
   const { gen } = useKeygen()
   const { setStep, workflow, rawWorkflow } = useContext(AddWorkflowDialogContext)
   const mappedInput = workflow?.mapInput
+
+  // Check if all inputs is valid, valid mean all node target is exist in workflow
+  const isValid = useMemo(() => {
+    const inputs = Object.values(mappedInput || {})
+    return inputs.every((input) => input.target.every((target) => rawWorkflow?.[target.nodeName]))
+  }, [mappedInput, rawWorkflow])
 
   const renderMappedInput = useMemo(() => {
     const inputs = Object.entries(mappedInput || {})
@@ -45,6 +52,8 @@ export const ViewInputNode: IComponent<{
     }
     return inputs.map(([key, input]) => {
       const Icon = input.iconName ? Icons[input.iconName as keyof typeof Icons] : ChevronsLeftRight
+      // Check if input is valid, valid mean all node target is exist in workflow
+      const isValid = input.target.every((target) => rawWorkflow?.[target.nodeName])
       return (
         <Alert
           key={key}
@@ -54,7 +63,8 @@ export const ViewInputNode: IComponent<{
             }
           }}
           className={cn('hover:opacity-70 transition-all', {
-            'cursor-pointer': !readonly
+            'cursor-pointer': !readonly,
+            'border-destructive bg-red-50': !isValid
           })}
         >
           <Icon className='w-4 h-4' />
@@ -116,6 +126,9 @@ export const ViewInputNode: IComponent<{
                 })}
               </>
             )}
+            {!isValid && (
+              <span className='text-xs font-bold text-destructive mt-1'>Some target node is not exist in workflow</span>
+            )}
           </AlertDescription>
         </Alert>
       )
@@ -143,7 +156,7 @@ export const ViewInputNode: IComponent<{
                 Back
                 <ChevronLeft width={16} height={16} className='ml-2' />
               </Button>
-              <LoadableButton onClick={() => setStep?.(EImportStep.S3_MAPPING_OUTPUT)}>
+              <LoadableButton disabled={!isValid} onClick={() => setStep?.(EImportStep.S3_MAPPING_OUTPUT)}>
                 Continue
                 <ArrowRight width={16} height={16} className='ml-2' />
               </LoadableButton>
