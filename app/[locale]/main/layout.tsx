@@ -15,6 +15,7 @@ import { ChartBarIcon, ListIcon, PlaySquare } from 'lucide-react'
 import { forceRecalculatePortal, Portal } from '@/components/Portal'
 import { RouteConf } from '@/constants/route'
 import { TooltipPopupContainer } from '@/components/TooltipPopup'
+import { ClientTerminalWindows } from '@/components/ClientTerminalWindows'
 
 const Layout: IComponent = ({ children }) => {
   const ref = useRef<HTMLDivElement>(null)
@@ -177,6 +178,7 @@ const Layout: IComponent = ({ children }) => {
     <div className='w-full h-full bg-background md:bg-white/10 md:dark:bg-black/10 md:backdrop-blur-sm md:border md:rounded-xl md:p-2'>
       <TooltipProvider>{dyn([renderMobileView, renderDesktopView, renderDesktopView], null)}</TooltipProvider>
       <TooltipPopupContainer />
+      <ClientTerminalWindows />
     </div>
   )
 }

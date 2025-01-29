@@ -148,3 +148,18 @@ body {
 .PhotoView-Slider__BannerWrap {
   background-color: #000000 !important;
 }
+
+.wb-body {
+  top: 10px !important;
+  background: transparent !important;
+}
+.wb-header {
+  height: 10px !important;
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+.dark {
+  .wb-header {
+    background: rgba(255, 255, 255, 0.2) !important;
+  }
+}

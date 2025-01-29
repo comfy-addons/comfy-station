@@ -24,6 +24,9 @@ const ClientSchema = z.object({
 })
 
 export const clientRouter = router({
+  get: adminProcedure.input(z.string()).query(async ({ input, ctx }) => {
+    return ctx.em.findOne(Client, { id: input })
+  }),
   list: adminProcedure.query(async ({ ctx }) => {
     return ctx.em.find(Client, {})
   }),

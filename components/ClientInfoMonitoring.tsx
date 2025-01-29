@@ -3,7 +3,7 @@ import { EClientAction, EClientStatus } from '@/entities/enum'
 import { cn } from '@/utils/style'
 import { trpc } from '@/utils/trpc'
 import { TMonitorEvent } from '@saintno/comfyui-sdk'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { MonitoringStat } from './MonitoringStat'
 
 import { ArrowPathIcon, CircleStackIcon, CpuChipIcon, TrashIcon } from '@heroicons/react/24/outline'
@@ -21,8 +21,9 @@ import { OverflowText } from './OverflowText'
 import { SimpleTransitionLayout } from './SimpleTranslation'
 import { useToast } from '@/hooks/useToast'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
-import { TriangleAlertIcon } from 'lucide-react'
+import { SquareTerminal, TriangleAlertIcon } from 'lucide-react'
 import { WorkflowTask } from '@/entities/workflow_task'
+import { useClientTerminalWindows } from './ClientTerminalWindows'
 
 export const ClientInfoMonitoring: IComponent<{
   client: Client
@@ -32,6 +33,8 @@ export const ClientInfoMonitoring: IComponent<{
   const [status, setStatus] = useState<EClientStatus>()
   const [clientTasks, setClientTasks] = useState<WorkflowTask[]>()
   const [monitoring, setMonitoring] = useState<TMonitorEvent>()
+
+  const { open } = useClientTerminalWindows()
 
   trpc.task.lastTasks.useSubscription(
     {
@@ -166,6 +169,10 @@ export const ClientInfoMonitoring: IComponent<{
                 >
                   <ReloadIcon className='mr-2' width={16} height={16} />
                   <span className='min-w-[100px]'>Force reconnect</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => open(client.id)} className='cursor-pointer'>
+                  <SquareTerminal className='mr-2' width={16} height={16} />
+                  <span className='min-w-[100px]'>Terminal logs</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
