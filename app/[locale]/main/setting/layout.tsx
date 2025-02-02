@@ -36,14 +36,14 @@ const Layout: IComponent = ({ children }) => {
   }, [routeConf?.key, session.data])
 
   return (
-    <div className='absolute w-full h-full flex flex-col md:flex-row divide-x-[1px] overflow-auto'>
+    <div className='absolute w-full h-full flex flex-col md:flex-row overflow-auto'>
       {routeConf?.key !== 'setting' && (
         <Link href='/main/setting' className='px-4 py-2 md:hidden flex gap-2 items-center text-sm'>
           <ArrowLongLeftIcon className='w-6 h-6' />
           <code>{t('backToSettings')}</code>
         </Link>
       )}
-      <div className='h-full hidden md:flex flex-col divide-y-[1px]'>{renderTabs}</div>
+      <div className='h-full hidden md:flex flex-col divide-y-[1px] border-r'>{renderTabs}</div>
       <div className='flex-1 h-full flex flex-col md:grid'>{children}</div>
     </div>
   )
