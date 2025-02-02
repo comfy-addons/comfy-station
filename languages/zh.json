@@ -304,6 +304,59 @@
         "updateError": "更新令牌失败",
         "createError": "创建令牌失败"
       }
+    },
+    "userUpdater": {
+      "role": {
+        "label": "用户类型",
+        "hint": "设置用户角色",
+        "placeholder": "选择用户类型",
+        "options": {
+          "admin": "管理员",
+          "editor": "编辑者",
+          "user": "用户"
+        }
+      },
+      "balance": {
+        "label": "余额",
+        "placeholder": "-1",
+        "hint": "设置用户余额（-1为无限制）"
+      },
+      "priority": {
+        "label": "优先级",
+        "placeholder": "-1",
+        "hint": "设置用户优先级（数值越大优先级越低）"
+      },
+      "password": {
+        "label": "密码",
+        "placeholder": "****",
+        "hint": "设置新密码",
+        "minLength": "密码至少需要8个字符",
+        "mismatch": "密码不匹配"
+      },
+      "repeatPassword": {
+        "label": "重复密码",
+        "placeholder": "****",
+        "hint": "再次输入新密码"
+      },
+      "actions": {
+        "update": "更新",
+        "delete": "删除",
+        "updateAvatar": "更新头像",
+        "reset": "重置"
+      },
+      "toast": {
+        "updateSuccess": "用户已更新",
+        "updateSuccessHint": "用户信息更新成功",
+        "updateError": "用户更新失败",
+        "updateErrorHint": "无法更新用户信息",
+        "deleteError": "删除失败",
+        "deleteErrorHint": "您不能删除自己",
+        "deleteSuccess": "用户已删除",
+        "deleteSuccessHint": "用户删除成功",
+        "deleteFailedHint": "无法删除用户",
+        "avatarSuccess": "头像已上传",
+        "avatarError": "头像上传失败"
+      }
     }
   }
 }

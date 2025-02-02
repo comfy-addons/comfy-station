@@ -304,6 +304,59 @@
         "updateError": "Failed to update token",
         "createError": "Failed to create token"
       }
+    },
+    "userUpdater": {
+      "role": {
+        "label": "Type of user",
+        "hint": "Set the role of the user",
+        "placeholder": "Select type of user",
+        "options": {
+          "admin": "Admin",
+          "editor": "Editor",
+          "user": "User"
+        }
+      },
+      "balance": {
+        "label": "Balance",
+        "placeholder": "-1",
+        "hint": "Set the balance of the user (-1 for infinity)"
+      },
+      "priority": {
+        "label": "Priority",
+        "placeholder": "-1",
+        "hint": "Set the priority of the user (higher mean lower priority)"
+      },
+      "password": {
+        "label": "Password",
+        "placeholder": "****",
+        "hint": "Set new password for user",
+        "minLength": "Password must be at least 8 characters",
+        "mismatch": "Password does not match"
+      },
+      "repeatPassword": {
+        "label": "Repeat password",
+        "placeholder": "****",
+        "hint": "Re-enter your new password"
+      },
+      "actions": {
+        "update": "Update",
+        "delete": "Delete",
+        "updateAvatar": "Update avatar",
+        "reset": "Reset"
+      },
+      "toast": {
+        "updateSuccess": "User updated",
+        "updateSuccessHint": "User has been updated successfully",
+        "updateError": "User update failed",
+        "updateErrorHint": "Failed to update user",
+        "deleteError": "Delete failed",
+        "deleteErrorHint": "You cannot delete yourself",
+        "deleteSuccess": "User deleted",
+        "deleteSuccessHint": "User has been deleted successfully",
+        "deleteFailedHint": "Failed to delete user",
+        "avatarSuccess": "Avatar uploaded",
+        "avatarError": "Avatar upload failed"
+      }
     }
   }
 }

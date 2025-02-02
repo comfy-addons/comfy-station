@@ -55,19 +55,19 @@
     "workflowSidePicker": {
       "select": "Chọn...",
       "deactivated": "[ĐÃ TẮT]",
-      "subTasks": "Sẽ chia thành {count} nhiệm vụ con, mỗi cái tốn {cost} tín dụng",
+      "subTasks": "Sẽ chia thành {count} tác vụ con, mỗi cái tốn {cost} tín dụng",
       "cost": "Tốn {value} tín dụng",
       "back": "Quay lại",
       "run": "Chạy",
       "have": "Có {balance}",
       "repeatError": "Số lần lặp phải lớn hơn 0",
       "inputRequired": "{field} là bắt buộc",
-      "taskScheduled": "Nhiệm vụ đã được lên lịch",
-      "taskFailed": "Lên lịch nhiệm vụ thất bại"
+      "taskScheduled": "Tác vụ đã được lên lịch",
+      "taskFailed": "Lên lịch tác vụ thất bại"
     },
     "adminSideInfo": {
-      "taskPending": "NHIỆM VỤ CHỜ XỬ LÝ",
-      "taskExecuted": "NHIỆM VỤ ĐÃ THỰC HIỆN",
+      "taskPending": "TÁC VỤ CHỜ XỬ LÝ",
+      "taskExecuted": "TÁC VỤ ĐÃ THỰC HIỆN",
       "status": {
         "online": "Trực tuyến",
         "offline": "Ngoại tuyến",
@@ -104,15 +104,15 @@
       "author": "Tác giả"
     },
     "taskBar": {
-      "lastTasks": "{count} NHIỆM VỤ GẦN ĐÂY",
-      "emptyTask": "Nhiệm vụ trống",
-      "taskId": "ID Nhiệm vụ #{id}",
+      "lastTasks": "{count} TÁC VỤ GẦN ĐÂY",
+      "emptyTask": "Tác vụ trống",
+      "taskId": "ID Tác vụ #{id}",
       "lastUpdated": "Cập nhật lần cuối lúc {time}",
       "status": "TRẠNG THÁI {status}",
-      "parentTask": "NHIỆM VỤ CHA",
+      "parentTask": "TÁC VỤ CHA",
       "detail": "Chi tiết: {message}",
       "lastExecuted": "Thực thi lần cuối lúc {time}",
-      "nothingExecuted": "Chưa thực thi nhiệm vụ nào"
+      "nothingExecuted": "Chưa thực thi tác vụ nào"
     },
     "workflowCard": {
       "status": {
@@ -157,7 +157,7 @@
       "select": "Chọn...",
       "isEmpty": {
         "title": "Thư viện trống",
-        "description": "Tạo nhiệm vụ đầu tiên để xem kết quả"
+        "description": "Tạo tác vụ đầu tiên để xem kết quả"
       },
       "dataStatus": {
         "more": "Thêm dữ liệu...",
@@ -303,6 +303,59 @@
       "toast": {
         "updateError": "Cập nhật token thất bại",
         "createError": "Tạo token thất bại"
+      }
+    },
+    "userUpdater": {
+      "role": {
+        "label": "Loại người dùng",
+        "hint": "Đặt vai trò người dùng",
+        "placeholder": "Chọn loại người dùng",
+        "options": {
+          "admin": "Quản trị viên",
+          "editor": "Biên tập viên",
+          "user": "Người dùng"
+        }
+      },
+      "balance": {
+        "label": "Số dư",
+        "placeholder": "-1",
+        "hint": "Đặt số dư của người dùng (-1 cho vô hạn)"
+      },
+      "priority": {
+        "label": "Độ ưu tiên",
+        "placeholder": "-1",
+        "hint": "Đặt độ ưu tiên của người dùng (càng cao càng ít ưu tiên)"
+      },
+      "password": {
+        "label": "Mật khẩu",
+        "placeholder": "****",
+        "hint": "Đặt mật khẩu mới",
+        "minLength": "Mật khẩu phải có ít nhất 8 ký tự",
+        "mismatch": "Mật khẩu không khớp"
+      },
+      "repeatPassword": {
+        "label": "Nhập lại mật khẩu",
+        "placeholder": "****",
+        "hint": "Nhập lại mật khẩu mới"
+      },
+      "actions": {
+        "update": "Cập nhật",
+        "delete": "Xóa",
+        "updateAvatar": "Cập nhật ảnh đại diện",
+        "reset": "Đặt lại"
+      },
+      "toast": {
+        "updateSuccess": "Đã cập nhật người dùng",
+        "updateSuccessHint": "Cập nhật người dùng thành công",
+        "updateError": "Cập nhật người dùng thất bại",
+        "updateErrorHint": "Không thể cập nhật người dùng",
+        "deleteError": "Xóa thất bại",
+        "deleteErrorHint": "Bạn không thể tự xóa chính mình",
+        "deleteSuccess": "Đã xóa người dùng",
+        "deleteSuccessHint": "Xóa người dùng thành công",
+        "deleteFailedHint": "Không thể xóa người dùng",
+        "avatarSuccess": "Đã tải lên ảnh đại diện",
+        "avatarError": "Tải lên ảnh đại diện thất bại"
       }
     }
   }

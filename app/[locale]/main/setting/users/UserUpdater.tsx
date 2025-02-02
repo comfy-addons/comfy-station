@@ -18,6 +18,7 @@ import { useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { ECompressPreset } from '@/constants/enum'
+import { useTranslations } from 'next-intl'
 
 const UpdateSchema = z.object({
   avatarId: z.string().optional(),
@@ -44,6 +45,7 @@ export const UserUpdater: IComponent<{
   user: User
   onRefresh?: () => void
 }> = ({ user, onRefresh }) => {
+  const t = useTranslations('settings.userUpdater')
   const { toast } = useToast()
   const session = useSession()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -74,14 +76,14 @@ export const UserUpdater: IComponent<{
       if (data.password.length < 8) {
         updateForm.setError('password', {
           type: 'manual',
-          message: 'Password must be at least 8 characters'
+          message: t('password.minLength')
         })
         return
       }
       if (data.password !== data.reEnterPassword) {
         updateForm.setError('reEnterPassword', {
           type: 'manual',
-          message: 'Password does not match'
+          message: t('password.mismatch')
         })
         return
       }
@@ -97,14 +99,14 @@ export const UserUpdater: IComponent<{
       })
       .then(() => {
         toast({
-          title: 'User updated',
-          description: 'User has been updated successfully'
+          title: t('toast.updateSuccess'),
+          description: t('toast.updateSuccessHint')
         })
       })
       .catch(() => {
         toast({
-          title: 'User update failed',
-          description: 'Failed to update user',
+          title: t('toast.updateError'),
+          description: t('toast.updateErrorHint'),
           variant: 'destructive'
         })
       })
@@ -113,8 +115,8 @@ export const UserUpdater: IComponent<{
   const handlePressDelete = async () => {
     if (user.id === session.data?.user.id) {
       toast({
-        title: 'Delete failed',
-        description: 'You cannot delete yourself',
+        title: t('toast.deleteError'),
+        description: t('toast.deleteErrorHint'),
         variant: 'destructive'
       })
       return
@@ -123,14 +125,14 @@ export const UserUpdater: IComponent<{
       .mutateAsync({ id: user.id })
       .then(() => {
         toast({
-          title: 'User deleted',
-          description: 'User has been deleted successfully'
+          title: t('toast.deleteSuccess'),
+          description: t('toast.deleteSuccessHint')
         })
       })
       .catch(() => {
         toast({
-          title: 'User delete failed',
-          description: 'Failed to delete user',
+          title: t('toast.updateError'),
+          description: t('toast.deleteFailedHint'),
           variant: 'destructive'
         })
       })
@@ -179,7 +181,7 @@ export const UserUpdater: IComponent<{
           name='role'
           render={({ field }) => (
             <FormItem className='w-1/2'>
-              <FormLabel>Type of user</FormLabel>
+              <FormLabel>{t('role.label')}</FormLabel>
               <div className='flex gap-2'>
                 <Select
                   onValueChange={(val: any) => field.onChange(EUserRole[val as EUserRole])}
@@ -187,23 +189,23 @@ export const UserUpdater: IComponent<{
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder='Select type of user' />
+                      <SelectValue placeholder={t('role.placeholder')} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     <SelectItem value={EUserRole[EUserRole.Admin]}>
-                      <div className='flex items-center'>Admin</div>
+                      <div className='flex items-center'>{t('role.options.admin')}</div>
                     </SelectItem>
                     <SelectItem value={EUserRole[EUserRole.Editor]}>
-                      <div className='flex items-center'>Editor</div>
+                      <div className='flex items-center'>{t('role.options.editor')}</div>
                     </SelectItem>
                     <SelectItem value={EUserRole[EUserRole.User]}>
-                      <div className='flex items-center'>User</div>
+                      <div className='flex items-center'>{t('role.options.user')}</div>
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <FormDescription>Set the role of the user</FormDescription>
+              <FormDescription>{t('role.hint')}</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -213,11 +215,11 @@ export const UserUpdater: IComponent<{
             name='balance'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Balance</FormLabel>
+                <FormLabel>{t('balance.label')}</FormLabel>
                 <FormControl>
                   <Input type='number' placeholder='-1' {...field} />
                 </FormControl>
-                <FormDescription>Set the balance of the user (-1 for infinity)</FormDescription>
+                <FormDescription>{t('balance.hint')}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -226,11 +228,11 @@ export const UserUpdater: IComponent<{
             name='weightOffset'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Priority</FormLabel>
+                <FormLabel>{t('priority.label')}</FormLabel>
                 <FormControl>
                   <Input type='number' placeholder='-1' {...field} />
                 </FormControl>
-                <FormDescription>Set the priority of the user (higher mean lower priority)</FormDescription>
+                <FormDescription>{t('priority.hint')}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -241,11 +243,11 @@ export const UserUpdater: IComponent<{
             name='password'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>{t('password.label')}</FormLabel>
                 <FormControl>
                   <Input placeholder='****' type='password' {...field} />
                 </FormControl>
-                <FormDescription>Set new password for user</FormDescription>
+                <FormDescription>{t('password.hint')}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -254,11 +256,11 @@ export const UserUpdater: IComponent<{
             name='reEnterPassword'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Repeat password</FormLabel>
+                <FormLabel>{t('repeatPassword.label')}</FormLabel>
                 <FormControl>
-                  <Input placeholder='****' type='password' {...field} />
+                  <Input placeholder={t('repeatPassword.placeholder')} type='password' {...field} />
                 </FormControl>
-                <FormDescription>Re-enter your new password</FormDescription>
+                <FormDescription>{t('repeatPassword.hint')}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -266,11 +268,11 @@ export const UserUpdater: IComponent<{
         </div>
         <div className='w-full flex flex-wrap gap-2'>
           <LoadableButton loading={updater.isPending} type='submit'>
-            <UpdateIcon className='w-4 h-4 mr-2' /> Update
+            <UpdateIcon className='w-4 h-4 mr-2' /> {t('actions.update')}
           </LoadableButton>
           <Button disabled={deletor.isPending} onClick={handlePressDelete} type='button' variant='destructive'>
             <Trash2 className='w-4 h-4 mr-2' />
-            Delete
+            {t('actions.delete')}
           </Button>
           <LoadableButton
             variant='outline'
@@ -280,11 +282,10 @@ export const UserUpdater: IComponent<{
               fileRef.current?.click()
             }}
           >
-            {/* eslint-disable-next-line jsx-a11y/alt-text */}
-            <Image className='w-4 h-4 mr-2' /> Update avatar
+            <Image className='w-4 h-4 mr-2' /> {t('actions.updateAvatar')}
           </LoadableButton>
           <Button disabled={updater.isPending} type='button' onClick={handleReset} className='ml-auto' variant='ghost'>
-            Reset
+            {t('actions.reset')}
           </Button>
         </div>
       </form>
