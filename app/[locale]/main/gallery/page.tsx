@@ -6,6 +6,7 @@ import { trpc } from '@/utils/trpc'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { ImageOff } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 
 export default function GalleryPage() {
   const infoLoader = trpc.workflow.attachments.useInfiniteQuery(
@@ -38,6 +39,7 @@ export default function GalleryPage() {
 
   const pending = runningTask.data ? runningTask.data.map((d) => ({ ...d, loading: true }) as const) : []
   const images = infoLoader.data ? infoLoader.data.pages.flatMap((d) => d.items) : []
+  const t = useTranslations('components.gallery')
 
   return (
     <div ref={containerRef} className='absolute top-0 left-0 w-full h-full flex flex-col'>
@@ -51,8 +53,8 @@ export default function GalleryPage() {
           return (
             <div className='flex flex-col text-center text-foreground/50'>
               <ImageOff className='w-6 h-6 mx-auto my-2' />
-              <span className='uppercase'>Gallery is empty</span>
-              <p className='text-xs'>Create your first task to see the results</p>
+              <span className='uppercase'>{t('isEmpty.title')}</span>
+              <p className='text-xs'>{t('isEmpty.description')}</p>
             </div>
           )
         }}
