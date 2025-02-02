@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { trpc } from '@/utils/trpc'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
@@ -6,6 +7,8 @@ import { BellIcon, Check, ListChecks, Trash2 } from 'lucide-react'
 import { cn } from '@/utils/style'
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en'
+import vi from 'javascript-time-ago/locale/vi'
+import zh from 'javascript-time-ago/locale/zh'
 import type { UserNotification } from '@/entities/user_notifications'
 import { ENotificationTarget } from '@/entities/enum'
 import LoadableImage from './LoadableImage'
@@ -14,7 +17,10 @@ import { LoadingSVG } from './svg/LoadingSVG'
 import DownloadImagesButton from './ui-ext/download-button'
 
 TimeAgo.addLocale(en)
-const timeAgo = new TimeAgo('en-US')
+TimeAgo.addLocale(vi)
+TimeAgo.addLocale(zh)
+// Initialize TimeAgo with the current locale
+const getTimeAgo = (locale: string) => new TimeAgo(locale)
 
 const dotLoading = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
 
@@ -23,6 +29,7 @@ const canShowNotifications = () => {
 }
 
 const NotificationItem = ({ notification, onClick }: { notification: UserNotification; onClick: () => void }) => {
+  const t = useTranslations('components.notificationCenter')
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
   const markRead = trpc.notification.markAsRead.useMutation()
@@ -63,12 +70,16 @@ const NotificationItem = ({ notification, onClick }: { notification: UserNotific
         <p className='text-sm'>{notification.title}</p>
         {!!notification.description && <p className='text-xs text-muted-foreground'>{notification.description}</p>}
         {!!notification.target?.targetId && !isSubTask && (
-          <span className='text-xs'>ID: #{notification.target.targetId.toString().split('-').at(-1)}</span>
+          <span className='text-xs'>
+            {t('parentTask', { id: notification.target.targetId.toString().split('-').at(-1) })}
+          </span>
         )}
         {!!notification.target?.targetId && !!taskInfo?.parent && isSubTask && (
-          <span className='text-xs'>ID: #{taskInfo!.parent!.toString().split('-').at(-1)}</span>
+          <span className='text-xs'>{t('subTask', { id: taskInfo!.parent!.id.toString().split('-').at(-1) })}</span>
         )}
-        <p className='text-xs text-muted-foreground'>{timeAgo.format(new Date(notification.createdAt))}</p>
+        <p className='text-xs text-muted-foreground'>
+          {getTimeAgo(t('timeAgo')).format(new Date(notification.createdAt))}
+        </p>
       </div>
       {!!notification.target && notification.target.targetType === ENotificationTarget.WorkflowTask && (
         <DownloadImagesButton workflowTaskId={String(notification.target!.targetId)} />
@@ -80,6 +91,7 @@ const NotificationItem = ({ notification, onClick }: { notification: UserNotific
 export const UserNotificationCenter: IComponent<{
   isAdmin: boolean
 }> = ({ isAdmin }) => {
+  const t = useTranslations('components.notificationCenter')
   const dotIdx = useRef(0)
   const [isRunning, setIsRunning] = useState(false)
   const {
@@ -179,8 +191,8 @@ export const UserNotificationCenter: IComponent<{
       <PopoverContent className='w-screen md:w-auto md:min-w-96 p-0'>
         <div className='w-full h-[400px] flex flex-col'>
           <div className='px-4 py-2 border-b flex items-center justify-between'>
-            <code className='font-bold text-sm'>NOTIFICATION CENTER</code>
-            <Button size='icon' variant='ghost' title='Mark all as read' onClick={() => cleanNotification.mutate()}>
+            <code className='font-bold text-sm'>{t('title')}</code>
+            <Button size='icon' variant='ghost' title={t('markAllRead')} onClick={() => cleanNotification.mutate()}>
               <ListChecks className='w-4 h-4' />
             </Button>
           </div>

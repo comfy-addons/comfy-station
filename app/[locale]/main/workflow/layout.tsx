@@ -8,8 +8,10 @@ import { useEffect, useMemo, useRef } from 'react'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { TTab, WorkflowDetailContext } from './context'
 import { forceRecalculatePortal, Portal } from '@/components/Portal'
+import { useTranslations } from 'next-intl'
 
 const Layout: IComponent = ({ children }) => {
+  const t = useTranslations('components.workflowLayout')
   const ref = useRef<HTMLDivElement>(null)
   const [viewMode, setViewMode] = useStorageState<TTab>('workflow_view_mode', 'history')
   const dyn = useDynamicValue()
@@ -18,14 +20,14 @@ const Layout: IComponent = ({ children }) => {
     return (
       <TabsList className='block md:hidden bg-background/40 w-full rounded-none shadow-none border-t border-b h-10'>
         <TabsTrigger value='history' className='w-1/2 data-[state=active]:text-white data-[state=active]:bg-primary'>
-          History
+          {t('tabs.history')}
         </TabsTrigger>
         <TabsTrigger value='visualize' className='w-1/2 data-[state=active]:text-white data-[state=active]:bg-primary'>
-          Gallery
+          {t('tabs.gallery')}
         </TabsTrigger>
       </TabsList>
     )
-  }, [])
+  }, [t])
 
   useEffect(() => {
     const ele = document.getElementById('main-content')
@@ -43,13 +45,13 @@ const Layout: IComponent = ({ children }) => {
           }}
         >
           <TabsList>
-            <TabsTrigger value='history'>History</TabsTrigger>
-            <TabsTrigger value='visualize'>Gallery</TabsTrigger>
+            <TabsTrigger value='history'>{t('tabs.history')}</TabsTrigger>
+            <TabsTrigger value='visualize'>{t('tabs.gallery')}</TabsTrigger>
           </TabsList>
         </div>
       </Portal>
     )
-  }, [])
+  }, [t])
 
   return (
     <WorkflowDetailContext.Provider value={{ viewTab: viewMode }}>

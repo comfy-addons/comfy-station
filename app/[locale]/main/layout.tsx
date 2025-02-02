@@ -16,6 +16,7 @@ import { forceRecalculatePortal, Portal } from '@/components/Portal'
 import { RouteConf } from '@/constants/route'
 import { TooltipPopupContainer } from '@/components/TooltipPopup'
 import { ClientTerminalWindows } from '@/components/ClientTerminalWindows'
+import { useTranslations } from 'next-intl'
 
 const Layout: IComponent = ({ children }) => {
   const ref = useRef<HTMLDivElement>(null)
@@ -23,6 +24,7 @@ const Layout: IComponent = ({ children }) => {
   const { routeConf, router } = useCurrentRoute()
   const dyn = useDynamicValue()
   const [executeTab, setExecuteTab] = useState('visualize')
+  const t = useTranslations('components.mainLayout')
 
   const isAdmin = session.data?.user?.role === EUserRole.Admin
   const isExecutePage = routeConf?.key === 'execute'
@@ -64,9 +66,9 @@ const Layout: IComponent = ({ children }) => {
                 }}
               >
                 <TabsList>
-                  <TabsTrigger value='Workflows'>Workflows</TabsTrigger>
-                  <TabsTrigger value='Gallery'>Gallery</TabsTrigger>
-                  <TabsTrigger value='Setting'>Setting</TabsTrigger>
+                  <TabsTrigger value='Workflows'>{t('tabs.workflows')}</TabsTrigger>
+                  <TabsTrigger value='Gallery'>{t('tabs.gallery')}</TabsTrigger>
+                  <TabsTrigger value='Setting'>{t('tabs.setting')}</TabsTrigger>
                 </TabsList>
               </div>
             </Portal>
@@ -79,7 +81,7 @@ const Layout: IComponent = ({ children }) => {
         )}
       </Tabs>
     )
-  }, [children, isAdmin, isExecutePage, routeConf?.group, router])
+  }, [children, isAdmin, isExecutePage, routeConf?.group, router, t])
 
   const renderMobileView = useMemo(() => {
     return (
@@ -93,18 +95,18 @@ const Layout: IComponent = ({ children }) => {
             <TabsList className='bg-background z-10 h-fit w-full rounded-none border-b'>
               <TabsTrigger value='history' className='py-2 data-[state=active]:shadow-none'>
                 <div className='flex gap-2 items-center'>
-                  <PlaySquare width={16} height={16} /> Execute
+                  <PlaySquare width={16} height={16} /> {t('tabs.execute')}
                 </div>
               </TabsTrigger>
               <TabsTrigger value='visualize' className='py-2 data-[state=active]:shadow-none'>
                 <div className='flex gap-2 items-center'>
-                  <ListIcon width={16} height={16} /> {isExecutePage ? 'Tasks' : 'Workflows'}
+                  <ListIcon width={16} height={16} /> {isExecutePage ? t('tabs.tasks') : t('tabs.workflows')}
                 </div>
               </TabsTrigger>
               {isAdmin && (
                 <TabsTrigger value='admin-pannel' className='py-2 data-[state=active]:shadow-none'>
                   <div className='flex gap-2 items-center'>
-                    <ChartBarIcon width={16} height={16} /> Admin
+                    <ChartBarIcon width={16} height={16} /> {t('tabs.admin')}
                   </div>
                 </TabsTrigger>
               )}
@@ -170,7 +172,7 @@ const Layout: IComponent = ({ children }) => {
         </Tabs>
       </div>
     )
-  }, [children, executeTab, isAdmin, isExecutePage, routeConf?.key, router])
+  }, [children, executeTab, isAdmin, isExecutePage, routeConf?.key, router, t])
 
   if (!session.data) return null
 

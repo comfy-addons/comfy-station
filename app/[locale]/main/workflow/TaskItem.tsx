@@ -18,12 +18,14 @@ import DownloadImagesButton from '@/components/ui-ext/download-button'
 import { Badge } from '@/components/ui/badge'
 import LoadableImage from '@/components/LoadableImage'
 import { PhotoSlider } from 'react-photo-view'
+import { useTranslations } from 'next-intl'
 
 export const TaskItem: IComponent<{
   data: WorkflowTask
   deleting?: boolean
   onPressDelete?: () => void
 }> = ({ data, onPressDelete, deleting }) => {
+  const t = useTranslations('components.taskItem')
   const [showImages, setShowImages] = useState(false)
   const { data: task, refetch } = trpc.workflowTask.detail.useQuery(data.id, {
     enabled: !!data.id,
@@ -126,7 +128,7 @@ export const TaskItem: IComponent<{
           <Tooltip>
             <TooltipTrigger>
               <div className='h-32 w-fit !aspect-square flex items-center justify-center bg-secondary/50 text-secondary'>
-                <span>TEXT</span>
+                <span>{t('text')}</span>
               </div>
             </TooltipTrigger>
             <TooltipContent
@@ -167,7 +169,7 @@ export const TaskItem: IComponent<{
         containerClassName='h-32 w-auto !aspect-square'
       />
     )
-  }, [isLoading, attachments, task?.workflow.name, outputData, isCopied, copyToClipboard])
+  }, [isLoading, attachments, task?.workflow.name, outputData, isCopied, copyToClipboard, t])
 
   const shortName = useMemo(() => {
     switch (task?.trigger.type) {
@@ -220,9 +222,9 @@ export const TaskItem: IComponent<{
           )}
           <div className='flex-1 flex-col px-1 py-3'>
             <Label className='text-base font-semibold'>{task.workflow.name}</Label>
-            <p className='text-xs md:text-sm'>ID: #{task.id.split('-').pop()}</p>
+            <p className='text-xs md:text-sm'>{t('id', {id: task.id.split('-').pop()})}</p>
             <div className='text-xs md:text-sm'>
-              Trigger by:{' '}
+              {t('triggerBy')}{' '}
               <Badge className='text-xs p-1' variant='outline'>
                 {shortName?.split('#')[0]}
               </Badge>{' '}
@@ -239,11 +241,11 @@ export const TaskItem: IComponent<{
                 })}
                 title={currentStatus}
               />
-              {runningTime >= 0 && <MiniBadge Icon={Hourglass} title='Take' count={`${runningTime}s`} />}
-              {task.repeatCount > 1 && <MiniBadge Icon={Repeat} title='Repeat' count={task.repeatCount} />}
-              {!!attachments?.length && <MiniBadge Icon={Image} title='Files' count={attachments.length} />}
+              {runningTime >= 0 && <MiniBadge Icon={Hourglass} title={t('take')} count={t('seconds', {value: runningTime})} />}
+              {task.repeatCount > 1 && <MiniBadge Icon={Repeat} title={t('repeat')} count={task.repeatCount} />}
+              {!!attachments?.length && <MiniBadge Icon={Image} title={t('files')} count={attachments.length} />}
               {task.computedCost > 0 && (
-                <MiniBadge Icon={DollarSign} title='Credits' count={task.computedCost.toFixed(2)} />
+                <MiniBadge Icon={DollarSign} title={t('credits')} count={task.computedCost.toFixed(2)} />
               )}
             </div>
           </div>
@@ -267,7 +269,7 @@ export const TaskItem: IComponent<{
             className='text-left p-0'
           >
             <Trash2 className='w-4 h-4 mr-2' />
-            Delete
+            {t('delete')}
           </LoadableButton>
         </ContextMenuItem>
       </ContextMenuContent>

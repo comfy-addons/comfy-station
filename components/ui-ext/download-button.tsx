@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslations } from 'next-intl'
 
 import useImageBundler from '@/hooks/useImageBundler'
 import { cn } from '@/utils/style'
@@ -13,6 +14,7 @@ const DownloadImagesButton: IComponent<{
   workflowTaskId?: string
   className?: string
 }> = ({ workflowTaskId, className }) => {
+  const t = useTranslations('components.downloadButton')
   const { data: attachments, refetch: refetchAttachments } = trpc.workflowTask.getOutputAttachmentUrls.useQuery(
     workflowTaskId!,
     {
@@ -87,16 +89,16 @@ const DownloadImagesButton: IComponent<{
       <DropdownMenuContent side='left' align='center'>
         {haveVideo && (
           <DropdownMenuItem onClick={downloadVideos} className='cursor-pointer text-sm'>
-            <span>Download video files</span>
+            <span>{t('downloadVideo')}</span>
           </DropdownMenuItem>
         )}
         {haveImage && (
           <DropdownMenuItem onClick={downloadCompressedJpg} className='cursor-pointer text-sm'>
-            <span>Download compressed JPG</span>
+            <span>{t('downloadJpg')}</span>
           </DropdownMenuItem>
         )}
         <DropdownMenuItem onClick={downloadRawOutput} className='cursor-pointer text-sm'>
-          <span>Download raw output</span>
+          <span>{t('downloadRaw')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

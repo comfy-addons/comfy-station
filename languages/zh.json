@@ -168,6 +168,45 @@
         "loading": "正在加载更多数据...",
         "noMore": "没有更多数据"
       }
+    },
+    "taskItem": {
+      "id": "ID: #{id}",
+      "triggerBy": "触发者：",
+      "take": "用时",
+      "repeat": "重复",
+      "files": "文件",
+      "credits": "积分",
+      "seconds": "{value}秒",
+      "delete": "删除",
+      "text": "文本"
+    },
+    "mainLayout": {
+      "tabs": {
+        "workflows": "工作流",
+        "gallery": "图库",
+        "setting": "设置",
+        "execute": "执行",
+        "tasks": "任务",
+        "admin": "管理"
+      }
+    },
+    "workflowLayout": {
+      "tabs": {
+        "history": "历史记录",
+        "gallery": "图库"
+      }
+    },
+    "downloadButton": {
+      "downloadVideo": "下载视频文件",
+      "downloadJpg": "下载压缩JPG",
+      "downloadRaw": "下载原始输出"
+    },
+    "notificationCenter": {
+      "title": "通知中心",
+      "markAllRead": "标记所有为已读",
+      "parentTask": "ID：#{id}",
+      "subTask": "ID：#{id}",
+      "timeAgo": "zh-CN"
     }
   },
   "main": {
