@@ -42,6 +42,8 @@ const NewUserSchema = z.object({
 type TNewUserInput = z.infer<typeof NewUserSchema>
 
 export const AddUserDialog: IComponent = () => {
+  const t = useTranslations('settings.addUser')
+
   const [show, setShow] = useState(false)
   const [avatar, setAvatar] = useState<File>()
 
@@ -61,7 +63,7 @@ export const AddUserDialog: IComponent = () => {
   const handleSubmit = createForm.handleSubmit(async (data) => {
     if (data.password !== data.reEnterPassword) {
       createForm.setError('reEnterPassword', {
-        message: 'Password does not match'
+        message: t('validation.passwordMismatch')
       })
       return
     }
@@ -74,8 +76,8 @@ export const AddUserDialog: IComponent = () => {
         : undefined
       await creator.mutateAsync({ ...data, avatarId: avatarAttachment?.id })
       toast({
-        title: 'User created',
-        description: 'New user has been created'
+        title: t('toast.success.title'),
+        description: t('toast.success.description')
       })
       dispatchGlobalEvent(EGlobalEvent.RLOAD_USER_LIST)
       createForm.reset()
@@ -83,8 +85,8 @@ export const AddUserDialog: IComponent = () => {
       setShow(false)
     } catch (e) {
       toast({
-        title: 'User creation failed',
-        description: 'Failed to create new user',
+        title: t('toast.error.title'),
+        description: t('toast.error.description'),
         variant: 'destructive'
       })
     }
@@ -96,8 +98,6 @@ export const AddUserDialog: IComponent = () => {
   }
 
   const avatarUrl = avatar ? URL.createObjectURL(avatar) : undefined
-
-  const t = useTranslations('settings.addUser')
 
   return (
     <Dialog open={show} modal onOpenChange={setShow}>

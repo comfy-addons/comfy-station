@@ -430,7 +430,22 @@
         "description": "Nhập lại mật khẩu mới"
       },
       "create": "Thêm",
-      "cancel": "Hủy"
+      "cancel": "Hủy",
+      "validation": {
+        "invalidEmail": "Địa chỉ email không hợp lệ",
+        "passwordMinLength": "Mật khẩu phải dài ít nhất 8 ký tự",
+        "passwordMismatch": "Hai mật khẩu đã nhập không khớp nhau"
+      },
+      "toast": {
+        "success": {
+          "title": "Người dùng đã được tạo thành công",
+          "description": "Người dùng mới đã được tạo thành công"
+        },
+        "error": {
+          "title": "Tạo người dùng không thành công",
+          "description": "Không thể tạo người dùng mới"
+        }
+      }
     }
   }
 }

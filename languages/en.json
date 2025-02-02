@@ -430,7 +430,22 @@
         "description": "Re-enter new password"
       },
       "create": "Add",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "validation": {
+        "invalidEmail": "Invalid email address",
+        "passwordMinLength": "Password must be at least 8 characters",
+        "passwordMismatch": "The passwords entered twice do not match"
+      },
+      "toast": {
+        "success": {
+          "title": "User creation successful",
+          "description": "New user has been successfully created"
+        },
+        "error": {
+          "title": "User creation failed",
+          "description": "Unable to create a new user"
+        }
+      }
     }
   }
 }
