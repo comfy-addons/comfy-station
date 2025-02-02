@@ -105,9 +105,9 @@ const Page: NextPage = () => {
             name='confirmPassword'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
+                <FormLabel>{t('confirmPasswordLabel')}</FormLabel>
                 <FormControl>
-                  <Input type='password' placeholder='Confirm your password' {...field} />
+                  <Input type='password' placeholder={t('confirmPasswordHint')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -118,7 +118,7 @@ const Page: NextPage = () => {
               Github <ExternalLinkIcon className='ml-2 w-4 h-4' />
             </Button>
             <LoadableButton type='submit' loading={submitting}>
-              Create Admin <Plus className='ml-2 w-4 h-4' />
+              {t('createAdmin')} <Plus className='ml-2 w-4 h-4' />
             </LoadableButton>
           </div>
         </form>

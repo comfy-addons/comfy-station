@@ -6,7 +6,8 @@
   },
   "lang": {
     "en": "English",
-    "vi": "Tiếng Việt"
+    "vi": "Tiếng Việt",
+    "zh": "简体中文"
   },
   "auth": {
     "tabs": {
@@ -20,6 +21,9 @@
       "passwordPlaceholder": "Nhập mật khẩu",
       "submit": "Đăng nhập",
       "forgotPassword": "Quên mật khẩu? Nhấn vào đây",
+      "confirmPasswordLabel": "Xác nhận mật khẩu",
+      "confirmPasswordHint": "Xác nhận mật khẩu của bạn",
+      "createAdmin": "Tạo Quản trị viên",
       "zod": {
         "username": {
           "min": "Tài khoản phải có ít nhất 2 ký tự."

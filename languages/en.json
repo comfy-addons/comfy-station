@@ -6,7 +6,8 @@
   },
   "lang": {
     "en": "English",
-    "vi": "Tiếng Việt"
+    "vi": "Tiếng Việt",
+    "zh": "简体中文"
   },
   "auth": {
     "tabs": {
@@ -20,6 +21,9 @@
       "passwordPlaceholder": "Enter your password",
       "submit": "Login",
       "forgotPassword": "Forgot your password? Click here",
+      "confirmPasswordLabel": "Confirm Password",
+      "confirmPasswordHint": "Confirm your password",
+      "createAdmin": "Create Admin",
       "zod": {
         "username": {
           "min": "Username must be at least 2 characters."
