@@ -175,5 +175,84 @@
       "detail": "Attachment Detail",
       "downloadTitle": "Double click to copy"
     }
+  },
+  "settings": {
+    "layout": {
+      "backToSettings": "Back to settings"
+    },
+    "account": {
+      "email": "Email",
+      "password": {
+        "label": "Password",
+        "placeholder": "****",
+        "description": "Set new password for user",
+        "minLength": "Password must be at least 8 characters"
+      },
+      "repeatPassword": {
+        "label": "Repeat password",
+        "placeholder": "****",
+        "description": "Re-enter your new password",
+        "mismatch": "Password does not match"
+      },
+      "update": "Update",
+      "toast": {
+        "success": "Account updated",
+        "failed": "Account update failed",
+        "avatarSuccess": "Avatar uploaded",
+        "avatarFailed": "Avatar upload failed"
+      }
+    },
+    "users": {
+      "title": "Edit User",
+      "table": {
+        "user": "User",
+        "role": "Role",
+        "balance": "Balance",
+        "priority": "Priority",
+        "executed": "Executed",
+        "actions": "Actions"
+      },
+      "status": {
+        "unlimited": "Unlimited"
+      },
+      "id": "ID: {id}"
+    },
+    "tokens": {
+      "title": "API Token Management",
+      "description": {
+        "main": "API tokens are used to authenticate and authorize requests to the API. You can create, delete, and manage your tokens here.",
+        "docs": "For more information on how to use the API, please refer to the",
+        "apiDocs": "API documentation"
+      },
+      "table": {
+        "tokenKey": "Token Key",
+        "description": "Description",
+        "type": "Type",
+        "balance": "Balance",
+        "workflows": "Workflows",
+        "weightOffset": "Weight Offset",
+        "createdBy": "Created By",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "unlimited": "Unlimited",
+        "synced": "{amount} (Synced)",
+        "expired": "Expired",
+        "active": "Active"
+      },
+      "workflows": {
+        "title": "Allow Workflows",
+        "allAllowed": "All workflows are allowed",
+        "noAllowed": "No workflows allowed"
+      },
+      "actions": {
+        "copyId": "Copy token ID",
+        "copied": "Token ID copied",
+        "reroll": "Reroll token",
+        "edit": "Edit token",
+        "delete": "Delete token"
+      }
+    }
   }
 }

@@ -14,19 +14,21 @@ import { useSession } from 'next-auth/react'
 import { useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-
-const UpdateSchema = z.object({
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  reEnterPassword: z.string().min(8, 'Password must be at least 8 characters')
-})
-
-type TUpdateInput = z.infer<typeof UpdateSchema>
+import { useTranslations } from 'next-intl'
 
 export default function AccountPage() {
+  const t = useTranslations('settings.account')
   const { data: session, update } = useSession()
   const { toast } = useToast()
   const fileRef = useRef<HTMLInputElement>(null)
   const { uploader, uploadAttachment } = useAttachmentUploader()
+
+  const UpdateSchema = z.object({
+    password: z.string().min(8, t('password.minLength')),
+    reEnterPassword: z.string().min(8, t('password.minLength'))
+  })
+
+  type TUpdateInput = z.infer<typeof UpdateSchema>
 
   const updateForm = useForm<TUpdateInput>({
     resolver: zodResolver(UpdateSchema),
@@ -43,7 +45,7 @@ export default function AccountPage() {
     if (data.password !== data.reEnterPassword) {
       updateForm.setError('reEnterPassword', {
         type: 'manual',
-        message: 'Password does not match'
+        message: t('repeatPassword.mismatch')
       })
       return
     }
@@ -53,11 +55,11 @@ export default function AccountPage() {
       })
       updateForm.reset()
       toast({
-        title: 'Account updated'
+        title: t('toast.success')
       })
     } catch (e) {
       toast({
-        title: 'Account update failed',
+        title: t('toast.failed'),
         color: 'destructive'
       })
     }
@@ -73,13 +75,13 @@ export default function AccountPage() {
           avatarId: res.id
         })
         toast({
-          title: 'Avatar uploaded'
+          title: t('toast.avatarSuccess')
         })
         await update()
       })
       .catch((e) => {
         toast({
-          title: 'Avatar upload failed',
+          title: t('toast.avatarFailed'),
           color: 'destructive'
         })
       })
@@ -106,7 +108,7 @@ export default function AccountPage() {
         containerClassName='aspect-square md:w-64 md:h-64 w-full rounded-lg overflow-hidden btn border'
       />
       <div className='flex flex-col flex-1 md:max-w-sm mt-4'>
-        <label className='text-sm'>Email</label>
+        <label className='text-sm'>{t('email')}</label>
         <Input readOnly value={user.email} />
 
         <Form {...updateForm}>
@@ -116,11 +118,11 @@ export default function AccountPage() {
                 name='password'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t('password.label')}</FormLabel>
                     <FormControl>
-                      <Input placeholder='****' type='password' {...field} />
+                      <Input placeholder={t('password.placeholder')} type='password' {...field} />
                     </FormControl>
-                    <FormDescription>Set new password for user</FormDescription>
+                    <FormDescription>{t('password.description')}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -129,11 +131,11 @@ export default function AccountPage() {
                 name='reEnterPassword'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Repeat password</FormLabel>
+                    <FormLabel>{t('repeatPassword.label')}</FormLabel>
                     <FormControl>
-                      <Input placeholder='****' type='password' {...field} />
+                      <Input placeholder={t('repeatPassword.placeholder')} type='password' {...field} />
                     </FormControl>
-                    <FormDescription>Re-enter your new password</FormDescription>
+                    <FormDescription>{t('repeatPassword.description')}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -141,7 +143,7 @@ export default function AccountPage() {
             </div>
             <div className='w-full flex md:justify-end gap-2'>
               <LoadableButton loading={updater.isPending} type='submit' className='w-full mt-2 md:w-fit'>
-                <UpdateIcon className='w-4 h-4 mr-2' /> Update
+                <UpdateIcon className='w-4 h-4 mr-2' /> {t('update')}
               </LoadableButton>
             </div>
           </form>

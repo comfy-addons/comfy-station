@@ -175,5 +175,84 @@
       "title": "工作流为空",
       "description": "创建您的第一个工作流"
     }
+  },
+  "settings": {
+    "layout": {
+      "backToSettings": "返回设置"
+    },
+    "account": {
+      "email": "邮箱",
+      "password": {
+        "label": "密码",
+        "placeholder": "****",
+        "description": "设置新密码",
+        "minLength": "密码至少需要8个字符"
+      },
+      "repeatPassword": {
+        "label": "重复密码",
+        "placeholder": "****",
+        "description": "再次输入新密码",
+        "mismatch": "密码不匹配"
+      },
+      "update": "更新",
+      "toast": {
+        "success": "账户已更新",
+        "failed": "账户更新失败",
+        "avatarSuccess": "头像已上传",
+        "avatarFailed": "头像上传失败"
+      }
+    },
+    "users": {
+      "title": "编辑用户",
+      "table": {
+        "user": "用户",
+        "role": "角色",
+        "balance": "余额",
+        "priority": "优先级",
+        "executed": "已执行",
+        "actions": "操作"
+      },
+      "status": {
+        "unlimited": "无限制"
+      },
+      "id": "ID：{id}"
+    },
+    "tokens": {
+      "title": "API 令牌管理",
+      "description": {
+        "main": "API 令牌用于验证和授权 API 请求。您可以在此创建、删除和管理您的令牌。",
+        "docs": "有关如何使用 API 的更多信息，请参阅",
+        "apiDocs": "API 文档"
+      },
+      "table": {
+        "tokenKey": "令牌密钥",
+        "description": "描述",
+        "type": "类型",
+        "balance": "余额",
+        "workflows": "工作流",
+        "weightOffset": "权重偏移",
+        "createdBy": "创建者",
+        "status": "状态",
+        "actions": "操作"
+      },
+      "status": {
+        "unlimited": "无限制",
+        "synced": "{amount}（同步）",
+        "expired": "已过期",
+        "active": "活跃"
+      },
+      "workflows": {
+        "title": "允许的工作流",
+        "allAllowed": "允许所有工作流",
+        "noAllowed": "无允许的工作流"
+      },
+      "actions": {
+        "copyId": "复制令牌 ID",
+        "copied": "令牌 ID 已复制",
+        "reroll": "重新生成令牌",
+        "edit": "编辑令牌",
+        "delete": "删除令牌"
+      }
+    }
   }
 }

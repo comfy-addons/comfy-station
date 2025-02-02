@@ -175,5 +175,84 @@
       "detail": "Chi tiết tập tin đính kèm",
       "downloadTitle": "Nhấp đúp để sao chép"
     }
+  },
+  "settings": {
+    "layout": {
+      "backToSettings": "Quay lại cài đặt"
+    },
+    "account": {
+      "email": "Email",
+      "password": {
+        "label": "Mật khẩu",
+        "placeholder": "****",
+        "description": "Đặt mật khẩu mới",
+        "minLength": "Mật khẩu phải có ít nhất 8 ký tự"
+      },
+      "repeatPassword": {
+        "label": "Nhập lại mật khẩu",
+        "placeholder": "****", 
+        "description": "Nhập lại mật khẩu mới",
+        "mismatch": "Mật khẩu không khớp"
+      },
+      "update": "Cập nhật",
+      "toast": {
+        "success": "Đã cập nhật tài khoản",
+        "failed": "Cập nhật tài khoản thất bại",
+        "avatarSuccess": "Đã tải lên ảnh đại diện",
+        "avatarFailed": "Tải lên ảnh đại diện thất bại"
+      }
+    },
+    "users": {
+      "title": "Chỉnh sửa người dùng",
+      "table": {
+        "user": "Người dùng",
+        "role": "Vai trò",
+        "balance": "Số dư",
+        "priority": "Ưu tiên",
+        "executed": "Đã thực thi",
+        "actions": "Thao tác"
+      },
+      "status": {
+        "unlimited": "Không giới hạn"
+      },
+      "id": "ID: {id}"
+    },
+    "tokens": {
+      "title": "Quản lý Token API",
+      "description": {
+        "main": "Token API được sử dụng để xác thực và ủy quyền các yêu cầu API. Bạn có thể tạo, xóa và quản lý token của bạn tại đây.",
+        "docs": "Để biết thêm thông tin về cách sử dụng API, vui lòng tham khảo",
+        "apiDocs": "tài liệu API"
+      },
+      "table": {
+        "tokenKey": "Khóa Token",
+        "description": "Mô tả",
+        "type": "Loại",
+        "balance": "Số dư",
+        "workflows": "Workflow",
+        "weightOffset": "Độ ưu tiên",
+        "createdBy": "Tạo bởi",
+        "status": "Trạng thái",
+        "actions": "Thao tác"
+      },
+      "status": {
+        "unlimited": "Không giới hạn",
+        "synced": "{amount} (Đồng bộ)",
+        "expired": "Hết hạn",
+        "active": "Đang hoạt động"
+      },
+      "workflows": {
+        "title": "Workflow được phép",
+        "allAllowed": "Cho phép tất cả workflow",
+        "noAllowed": "Không có workflow nào được phép"
+      },
+      "actions": {
+        "copyId": "Sao chép ID token",
+        "copied": "Đã sao chép ID token",
+        "reroll": "Tạo lại token",
+        "edit": "Chỉnh sửa token",
+        "delete": "Xóa token"
+      }
+    }
   }
 }

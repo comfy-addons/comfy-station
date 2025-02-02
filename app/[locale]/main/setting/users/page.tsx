@@ -12,8 +12,10 @@ import { DollarSign, Dumbbell, Play, Settings2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { cn } from '@/utils/style'
 import { UserUpdater } from './UserUpdater'
+import { useTranslations } from 'next-intl'
 
 export default function SettingUserPage() {
+  const t = useTranslations('settings.users')
   const users = trpc.user.list.useQuery()
   const [selectedUser, setSelectedUser] = useState<string | null>(null)
 
@@ -29,11 +31,11 @@ export default function SettingUserPage() {
   }
 
   return (
-    <div className='w-full h-full space-y-4 overflow-x-auto overflow-y-hidden'>
+    <div className='w-full h-full space-y-4 overflow-auto pb-10'>
       <Dialog open={!!selectedUser} onOpenChange={(open) => !open && setSelectedUser(null)}>
         <DialogContent className='max-w-2xl'>
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
+            <DialogTitle>{t('title')}</DialogTitle>
           </DialogHeader>
           {selectedUser && (
             <UserUpdater
@@ -50,12 +52,12 @@ export default function SettingUserPage() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>User</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Balance</TableHead>
-            <TableHead>Priority</TableHead>
-            <TableHead>Executed</TableHead>
-            <TableHead className='w-[100px]'>Actions</TableHead>
+            <TableHead>{t('table.user')}</TableHead>
+            <TableHead>{t('table.role')}</TableHead>
+            <TableHead>{t('table.balance')}</TableHead>
+            <TableHead>{t('table.priority')}</TableHead>
+            <TableHead>{t('table.executed')}</TableHead>
+            <TableHead className='w-[100px]'>{t('table.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -83,7 +85,9 @@ export default function SettingUserPage() {
                     </div>
                     <div className='flex flex-col'>
                       <span className='font-medium'>{user.email}</span>
-                      <span className='text-xs text-muted-foreground'>ID: {user.id.split('-').pop()}</span>
+                      <span className='text-xs text-muted-foreground'>
+                        {t('id', { id: user.id.split('-').pop() })}
+                      </span>
                     </div>
                   </div>
                 </TableCell>
@@ -100,8 +104,8 @@ export default function SettingUserPage() {
                 <TableCell>
                   <MiniBadge
                     Icon={DollarSign}
-                    count={user.balance === -1 ? 'Unlimited' : user.balance.toFixed(2)}
-                    className='px-0 w-min border-none shadow-none'
+                    count={user.balance === -1 ? t('status.unlimited') : user.balance.toFixed(2)}
+                    className='px-0 w-min border-none shadow-none whitespace-nowrap'
                   />
                 </TableCell>
                 <TableCell>

@@ -1,6 +1,5 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
 import { RouteConf } from '@/constants/route'
 import { EDeviceStatus } from '@/entities/enum'
 import useMobile from '@/hooks/useMobile'
@@ -9,11 +8,13 @@ import { trpc } from '@/utils/trpc'
 import { Link, redirect } from '@routing'
 import { LogOut } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
+import { useLocale } from 'next-intl'
 import { useMemo } from 'react'
 
 export default function SettingPage() {
   const isMobile = useMobile(null)
   const session = useSession()
+  const locale = useLocale()
 
   const updateStatus = trpc.userClient.updateStatus.useMutation()
 
@@ -53,7 +54,7 @@ export default function SettingPage() {
   if (!isMobile) {
     redirect({
       href: { pathname: '/main/setting/account' },
-      locale: 'en'
+      locale
     })
     return null
   }

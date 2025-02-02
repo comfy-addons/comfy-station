@@ -7,10 +7,12 @@ import { ArrowLongLeftIcon } from '@heroicons/react/24/outline'
 import { Link } from '@routing'
 import { useSession } from 'next-auth/react'
 import { useMemo } from 'react'
+import { useTranslations } from 'next-intl'
 
 const Layout: IComponent = ({ children }) => {
   const session = useSession()
   const { routeConf } = useCurrentRoute()
+  const t = useTranslations('settings.layout')
 
   const renderTabs = useMemo(() => {
     const settings = Object.values(RouteConf).filter(
@@ -38,7 +40,7 @@ const Layout: IComponent = ({ children }) => {
       {routeConf?.key !== 'setting' && (
         <Link href='/main/setting' className='px-4 py-2 md:hidden flex gap-2 items-center text-sm'>
           <ArrowLongLeftIcon className='w-6 h-6' />
-          <code>Back to settings</code>
+          <code>{t('backToSettings')}</code>
         </Link>
       )}
       <div className='h-full hidden md:flex flex-col divide-y-[1px]'>{renderTabs}</div>

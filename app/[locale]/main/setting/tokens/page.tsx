@@ -10,8 +10,10 @@ import { TokenPopup } from './TokenPopup'
 import { usePathname, useRouter } from 'next/navigation'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
 import useCopyAction from '@/hooks/useCopyAction'
+import { useTranslations } from 'next-intl'
 
 export default function TokenPage() {
+  const t = useTranslations('settings.tokens')
   const router = useRouter()
   const pathName = usePathname()
   const tokens = trpc.token.list.useQuery()
@@ -28,15 +30,12 @@ export default function TokenPage() {
         }}
       />
       <div className='p-2'>
-        <h1 className='font-bold text-xl'>API Token Management</h1>
+        <h1 className='font-bold text-xl'>{t('title')}</h1>
+        <p className='text-gray-500'>{t('description.main')}</p>
         <p className='text-gray-500'>
-          API tokens are used to authenticate and authorize requests to the API. You can create, delete, and manage your
-          tokens here.
-        </p>
-        <p className='text-gray-500'>
-          For more information on how to use the API, please refer to the
+          {t('description.docs')}{' '}
           <a href={`${getBaseUrl()}/swagger`} target='__blank' className='text-blue-500 underline px-1'>
-            API documentation
+            {t('description.apiDocs')}
           </a>
           .
         </p>
@@ -45,15 +44,15 @@ export default function TokenPage() {
         <Table divClassname='absolute top-0 left-0 w-full h-full pb-10'>
           <TableHeader>
             <TableRow className='whitespace-nowrap'>
-              <TableHead>Token Key</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Balance</TableHead>
-              <TableHead>Workflows</TableHead>
-              <TableHead>Weight Offset</TableHead>
-              <TableHead>Created By</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead>{t('table.tokenKey')}</TableHead>
+              <TableHead>{t('table.description')}</TableHead>
+              <TableHead>{t('table.type')}</TableHead>
+              <TableHead>{t('table.balance')}</TableHead>
+              <TableHead>{t('table.workflows')}</TableHead>
+              <TableHead>{t('table.weightOffset')}</TableHead>
+              <TableHead>{t('table.createdBy')}</TableHead>
+              <TableHead>{t('table.status')}</TableHead>
+              <TableHead>{t('table.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -61,8 +60,8 @@ export default function TokenPage() {
               <TableRow key={token.id}>
                 <TableCell
                   className='cursor-pointer'
-                  onDoubleClick={() => copyToClipboard(token.id, 'Token ID copied')}
-                  title='Double click to copy'
+                  onDoubleClick={() => copyToClipboard(token.id, t('actions.copied'))}
+                  title={t('actions.copyId')}
                 >
                   {token.id.slice(-8)}...
                 </TableCell>
@@ -71,8 +70,8 @@ export default function TokenPage() {
                 <TableCell>
                   {token.balance === -1
                     ? token.createdBy.balance === -1
-                      ? 'Unlimited'
-                      : `${token.createdBy.balance.toFixed(2)} (Synced)`
+                      ? t('status.unlimited')
+                      : t('status.synced', { amount: token.createdBy.balance.toFixed(2) })
                     : token.balance.toFixed(2)}
                 </TableCell>
                 <TableCell>
@@ -82,13 +81,13 @@ export default function TokenPage() {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Allow Workflows</TableHead>
+                            <TableHead>{t('workflows.title')}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {token.isMaster && (
                             <TableCell className='text-center' colSpan={1}>
-                              All workflows are allowed
+                              {t('workflows.allAllowed')}
                             </TableCell>
                           )}
                           {!token.isMaster &&
@@ -101,7 +100,7 @@ export default function TokenPage() {
                           {!token.grantedWorkflows.length && !token.isMaster && (
                             <TableRow>
                               <TableCell className='text-center' colSpan={1}>
-                                No workflows allowed
+                                {t('workflows.noAllowed')}
                               </TableCell>
                             </TableRow>
                           )}
@@ -116,9 +115,9 @@ export default function TokenPage() {
                 <TableCell>{token.createdBy.email}</TableCell>
                 <TableCell>
                   {token.expireAt && new Date(token.expireAt) < new Date() ? (
-                    <span className='text-red-500'>Expired</span>
+                    <span className='text-red-500'>{t('status.expired')}</span>
                   ) : (
-                    <span className='text-green-500'>Active</span>
+                    <span className='text-green-500'>{t('status.active')}</span>
                   )}
                 </TableCell>
                 <TableCell className='flex gap-2'>
@@ -134,7 +133,7 @@ export default function TokenPage() {
                       }, 1000)
                     }}
                     className='p-1 hover:bg-gray-100 text-green-500 rounded'
-                    title='Copy token ID'
+                    title={t('actions.copyId')}
                   >
                     📋
                   </Button>
@@ -143,7 +142,7 @@ export default function TokenPage() {
                     onClick={() => reRoller.mutateAsync({ tokenId: token.id }).then(() => tokens.refetch())}
                     size='icon'
                     variant='outline'
-                    title='Reroll token'
+                    title={t('actions.reroll')}
                   >
                     <RefreshCcwDot size={14} />
                   </LoadableButton>
@@ -151,12 +150,11 @@ export default function TokenPage() {
                     size='icon'
                     variant='outline'
                     onClick={() => {
-                      // Navigate to the edit page for the token
                       router.push(`${pathName}?token_id=${token.id}`)
                       dispatchGlobalEvent(EGlobalEvent.BTN_CREATE_TOKEN)
                     }}
                     className='p-1 hover:bg-gray-100 rounded'
-                    title='Edit token'
+                    title={t('actions.edit')}
                   >
                     <Pencil size={14} />
                   </Button>
@@ -165,7 +163,7 @@ export default function TokenPage() {
                     onClick={() => destroyer.mutateAsync({ tokenId: token.id }).then(() => tokens.refetch())}
                     size='icon'
                     variant='destructive'
-                    title='Delete token'
+                    title={t('actions.delete')}
                   >
                     <Trash2 size={14} />
                   </LoadableButton>
