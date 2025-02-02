@@ -19,6 +19,7 @@ import { useWorkflowStore } from '@/states/workflow'
 import { useGenerative } from '@/hooks/useGenerative'
 import { GenerativeTextarea } from './GenerativeTextarea'
 import { useIsolateState } from '@/hooks/useIsolateState'
+import { useTranslations } from 'next-intl'
 
 const SelectionSchema = z.nativeEnum(EValueSelectionType)
 
@@ -32,6 +33,7 @@ export const WorkflowInputArea: IComponent<{
   data: Record<string, any>
   onChange?: (data: Record<string, any>) => void
 }> = ({ data, workflow, disabled, repeat, onChangeRepeat, onChange, randomSeedEnabled, changeRandomSeedEnabled }) => {
+  const t = useTranslations('components.workflowInput')
   const { isActive, prompter } = useGenerative()
   const { updateSelecting, recenter } = useWorkflowVisStore()
   const { setCurrentInput } = useWorkflowStore()
@@ -157,7 +159,7 @@ export const WorkflowInputArea: IComponent<{
               {input.type === EValueUtilityType.Seed && (
                 <div className='flex items-center space-x-2 w-full'>
                   <Switch checked={randomSeedEnabled} onCheckedChange={changeRandomSeedEnabled} />
-                  <Label htmlFor='airplane-mode'>Random seed after run</Label>
+                  <Label htmlFor='airplane-mode'>{t('randomSeedAfterRun')}</Label>
                 </div>
               )}
             </>
@@ -171,7 +173,7 @@ export const WorkflowInputArea: IComponent<{
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder='Select...' />
+                <SelectValue placeholder={t('select')} />
               </SelectTrigger>
               <SelectContent>
                 {input.selections!.map((selection) => (
@@ -215,9 +217,9 @@ export const WorkflowInputArea: IComponent<{
           <div className='w-full px-2 flex flex-col gap-2 mb-2'>
             <div className='flex items-center gap-1'>
               <Repeat className='w-4 h-4' />
-              <Label>Repeat</Label>
+              <Label>{t('repeat')}</Label>
             </div>
-            <CardDescription>Repeat this job many times by creating sub jobs</CardDescription>
+            <CardDescription>{t('repeatDescription')}</CardDescription>
             <div className='w-full gap-2 flex'>
               <Input
                 disabled={disabled}
@@ -234,15 +236,15 @@ export const WorkflowInputArea: IComponent<{
         )}
         <div className='flex flex-col border-t py-2 px-2'>
           <div>
-            <Label>Description</Label>
+            <Label>{t('description')}</Label>
             <OverflowText className='text-sm w-full line-clamp-3 text-start'>{workflow?.description}</OverflowText>
           </div>
           <div>
-            <Label>Base cost per run</Label>
-            <p className='text-sm'>{workflow?.cost} Credits</p>
+            <Label>{t('baseCost')}</Label>
+            <p className='text-sm'>{workflow?.cost} {t('credits')}</p>
           </div>
           <div>
-            <Label>Author</Label>
+            <Label>{t('author')}</Label>
             <p className='text-sm'>@{workflow?.author?.email.split('@')[0]}</p>
           </div>
         </div>

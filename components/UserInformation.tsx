@@ -8,8 +8,10 @@ import { cn } from '@/utils/style'
 import { useState } from 'react'
 import { MiniBadge } from './MiniBadge'
 import { UserNotificationCenter } from './UserNotificationCenter'
+import { useTranslations } from 'next-intl'
 
 export const UserInformation: IComponent = () => {
+  const t = useTranslations('components.userInformation')
   const session = useSession()
   const [balance, setBalance] = useState(session.data?.user.balance || -1)
   const shortUsername = (session.data?.user?.email || '?').split('@')[0].slice(0, 2).toUpperCase()
@@ -56,7 +58,7 @@ export const UserInformation: IComponent = () => {
             <span className={cn('px-2 hidden md:block')}>{session.data?.user?.email}</span>
             <span className={cn('px-2 md:hidden block')}>@{shortEmail}</span>
             <div className='w-full text-xs px-2 text-foreground/50 hidden md:flex items-center gap-2'>
-              <span>{balance === -1 ? 'Unlimited' : balance.toFixed(2)} credits</span>
+              <span>{balance === -1 ? t('unlimited') : balance.toFixed(2)} {t('credits')}</span>
               <MiniBadge
                 title={EUserRole[session.data!.user.role]}
                 className={cn('w-min', {
@@ -70,7 +72,7 @@ export const UserInformation: IComponent = () => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align='start' sideOffset={10}>
           <DropdownMenuItem onClick={handlePressLogout} className='min-w-[100px] flex justify-between cursor-pointer'>
-            <span>Logout</span>
+            <span>{t('logout')}</span>
             <ExitIcon className='ml-2' width={16} height={16} />
           </DropdownMenuItem>
         </DropdownMenuContent>

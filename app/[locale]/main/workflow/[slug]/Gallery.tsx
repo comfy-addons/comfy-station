@@ -9,6 +9,7 @@ import { trpc } from '@/utils/trpc'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { useSession } from 'next-auth/react'
 import { useRef } from 'react'
+import { useTranslations } from 'next-intl'
 
 export default function WorkflowGallery() {
   const { slug, router } = useCurrentRoute()
@@ -68,12 +69,14 @@ export default function WorkflowGallery() {
     await taskInfo.refetch()
   }
 
+  const t = useTranslations('components.gallery')
+
   return (
     <div ref={containerRef} className='absolute top-0 left-0 w-full h-full flex flex-col shadow-inner'>
       <div className='p-2 w-full md:hidden'>
         <Select defaultValue={slug} onValueChange={handlePickWorkflow}>
           <SelectTrigger>
-            <SelectValue placeholder='Select...' className='w-full' />
+            <SelectValue placeholder={t('select')} className='w-full' />
           </SelectTrigger>
           <SelectContent>
             {workflowListLoader.data?.map((selection) => (
@@ -99,8 +102,8 @@ export default function WorkflowGallery() {
           return (
             <div className='flex flex-col text-center text-foreground/50'>
               <ExclamationTriangleIcon className='w-6 h-6 mx-auto my-2' />
-              <span className='uppercase'>Gallery is empty</span>
-              <p className='text-xs'>Create your first task to see the results</p>
+              <span className='uppercase'>{t('isEmpty.title')}</span>
+              <p className='text-xs'>{t('isEmpty.description')}</p>
             </div>
           )
         }}

@@ -11,8 +11,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import LoadableImage from './LoadableImage'
 import { useEffect, useRef, useState } from 'react'
 import { m } from 'framer-motion'
-import { forceRecalculatePortal, Portal } from './Portal'
+import { Portal } from './Portal'
 import { useStateSyncDebounce } from '@/hooks/useStateSyncDebounce'
+import { useTranslations } from 'next-intl'
 
 import { AddonDiv } from './AddonDiv'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
@@ -20,9 +21,7 @@ import { AttachmentDetail } from './AttachmentDetail'
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogHeader } from './ui/dialog'
 import { useTargetRefById } from '@/hooks/useTargetRefById'
 import useCurrentMousePosRef from '@/hooks/useCurrentMousePos'
-import { useScrollingStatusRef } from '@/hooks/useScrollingStatus'
 import useCopyAction from '@/hooks/useCopyAction'
-import { useActionDebounce } from '@/hooks/useAction'
 import { EValueType } from '@/entities/enum'
 import { PlayCircleIcon } from '@heroicons/react/24/outline'
 import { useTouchDevice } from '@/hooks/useTouchDevice'
@@ -32,6 +31,7 @@ const AttachmentTooltipPopup: IComponent<{
   taskId?: string
   active: boolean
 }> = ({ taskId, active }) => {
+  const t = useTranslations('components.attachmentDetail')
   const { data: detail } = trpc.workflowTask.detail.useQuery(taskId!, {
     enabled: !!taskId && active,
     refetchOnWindowFocus: false
@@ -40,15 +40,15 @@ const AttachmentTooltipPopup: IComponent<{
   return (
     <div className='p-1 text-foreground'>
       <div className='flex flex-col justify-between max-w-[420px] text-justify p-2'>
-        <code className='font-bold'>Workflow</code>
+        <code className='font-bold'>{t('workflow')}</code>
         <span>{detail?.workflow.name}</span>
       </div>
       {!!detail?.inputValues &&
         Object.entries(detail.inputValues).map(([key, value], idx) => (
           <AddonDiv
             key={key}
-            title='Double click to copy'
-            onDoubleClick={() => copyToClipboard(String(value), 'Value copied')}
+            title={t('downloadTitle')}
+            onDoubleClick={() => copyToClipboard(String(value), t('copyValue'))}
             className={cn(
               'flex flex-col justify-between max-w-[420px] break-words p-2 even:bg-secondary/50 hover:opacity-80 cursor-pointer active:opacity-100'
             )}
@@ -83,6 +83,7 @@ export const AttachmentReview: IComponent<{
   taskId,
   onPressFavorite
 }) => {
+  const t = useTranslations('components.attachmentDetail')
   const enabled = !!data?.id
   const isTouchDevice = useTouchDevice()
   const {
@@ -233,22 +234,22 @@ export const AttachmentReview: IComponent<{
                             onClick={() => downloadFn()}
                             className='bg-background/50 backdrop-blur-lg'
                           >
-                            <code>DOWNLOAD</code> <Download width={16} height={16} className='ml-2' />
+                            <code>{t('download')}</code> <Download width={16} height={16} className='ml-2' />
                           </Button>
                         ) : (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild className='flex items-center'>
                               <Button variant='secondary' className='bg-background/50 backdrop-blur-lg'>
-                                <code>DOWNLOAD</code> <Download width={16} height={16} className='ml-2' />
+                                <code>{t('download')}</code> <Download width={16} height={16} className='ml-2' />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent side='left' className='bg-background/80 backdrop-blur-lg'>
                               <DropdownMenuItem onClick={() => downloadFn('jpg')} className='cursor-pointer text-sm'>
-                                <span>Download compressed JPG</span>
+                                <span>{t('downloadHigh')}</span>
                               </DropdownMenuItem>
 
                               <DropdownMenuItem onClick={() => downloadFn()} className='cursor-pointer text-sm'>
-                                <span>Download Raw</span>
+                                <span>{t('downloadRaw')}</span>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -259,7 +260,7 @@ export const AttachmentReview: IComponent<{
                             variant='secondary'
                             className='bg-background/50 backdrop-blur-lg'
                           >
-                            <code>FAVORITE</code>
+                            <code>{t('favorite')}</code>
                             <Star
                               width={16}
                               height={16}
@@ -290,9 +291,9 @@ export const AttachmentReview: IComponent<{
                 <DialogContent className='max-w-full p-0 overflow-hidden md:w-[calc(100vw-20px)] h-full md:h-[calc(100vh-20px)] bg-background flex flex-col'>
                   <VisuallyHidden>
                     <DialogHeader>
-                      <DialogTitle className='text-base font-bold'>Attachment Detail</DialogTitle>
+                      <DialogTitle className='text-base font-bold'>{t('detail')}</DialogTitle>
                     </DialogHeader>
-                    <DialogDescription>Attachment Detail</DialogDescription>
+                    <DialogDescription>{t('detail')}</DialogDescription>
                   </VisuallyHidden>
                   {!!data && (
                     <AttachmentDetail
@@ -312,10 +313,10 @@ export const AttachmentReview: IComponent<{
                 </DropdownMenuTrigger>
                 <DropdownMenuContent side='left'>
                   <DropdownMenuItem onClick={() => downloadFn('jpg')} className='cursor-pointer text-sm'>
-                    <span>Download compressed JPG</span>
+                    <span>{t('downloadHigh')}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => downloadFn()} className='cursor-pointer text-sm'>
-                    <span>Download Raw</span>
+                    <span>{t('downloadRaw')}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

@@ -5,6 +5,7 @@ import { trpc } from '@/utils/trpc'
 import { TMonitorEvent } from '@saintno/comfyui-sdk'
 import { useMemo, useState } from 'react'
 import { MonitoringStat } from './MonitoringStat'
+import { useTranslations } from 'next-intl'
 
 import { ArrowPathIcon, CircleStackIcon, CpuChipIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { HamburgerMenuIcon, ReloadIcon, SquareIcon } from '@radix-ui/react-icons'
@@ -28,6 +29,7 @@ import { useClientTerminalWindows } from './ClientTerminalWindows'
 export const ClientInfoMonitoring: IComponent<{
   client: Client
 }> = ({ client }) => {
+  const t = useTranslations('components.clientInfoMonitoring')
   const { toast } = useToast()
   const [isDoingAction, setDoingAction] = useState(false)
   const [status, setStatus] = useState<EClientStatus>()
@@ -79,12 +81,12 @@ export const ClientInfoMonitoring: IComponent<{
       .then(() => {
         dispatchGlobalEvent(EGlobalEvent.RLOAD_CLIENTS)
         toast({
-          description: 'Client deleted successfully'
+          description: t('deleteSuccess')
         })
       })
       .catch(() => {
         toast({
-          description: 'Failed to delete client',
+          description: t('deleteFailed'),
           variant: 'destructive'
         })
       })
@@ -97,14 +99,14 @@ export const ClientInfoMonitoring: IComponent<{
     if (status === EClientStatus.Offline)
       return (
         <div className='h-full flex justify-center items-center text-foreground/20 font-bold px-4'>
-          <span>OFFLINE</span>
+          <span>{t('offline')}</span>
         </div>
       )
     if (status === EClientStatus.Error)
       return (
         <div className='h-full flex flex-col gap-2 justify-center items-center text-destructive/20 font-bold px-4'>
           <TriangleAlertIcon width={24} height={24} />
-          <span>ERROR</span>
+          <span>{t('error')}</span>
         </div>
       )
     if (!monitoring) return null
@@ -138,7 +140,7 @@ export const ClientInfoMonitoring: IComponent<{
         })}
       </>
     )
-  }, [monitoring, status])
+  }, [monitoring, status, t])
 
   return (
     <div className='w-full flex flex-row min-h-[120px]'>
@@ -154,25 +156,19 @@ export const ClientInfoMonitoring: IComponent<{
               <DropdownMenuContent side='bottom' align='start' className='w-48'>
                 <DropdownMenuItem onClick={() => handlePressAction(EClientAction.RESTART)} className='cursor-pointer'>
                   <ArrowPathIcon className='mr-2' width={16} height={16} />
-                  <span className='min-w-[100px]'>Reboot</span>
+                  <span className='min-w-[100px]'>{t('actions.reboot')}</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handlePressAction(EClientAction.FREE_MEMORY)}
-                  className='cursor-pointer'
-                >
+                <DropdownMenuItem onClick={() => handlePressAction(EClientAction.FREE_MEMORY)} className='cursor-pointer'>
                   <TrashIcon className='mr-2' width={16} height={16} />
-                  <span className='min-w-[100px]'>Free VRAM</span>
+                  <span className='min-w-[100px]'>{t('actions.freeVram')}</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handlePressAction(EClientAction.FORCE_RECONNECT)}
-                  className='cursor-pointer'
-                >
+                <DropdownMenuItem onClick={() => handlePressAction(EClientAction.FORCE_RECONNECT)} className='cursor-pointer'>
                   <ReloadIcon className='mr-2' width={16} height={16} />
-                  <span className='min-w-[100px]'>Force reconnect</span>
+                  <span className='min-w-[100px]'>{t('actions.forceReconnect')}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => open(client.id)} className='cursor-pointer'>
                   <SquareTerminal className='mr-2' width={16} height={16} />
-                  <span className='min-w-[100px]'>Terminal logs</span>
+                  <span className='min-w-[100px]'>{t('actions.terminalLogs')}</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -181,18 +177,18 @@ export const ClientInfoMonitoring: IComponent<{
                   onClick={() => handlePressAction(EClientAction.INTERRUPT)}
                 >
                   <SquareIcon className='mr-2' width={16} height={16} />
-                  <span className='min-w-[100px]'>Cancel current task</span>
+                  <span className='min-w-[100px]'>{t('actions.cancelTask')}</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className='text-destructive cursor-pointer' onClick={handlePressDelete}>
                   <TrashIcon className='mr-2' width={16} height={16} />
-                  <span className='min-w-[100px]'>Delete this client</span>
+                  <span className='min-w-[100px]'>{t('actions.deleteClient')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <div className='flex flex-col flex-auto'>
               <OverflowText className='uppercase text-sm font-bold max-w-[170px] text-left'>
-                {client.name || `NODE #${client.id.slice(0, 4)}`}
+                {client.name || `${t('node')} #${client.id.slice(0, 4)}`}
               </OverflowText>
               <a
                 href={client.host}

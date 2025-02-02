@@ -1,4 +1,5 @@
 import { useMemo, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 
 import { ETaskStatus } from '@/entities/enum'
 import { WorkflowTask } from '@/entities/workflow_task'
@@ -19,6 +20,7 @@ export const TaskBarItem: IComponent<{ task: WorkflowTask; animationDelay?: numb
   task,
   animationDelay = 0
 }) => {
+  const t = useTranslations('components.taskBar')
   const detailer = trpc.workflowTask.get.useQuery(task?.id, {
     enabled: !!task?.id
   })
@@ -45,16 +47,18 @@ export const TaskBarItem: IComponent<{ task: WorkflowTask; animationDelay?: numb
         />
       </TooltipTrigger>
       <TooltipContent>
-        {!task && <p>Task is empty</p>}
+        {!task && <p>{t('emptyTask')}</p>}
         {!!task && (
           <div className='flex flex-col gap-1'>
-            <p className='font-bold'>TaskID #{task.id}</p>
-            <p className='text-xs'>Last updated at {task.updateAt.toLocaleString()}</p>
+            <p className='font-bold'>{t('taskId', { id: task.id })}</p>
+            <p className='text-xs'>{t('lastUpdated', { time: task.updateAt.toLocaleString() })}</p>
             {task.status !== ETaskStatus.Parent && (
-              <p className='text-xs uppercase font-bold mt-2'>STATUS {task.status}</p>
+              <p className='text-xs uppercase font-bold mt-2'>{t('status', { status: task.status })}</p>
             )}
-            {task.status === ETaskStatus.Parent && <p className='text-xs uppercase font-bold mt-2'>PARENT TASK</p>}
-            {!!latestEv?.details && <p className='text-xs'>Detail: {latestEv.details}</p>}
+            {task.status === ETaskStatus.Parent && (
+              <p className='text-xs uppercase font-bold mt-2'>{t('parentTask')}</p>
+            )}
+            {!!latestEv?.details && <p className='text-xs'>{t('detail', { message: latestEv.details })}</p>}
           </div>
         )}
       </TooltipContent>
@@ -63,6 +67,7 @@ export const TaskBarItem: IComponent<{ task: WorkflowTask; animationDelay?: numb
 }
 
 export const TaskBar: IComponent<ITaskBarProps> = ({ className, tasks, total = 30, loading = false }) => {
+  const t = useTranslations('components.taskBar')
   const animtionRef = useRef(0)
   const lastItem = tasks[tasks.length - 1]
 
@@ -92,14 +97,16 @@ export const TaskBar: IComponent<ITaskBarProps> = ({ className, tasks, total = 3
 
   return (
     <div className={cn('flex flex-col w-full gap-2', className)}>
-      <span className='text-xs font-bold text-secondary-foreground'>LAST {total} TASK</span>
+      <span className='text-xs font-bold text-secondary-foreground'>
+        {t('lastTasks', { count: total })}
+      </span>
       <div className='flex gap-1 flex-row-reverse group'>{renderTick}</div>
       {!!lastItem && (
         <span className='ml-auto text-xs font-light'>
-          Last executed at {new Date(lastItem.updateAt).toLocaleString()}
+          {t('lastExecuted', { time: new Date(lastItem.updateAt).toLocaleString() })}
         </span>
       )}
-      {!lastItem && <span className='ml-auto text-xs font-light opacity-50'>Nothing executed yet</span>}
+      {!lastItem && <span className='ml-auto text-xs font-light opacity-50'>{t('nothingExecuted')}</span>}
     </div>
   )
 }

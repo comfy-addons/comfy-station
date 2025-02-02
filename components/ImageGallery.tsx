@@ -5,6 +5,7 @@ import { AttachmentReview } from './AttachmentReview'
 import { useActionDebounce, useActionThreshold } from '@/hooks/useAction'
 import { useOnScreen } from '@/hooks/useOnScreen'
 import { cn } from '@/utils/style'
+import { useTranslations } from 'next-intl'
 
 type TLoadableAttachment = Attachment | { id: string; loading: boolean }
 
@@ -27,6 +28,7 @@ export const ImageGallery: IComponent<{
   favoriteIds,
   imgPerRow = 3
 }) => {
+  const t = useTranslations('components.gallery')
   const parentRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const firstLoaded = useRef(false)
@@ -78,7 +80,7 @@ export const ImageGallery: IComponent<{
       >
         {items.length === 0 && (
           <div className='w-full h-full flex items-center justify-center'>
-            {renderEmpty?.() || <span className='text-foreground/50 uppercase'>Empty</span>}
+            {renderEmpty?.() || <span className='text-foreground/50 uppercase'>{t('isEmpty.title')}</span>}
           </div>
         )}
         <div
@@ -133,9 +135,9 @@ export const ImageGallery: IComponent<{
             hidden: items.length === 0
           })}
         >
-          {hasNextPage && <div className='flex'>More data...</div>}
-          {isFetchingNextPage && <div className='flex'>Loading more data...</div>}
-          {!isFetchingNextPage && !hasNextPage && <div className='flex'>No more data</div>}
+          {hasNextPage && <div className='flex'>{t('dataStatus.more')}</div>}
+          {isFetchingNextPage && <div className='flex'>{t('dataStatus.loading')}</div>}
+          {!isFetchingNextPage && !hasNextPage && <div className='flex'>{t('dataStatus.noMore')}</div>}
         </div>
       </div>
     </>

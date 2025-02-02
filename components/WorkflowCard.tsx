@@ -16,10 +16,12 @@ import { AttachmentImage } from './AttachmentImage'
 import { Loaded } from '@mikro-orm/core'
 import { useWorkflowStore } from '@/states/workflow'
 import { DropdownMenuSeparator } from './ui/dropdown-menu'
+import { useTranslations } from 'next-intl'
 
 export const WorkflowCard: IComponent<{
   data: Loaded<Workflow, 'avatar' | 'author', '*', 'rawWorkflow'>
 }> = ({ data }) => {
+  const t = useTranslations('components.workflowCard')
   const stator = trpc.workflowTask.workflowTaskStats.useQuery(data.id)
   const statusChanger = trpc.workflow.changeStatus.useMutation()
   const downloader = trpc.workflow.getRawWorkflow.useMutation()
@@ -34,7 +36,7 @@ export const WorkflowCard: IComponent<{
       status: EWorkflowActiveStatus.Activated
     })
     toast({
-      title: 'Workflow Activated'
+      title: t('toast.activated')
     })
     dispatchGlobalEvent(EGlobalEvent.RLOAD_WORKFLOW)
   }
@@ -98,7 +100,7 @@ export const WorkflowCard: IComponent<{
               <MiniBadge
                 dotClassName={stator.data?.isExecuting ? 'bg-orange-500' : 'bg-gray-500'}
                 className='bg-white text-zinc-800 border-none'
-                title={stator.data?.isExecuting ? 'Executing' : 'Idle'}
+                title={stator.data?.isExecuting ? t('status.executing') : t('status.idle')}
               />
             </div>
             <AttachmentImage
@@ -119,10 +121,10 @@ export const WorkflowCard: IComponent<{
                 <div className='flex flex-col'>
                   <span className='font-bold uppercase text-sm'>{data.status}</span>
                   {data.status === EWorkflowActiveStatus.Deactivated && (
-                    <p className='text-xs text-center max-w-52'>User still can get access to old tasks</p>
+                    <p className='text-xs text-left max-w-52'>{t('deactivatedHint')}</p>
                   )}
                   {data.status === EWorkflowActiveStatus.Deleted && (
-                    <p className='text-xs text-center max-w-52'>User will loose access to old tasks</p>
+                    <p className='text-xs text-left max-w-52'>{t('deletedHint')}</p>
                   )}
                 </div>
               </div>
@@ -133,8 +135,8 @@ export const WorkflowCard: IComponent<{
             <CardDescription className='line-clamp-2 h-10'>{data.description}</CardDescription>
           </CardContent>
           <CardFooter className='px-2 pb-2 flex gap-1'>
-            <MiniBadge dotClassName='bg-green-500' title='Executed' count={stator.data?.success} />
-            <MiniBadge dotClassName='bg-destructive' title='Failed' count={stator.data?.failed} />
+            <MiniBadge dotClassName='bg-green-500' title={t('stats.executed')} count={stator.data?.success} />
+            <MiniBadge dotClassName='bg-destructive' title={t('stats.failed')} count={stator.data?.failed} />
             <p className='text-sm ml-auto text-border'>@{data.author.email.split('@')[0]}</p>
           </CardFooter>
         </Card>
@@ -150,7 +152,7 @@ export const WorkflowCard: IComponent<{
               className='justify-start p-0 w-full'
             >
               <PenBox className='w-4 h-4 mr-2' />
-              Edit workflow
+              {t('actions.edit')}
             </LoadableButton>
           </ContextMenuItem>
         )}
@@ -164,7 +166,7 @@ export const WorkflowCard: IComponent<{
               className='justify-start p-0 w-full'
             >
               <DownloadCloud className='w-4 h-4 mr-2' />
-              Download workflow
+              {t('actions.download')}
             </LoadableButton>
           </ContextMenuItem>
         )}
@@ -179,7 +181,7 @@ export const WorkflowCard: IComponent<{
               className='justify-start p-0 w-full'
             >
               <EyeIcon className='w-4 h-4 mr-2' />
-              Activated
+              {t('actions.activate')}
             </LoadableButton>
           </ContextMenuItem>
         )}
@@ -193,7 +195,7 @@ export const WorkflowCard: IComponent<{
               className='justify-start p-0 w-full'
             >
               <EyeSlashIcon className='w-4 h-4 mr-2' />
-              Deactivated
+              {t('actions.deactivate')}
             </LoadableButton>
           </ContextMenuItem>
         )}
@@ -208,7 +210,7 @@ export const WorkflowCard: IComponent<{
               className='justify-start p-0 w-full'
             >
               <Trash2 className='w-4 h-4 mr-2' />
-              Delete
+              {t('actions.delete')}
             </LoadableButton>
           </ContextMenuItem>
         )}

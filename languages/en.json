@@ -39,5 +39,141 @@
       "tokenPlaceholder": "Enter your access token",
       "submit": "Login"
     }
+  },
+  "main": {
+    "emptyWorkflow": {
+      "title": "Workflow is empty",
+      "description": "Create your first workflow"
+    }
+  },
+  "components": {
+    "userInformation": {
+      "credits": "credits",
+      "unlimited": "Unlimited",
+      "logout": "Logout"
+    },
+    "workflowSidePicker": {
+      "select": "Select...",
+      "deactivated": "[DEACTIVATED]",
+      "subTasks": "Will splitted into {count} sub-tasks, each cost {cost} credits",
+      "cost": "Cost {value} credits",
+      "back": "Back",
+      "run": "Run",
+      "have": "Have {balance}",
+      "repeatError": "Repeat must be greater than 0",
+      "inputRequired": "{field} is required",
+      "taskScheduled": "Task has been scheduled",
+      "taskFailed": "Failed to schedule task"
+    },
+    "adminSideInfo": {
+      "taskPending": "TASK PENDING",
+      "taskExecuted": "TASK EXECUTED",
+      "status": {
+        "online": "Online",
+        "offline": "Offline",
+        "error": "Error"
+      },
+      "emptyServer": {
+        "title": "Server list is empty",
+        "description": "Please add your first server"
+      }
+    },
+    "clientInfoMonitoring": {
+      "offline": "OFFLINE",
+      "error": "ERROR",
+      "actions": {
+        "reboot": "Reboot",
+        "freeVram": "Free VRAM",
+        "forceReconnect": "Force reconnect",
+        "terminalLogs": "Terminal logs",
+        "cancelTask": "Cancel current task",
+        "deleteClient": "Delete this client"
+      },
+      "node": "NODE",
+      "deleteSuccess": "Client deleted successfully",
+      "deleteFailed": "Failed to delete client"
+    },
+    "workflowInput": {
+      "select": "Select...",
+      "randomSeedAfterRun": "Random seed after run",
+      "repeat": "Repeat",
+      "repeatDescription": "Repeat this job many times by creating sub jobs",
+      "description": "Description",
+      "baseCost": "Base cost per run",
+      "credits": "Credits",
+      "author": "Author"
+    },
+    "taskBar": {
+      "lastTasks": "LAST {count} TASK",
+      "emptyTask": "Task is empty",
+      "taskId": "TaskID #{id}",
+      "lastUpdated": "Last updated at {time}",
+      "status": "STATUS {status}",
+      "parentTask": "PARENT TASK",
+      "detail": "Detail: {message}",
+      "lastExecuted": "Last executed at {time}",
+      "nothingExecuted": "Nothing executed yet"
+    },
+    "workflowCard": {
+      "status": {
+        "executing": "Executing",
+        "idle": "Idle"
+      },
+      "deactivatedHint": "User still can get access to old tasks",
+      "deletedHint": "User will loose access to old tasks",
+      "actions": {
+        "edit": "Edit workflow",
+        "download": "Download workflow",
+        "activate": "Activated",
+        "deactivate": "Deactivated",
+        "delete": "Delete"
+      },
+      "toast": {
+        "activated": "Workflow Activated",
+        "deactivated": "Workflow Deactivated",
+        "deleted": "Workflow Deleted"
+      },
+      "stats": {
+        "executed": "Executed",
+        "failed": "Failed"
+      }
+    },
+    "attachmentReview": {
+      "workflow": "Workflow",
+      "empty": "Empty",
+      "downloadTitle": "Double click to copy",
+      "setThumbnail": "Set as thumbnail for this workflow",
+      "downloadBtn": "DOWNLOAD",
+      "downloadCompressed": "Download compressed JPG",
+      "downloadRaw": "Download Raw",
+      "favoriteBtn": "FAVORITE",
+      "attachmentDetail": "Attachment Detail"
+    },
+    "authLayout": {
+      "themeToggle": "Toggle theme - {theme}",
+      "pageTitle": "Login | ComfyUI-Station"
+    },
+    "gallery": {
+      "select": "Select...",
+      "isEmpty": {
+        "title": "Gallery is empty",
+        "description": "Create your first task to see the results"
+      },
+      "dataStatus": {
+        "more": "More data...",
+        "loading": "Loading more data...",
+        "noMore": "No more data"
+      }
+    },
+    "attachmentDetail": {
+      "workflow": "Workflow",
+      "copyValue": "Value copied",
+      "downloadHigh": "Download compressed JPG",
+      "downloadRaw": "Download Raw",
+      "download": "DOWNLOAD",
+      "favorite": "FAVORITE",
+      "detail": "Attachment Detail",
+      "downloadTitle": "Double click to copy"
+    }
   }
 }

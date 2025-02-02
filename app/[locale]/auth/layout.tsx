@@ -36,8 +36,8 @@ const Layout: IComponent = ({ children }) => {
   }
 
   useEffect(() => {
-    document.title = 'Login | ComfyUI-Station'
-  }, [])
+    document.title = t('components.authLayout.pageTitle')
+  }, [t])
 
   useEffect(() => {
     if (isEmptyUser) {
@@ -76,7 +76,7 @@ const Layout: IComponent = ({ children }) => {
       </div>
       <div className='fixed top-4 right-4'>
         <Button
-          title={`Toggle theme - ${theme}`}
+          title={t('components.authLayout.themeToggle', { theme })}
           onClick={toggleTheme}
           size='icon'
           variant='secondary'

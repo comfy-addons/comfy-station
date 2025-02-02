@@ -39,5 +39,141 @@
       "tokenPlaceholder": "Nhập token truy cập",
       "submit": "Đăng nhập"
     }
+  },
+  "main": {
+    "emptyWorkflow": {
+      "title": "Chưa có Workflow nào",
+      "description": "Tạo Workflow đầu tiên của bạn"
+    }
+  },
+  "components": {
+    "userInformation": {
+      "credits": "tín dụng",
+      "unlimited": "Không giới hạn",
+      "logout": "Đăng xuất"
+    },
+    "workflowSidePicker": {
+      "select": "Chọn...",
+      "deactivated": "[ĐÃ TẮT]",
+      "subTasks": "Sẽ chia thành {count} nhiệm vụ con, mỗi cái tốn {cost} tín dụng",
+      "cost": "Tốn {value} tín dụng",
+      "back": "Quay lại",
+      "run": "Chạy",
+      "have": "Có {balance}",
+      "repeatError": "Số lần lặp phải lớn hơn 0",
+      "inputRequired": "{field} là bắt buộc",
+      "taskScheduled": "Nhiệm vụ đã được lên lịch",
+      "taskFailed": "Lên lịch nhiệm vụ thất bại"
+    },
+    "adminSideInfo": {
+      "taskPending": "NHIỆM VỤ CHỜ XỬ LÝ",
+      "taskExecuted": "NHIỆM VỤ ĐÃ THỰC HIỆN",
+      "status": {
+        "online": "Trực tuyến",
+        "offline": "Ngoại tuyến",
+        "error": "Lỗi"
+      },
+      "emptyServer": {
+        "title": "Danh sách máy chủ trống",
+        "description": "Vui lòng thêm máy chủ đầu tiên của bạn"
+      }
+    },
+    "clientInfoMonitoring": {
+      "offline": "NGOẠI TUYẾN",
+      "error": "LỖI",
+      "actions": {
+        "reboot": "Khởi động lại",
+        "freeVram": "Giải phóng VRAM",
+        "forceReconnect": "Buộc kết nối lại",
+        "terminalLogs": "Nhật ký thiết bị",
+        "cancelTask": "Hủy tác vụ hiện tại",
+        "deleteClient": "Xóa máy khách này"
+      },
+      "node": "MÁY",
+      "deleteSuccess": "Đã xóa máy khách thành công",
+      "deleteFailed": "Xóa máy khách thất bại"
+    },
+    "workflowInput": {
+      "select": "Chọn...",
+      "randomSeedAfterRun": "Ngẫu nhiên hạt giống sau khi chạy",
+      "repeat": "Lặp lại",
+      "repeatDescription": "Lặp lại công việc này nhiều lần bằng cách tạo các công việc con",
+      "description": "Mô tả",
+      "baseCost": "Chi phí cơ bản mỗi lần chạy",
+      "credits": "tín dụng",
+      "author": "Tác giả"
+    },
+    "taskBar": {
+      "lastTasks": "{count} NHIỆM VỤ GẦN ĐÂY",
+      "emptyTask": "Nhiệm vụ trống",
+      "taskId": "ID Nhiệm vụ #{id}",
+      "lastUpdated": "Cập nhật lần cuối lúc {time}",
+      "status": "TRẠNG THÁI {status}",
+      "parentTask": "NHIỆM VỤ CHA",
+      "detail": "Chi tiết: {message}",
+      "lastExecuted": "Thực thi lần cuối lúc {time}",
+      "nothingExecuted": "Chưa thực thi nhiệm vụ nào"
+    },
+    "workflowCard": {
+      "status": {
+        "executing": "Đang thực thi",
+        "idle": "Đang chờ"
+      },
+      "deactivatedHint": "Người dùng vẫn có thể truy cập các tác vụ cũ",
+      "deletedHint": "Người dùng sẽ mất quyền truy cập vào các tác vụ cũ",
+      "actions": {
+        "edit": "Chỉnh sửa workflow",
+        "download": "Tải xuống workflow",
+        "activate": "Kích hoạt",
+        "deactivate": "Vô hiệu hóa",
+        "delete": "Xóa"
+      },
+      "toast": {
+        "activated": "Đã kích hoạt workflow",
+        "deactivated": "Đã vô hiệu hóa workflow",
+        "deleted": "Đã xóa workflow"
+      },
+      "stats": {
+        "executed": "Đã thực thi",
+        "failed": "Thất bại"
+      }
+    },
+    "attachmentReview": {
+      "workflow": "Workflow",
+      "empty": "Trống",
+      "downloadTitle": "Nhấp đúp để sao chép",
+      "setThumbnail": "Đặt làm ảnh thu nhỏ cho workflow này",
+      "downloadBtn": "TẢI XUỐNG",
+      "downloadCompressed": "Tải xuống JPG đã nén",
+      "downloadRaw": "Tải xuống bản gốc",
+      "favoriteBtn": "YÊU THÍCH",
+      "attachmentDetail": "Chi tiết tập tin đính kèm"
+    },
+    "authLayout": {
+      "themeToggle": "Chuyển đổi giao diện - {theme}",
+      "pageTitle": "Đăng nhập | ComfyUI-Station"
+    },
+    "gallery": {
+      "select": "Chọn...",
+      "isEmpty": {
+        "title": "Thư viện trống",
+        "description": "Tạo nhiệm vụ đầu tiên để xem kết quả"
+      },
+      "dataStatus": {
+        "more": "Thêm dữ liệu...",
+        "loading": "Đang tải thêm dữ liệu...",
+        "noMore": "Không còn dữ liệu"
+      }
+    },
+    "attachmentDetail": {
+      "workflow": "Workflow",
+      "copyValue": "Đã sao chép giá trị",
+      "downloadHigh": "Tải xuống JPG đã nén",
+      "downloadRaw": "Tải xuống bản gốc",
+      "download": "TẢI XUỐNG",
+      "favorite": "YÊU THÍCH",
+      "detail": "Chi tiết tập tin đính kèm",
+      "downloadTitle": "Nhấp đúp để sao chép"
+    }
   }
 }

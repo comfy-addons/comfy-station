@@ -8,11 +8,13 @@ import { useDynamicValue } from '@/hooks/useDynamicValue'
 import { cn } from '@/utils/style'
 import { EWorkflowActiveStatus } from '@/entities/enum'
 import { PenOff } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 /**
  * Current redirect to /auth/basic
  */
 export default function Home() {
+  const t = useTranslations('main')
   const query = trpc.workflow.list.useInfiniteQuery(
     {
       limit: 10
@@ -45,8 +47,8 @@ export default function Home() {
     return (
       <div ref={containerRef} className='flex h-full flex-col items-center justify-center text-foreground/50'>
         <PenOff className='w-6 h-6 mx-auto my-2' />
-        <span className='uppercase'>Workflow is empty</span>
-        <p className='text-xs'>Create your first workflow</p>
+        <span className='uppercase'>{t('emptyWorkflow.title')}</span>
+        <p className='text-xs'>{t('emptyWorkflow.description')}</p>
       </div>
     )
   }

@@ -15,8 +15,10 @@ import { trpc } from '@/utils/trpc'
 import { cloneDeep } from 'lodash'
 import { ChevronLeft, Play } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 export const WorkflowSidePicker: IComponent = () => {
+  const t = useTranslations('components.workflowSidePicker')
   const { router, slug } = useCurrentRoute()
   const [loading, setLoading] = useState(false)
   const [repeat, setRepeat] = useState(1)
@@ -78,7 +80,7 @@ export const WorkflowSidePicker: IComponent = () => {
     }
     if (repeat < 1) {
       toast({
-        title: 'Repeat must be greater than 0',
+        title: t('repeatError'),
         variant: 'destructive'
       })
       return
@@ -95,7 +97,7 @@ export const WorkflowSidePicker: IComponent = () => {
         const files = inputData[key] as File[]
         if (!files || files.length === 0) {
           toast({
-            title: `${key} is required`,
+            title: t('inputRequired', { field: key }),
             variant: 'destructive'
           })
           setLoading(false)
@@ -118,12 +120,12 @@ export const WorkflowSidePicker: IComponent = () => {
       })
       .then(() => {
         toast({
-          title: 'Task has been scheduled'
+          title: t('taskScheduled')
         })
       })
       .catch(() => {
         toast({
-          title: 'Failed to schedule task',
+          title: t('taskFailed'),
           variant: 'destructive'
         })
       })
@@ -171,7 +173,7 @@ export const WorkflowSidePicker: IComponent = () => {
       <div className='px-2 w-full'>
         <Select defaultValue={slug} onValueChange={handlePickWorkflow}>
           <SelectTrigger>
-            <SelectValue placeholder='Select...' className='w-full' />
+            <SelectValue placeholder={t('select')} className='w-full' />
           </SelectTrigger>
           <SelectContent>
             {workflowListLoader.data?.map((selection) => (
@@ -184,7 +186,7 @@ export const WorkflowSidePicker: IComponent = () => {
                   {selection.name}
                 </div>
                 <p className='text-xs'>
-                  {selection.status === EWorkflowActiveStatus.Deactivated && '[DEACTIVATED] '}
+                  {selection.status === EWorkflowActiveStatus.Deactivated && t('deactivated')}{' '}
                   {selection.description}
                 </p>
               </SelectItem>
@@ -208,11 +210,11 @@ export const WorkflowSidePicker: IComponent = () => {
       <div className='w-full flex flex-col gap-2 justify-end items-center border-t px-2 pt-2'>
         {cost.subTasks > 1 && (
           <span className='text-xs text-center px-4'>
-            Will splitted into {cost.subTasks} sub-tasks, each cost {cost.value / cost.subTasks} credits
+            {t('subTasks', { count: cost.subTasks, cost: cost.value / cost.subTasks })}
           </span>
         )}
         <div className='w-full flex gap-2 justify-end items-center flex-col md:flex-row py-2 md:py-0'>
-          {!!cost && <span className='text-xs text-gray-600 hidden md:block'>Cost {cost.value} credits</span>}
+          {!!cost && <span className='text-xs text-gray-600 hidden md:block'>{t('cost', { value: cost.value })}</span>}
           <Button
             onClick={() => {
               router.push('/main')
@@ -220,7 +222,7 @@ export const WorkflowSidePicker: IComponent = () => {
             className='hidden md:flex'
             variant='ghost'
           >
-            Back
+            {t('back')}
             <ChevronLeft className='w-4 h-4 ml-1' />
           </Button>
           <LoadableButton
@@ -229,7 +231,7 @@ export const WorkflowSidePicker: IComponent = () => {
             onClick={handlePressRun}
             className='w-full md:w-fit relative'
           >
-            Run
+            {t('run')}
             <Play className='w-4 h-4 ml-1' />
             {!!cost && (
               <div
@@ -237,8 +239,8 @@ export const WorkflowSidePicker: IComponent = () => {
                   'mt-1': balance !== -1
                 })}
               >
-                <span>Cost {cost.value} credits</span>
-                {balance !== -1 && <code className='text-[8px] -mt-1'>(Have {balance})</code>}
+                <span>{t('cost', { value: cost.value })}</span>
+                {balance !== -1 && <code className='text-[8px] -mt-1'>({t('have', { balance })})</code>}
               </div>
             )}
           </LoadableButton>

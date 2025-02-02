@@ -39,5 +39,141 @@
       "tokenPlaceholder": "请输入访问令牌",
       "submit": "登录"
     }
+  },
+  "components": {
+    "userInformation": {
+      "credits": "积分",
+      "unlimited": "无限制",
+      "logout": "退出登录"
+    },
+    "workflowSidePicker": {
+      "select": "选择...",
+      "deactivated": "[已停用]",
+      "subTasks": "将分为 {count} 个子任务，每个花费 {cost} 积分",
+      "cost": "花费 {value} 积分",
+      "back": "返回",
+      "run": "运行",
+      "have": "拥有 {balance}",
+      "repeatError": "重复次数必须大于0",
+      "inputRequired": "{field} 是必需的",
+      "taskScheduled": "任务已安排",
+      "taskFailed": "安排任务失败"
+    },
+    "adminSideInfo": {
+      "taskPending": "待处理任务",
+      "taskExecuted": "已执行任务",
+      "status": {
+        "online": "在线",
+        "offline": "离线",
+        "error": "错误"
+      },
+      "emptyServer": {
+        "title": "服务器列表为空",
+        "description": "请添加您的第一台服务器"
+      }
+    },
+    "clientInfoMonitoring": {
+      "offline": "离线",
+      "error": "错误",
+      "actions": {
+        "reboot": "重启",
+        "freeVram": "释放显存",
+        "forceReconnect": "强制重连",
+        "terminalLogs": "终端日志",
+        "cancelTask": "取消当前任务",
+        "deleteClient": "删除此客户端"
+      },
+      "node": "节点",
+      "deleteSuccess": "客户端删除成功",
+      "deleteFailed": "删除客户端失败"
+    },
+    "workflowInput": {
+      "select": "选择...",
+      "randomSeedAfterRun": "运行后随机种子",
+      "repeat": "重复",
+      "repeatDescription": "通过创建子任务来多次重复此任务",
+      "description": "描述",
+      "baseCost": "每次运行基础成本",
+      "credits": "积分",
+      "author": "作者"
+    },
+    "taskBar": {
+      "lastTasks": "最近 {count} 个任务",
+      "emptyTask": "任务为空",
+      "taskId": "任务ID #{id}",
+      "lastUpdated": "最后更新于 {time}",
+      "status": "状态 {status}",
+      "parentTask": "父任务",
+      "detail": "详情：{message}",
+      "lastExecuted": "最后执行于 {time}",
+      "nothingExecuted": "尚未执行任何任务"
+    },
+    "workflowCard": {
+      "status": {
+        "executing": "执行中",
+        "idle": "空闲"
+      },
+      "deactivatedHint": "用户仍可访问旧任务",
+      "deletedHint": "用户将失去对旧任务的访问权限",
+      "actions": {
+        "edit": "编辑工作流",
+        "download": "下载工作流",
+        "activate": "启用",
+        "deactivate": "停用",
+        "delete": "删除"
+      },
+      "toast": {
+        "activated": "工作流已启用",
+        "deactivated": "工作流已停用",
+        "deleted": "工作流已删除"
+      },
+      "stats": {
+        "executed": "已执行",
+        "failed": "失败"
+      }
+    },
+    "attachmentReview": {
+      "workflow": "工作流",
+      "empty": "空",
+      "downloadTitle": "双击复制",
+      "setThumbnail": "设为此工作流的缩略图",
+      "downloadBtn": "下载",
+      "downloadCompressed": "下载压缩JPG",
+      "downloadRaw": "下载原始文件",
+      "favoriteBtn": "收藏",
+      "attachmentDetail": "附件详情"
+    },
+    "attachmentDetail": {
+      "workflow": "工作流",
+      "copyValue": "已复制",
+      "downloadHigh": "下载压缩JPG",
+      "downloadRaw": "下载原始文件",
+      "download": "下载",
+      "favorite": "收藏",
+      "detail": "附件详情",
+      "downloadTitle": "双击复制"
+    },
+    "authLayout": {
+      "themeToggle": "切换主题 - {theme}",
+      "pageTitle": "登录 | ComfyUI-Station"
+    },
+    "gallery": {
+      "select": "选择...",
+      "isEmpty": {
+        "title": "相册为空",
+        "description": "创建您的第一个任务以查看结果"
+      },
+      "dataStatus": {
+        "more": "更多数据...",
+        "loading": "正在加载更多数据...",
+        "noMore": "没有更多数据"
+      }
+    }
+  },
+  "main": {
+    "emptyWorkflow": {
+      "title": "工作流为空",
+      "description": "创建您的第一个工作流"
+    }
   }
 }
