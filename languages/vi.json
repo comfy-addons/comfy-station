@@ -253,6 +253,57 @@
         "edit": "Chỉnh sửa token",
         "delete": "Xóa token"
       }
+    },
+    "tokenPopup": {
+      "title": {
+        "update": "Cập nhật Token API",
+        "create": "Tạo Token API"
+      },
+      "description": {
+        "label": "Mô tả",
+        "hint": "Mô tả của token. Điều này sẽ giúp bạn nhận dạng token sau này.",
+        "placeholder": "Đây là một token thử nghiệm..."
+      },
+      "type": {
+        "label": "Loại",
+        "hint": "Loại token. Chọn <strong>Both</strong> để chạy trên cả Web và API.",
+        "both": "Cả hai",
+        "web": "Web",
+        "api": "Api"
+      },
+      "balance": {
+        "label": "Số dư",
+        "hint": "Số dư của token. Đặt <strong>-1</strong> để đồng bộ với số dư của chủ sở hữu. Các giá trị khác sẽ giảm số dư của bạn.",
+        "placeholder": "-1"
+      },
+      "weight": {
+        "label": "Độ ưu tiên",
+        "hint": "Độ lệch càng lớn, độ ưu tiên càng thấp. Chỉ Admin mới có thể tạo độ lệch âm.",
+        "placeholder": "0"
+      },
+      "expiry": {
+        "label": "Thời hạn",
+        "hint": "Đặt ngày hết hạn cho token này. Để trống nếu không có thời hạn.",
+        "neverExpire": "Không bao giờ hết hạn"
+      },
+      "master": {
+        "label": "Token Chủ",
+        "hint": "Cho phép thực thi tất cả workflow. Chỉ Admin mới có thể tạo loại token này."
+      },
+      "workflows": {
+        "label": "Workflows",
+        "hint": "Chọn các workflow mà token này có thể thực thi.",
+        "placeholder": "Chọn Workflows"
+      },
+      "actions": {
+        "cancel": "Hủy",
+        "create": "Tạo",
+        "update": "Cập nhật"
+      },
+      "toast": {
+        "updateError": "Cập nhật token thất bại",
+        "createError": "Tạo token thất bại"
+      }
     }
   }
 }

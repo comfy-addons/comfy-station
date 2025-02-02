@@ -253,6 +253,57 @@
         "edit": "编辑令牌",
         "delete": "删除令牌"
       }
+    },
+    "tokenPopup": {
+      "title": {
+        "update": "更新 API 令牌",
+        "create": "创建 API 令牌"
+      },
+      "description": {
+        "label": "描述",
+        "hint": "令牌的描述信息，帮助您以后识别此令牌。",
+        "placeholder": "这是一个测试令牌..."
+      },
+      "type": {
+        "label": "类型",
+        "hint": "令牌类型。设置为 <strong>Both</strong> 可同时在网页和 API 中使用。",
+        "both": "两者",
+        "web": "网页",
+        "api": "接口"
+      },
+      "balance": {
+        "label": "余额",
+        "hint": "令牌余额。设置为 <strong>-1</strong> 与所有者余额同步。其他值将从您的余额中扣除。",
+        "placeholder": "-1"
+      },
+      "weight": {
+        "label": "权重偏移",
+        "hint": "偏移值越大优先级越低。只有管理员可以创建负偏移。",
+        "placeholder": "0"
+      },
+      "expiry": {
+        "label": "过期时间",
+        "hint": "设置令牌的过期时间。留空则永不过期。",
+        "neverExpire": "永不过期"
+      },
+      "master": {
+        "label": "主令牌",
+        "hint": "允许执行所有工作流。只有管理员可以创建此类令牌。"
+      },
+      "workflows": {
+        "label": "工作流",
+        "hint": "选择此令牌可以执行的工作流。",
+        "placeholder": "选择工作流"
+      },
+      "actions": {
+        "cancel": "取消",
+        "create": "创建",
+        "update": "更新"
+      },
+      "toast": {
+        "updateError": "更新令牌失败",
+        "createError": "创建令牌失败"
+      }
     }
   }
 }

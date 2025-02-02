@@ -19,6 +19,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { useTranslations } from 'next-intl'
 
 const TokenSchema = z.object({
   expiredAt: z
@@ -39,6 +40,7 @@ type TokenInput = z.infer<typeof TokenSchema>
 export const TokenPopup: IComponent<{
   onRefresh?: () => void
 }> = ({ onRefresh }) => {
+  const t = useTranslations('settings.tokenPopup')
   const query = useSearchParams()
   const pathname = usePathname()
   const route = useRouter()
@@ -134,7 +136,7 @@ export const TokenPopup: IComponent<{
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className='max-w-2xl'>
         <DialogHeader>
-          <DialogTitle className='text-base font-bold'>{tokenId ? 'Update' : 'Create'} API Token</DialogTitle>
+          <DialogTitle className='text-base font-bold'>{tokenId ? t('title.update') : t('title.create')}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={handleSubmitToken} className='grid gap-2'>
@@ -142,12 +144,10 @@ export const TokenPopup: IComponent<{
               name='description'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormDescription>
-                    A description of the token. This will help you identify the token later.
-                  </FormDescription>
+                  <FormLabel>{t('description.label')}</FormLabel>
+                  <FormDescription>{t.raw('description.hint')}</FormDescription>
                   <FormControl>
-                    <Textarea placeholder='This is a test token...' {...field} />
+                    <Textarea placeholder={t('description.placeholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -157,16 +157,16 @@ export const TokenPopup: IComponent<{
               name='type'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Type</FormLabel>
+                  <FormLabel>{t('type.label')}</FormLabel>
                   <FormDescription>
-                    Type of this token. Set <strong>Both</strong> for running in Web and API.
+                    <span dangerouslySetInnerHTML={{ __html: t.raw('type.hint') }} />
                   </FormDescription>
                   <FormControl>
                     <Tabs value={field.value} onValueChange={(val) => field.onChange(val)} className='w-full'>
                       <TabsList>
-                        <TabsTrigger value={ETokenType.Both}>Both</TabsTrigger>
-                        <TabsTrigger value={ETokenType.Web}>Web</TabsTrigger>
-                        <TabsTrigger value={ETokenType.Api}>Api</TabsTrigger>
+                        <TabsTrigger value={ETokenType.Both}>{t('type.both')}</TabsTrigger>
+                        <TabsTrigger value={ETokenType.Web}>{t('type.web')}</TabsTrigger>
+                        <TabsTrigger value={ETokenType.Api}>{t('type.api')}</TabsTrigger>
                       </TabsList>
                     </Tabs>
                   </FormControl>
@@ -179,13 +179,12 @@ export const TokenPopup: IComponent<{
                 name='balance'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Balance</FormLabel>
+                    <FormLabel>{t('balance.label')}</FormLabel>
                     <FormDescription>
-                      Balance of this token. Set <strong>-1</strong> for sync with owner balance. Any other value will
-                      reduce your balance.
+                      <span dangerouslySetInnerHTML={{ __html: t.raw('balance.hint') }} />
                     </FormDescription>
                     <FormControl>
-                      <Input type='number' placeholder='-1' {...field} />
+                      <Input type='number' placeholder={t('balance.placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -195,12 +194,10 @@ export const TokenPopup: IComponent<{
                 name='weightOffset'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Weight Offset</FormLabel>
-                    <FormDescription>
-                      More offset mean lower priority. Only Admin can create negative offset.
-                    </FormDescription>
+                    <FormLabel>{t('weight.label')}</FormLabel>
+                    <FormDescription>{t.raw('weight.hint')}</FormDescription>
                     <FormControl>
-                      <Input type='number' placeholder='0' {...field} />
+                      <Input type='number' placeholder={t('weight.placeholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -211,8 +208,8 @@ export const TokenPopup: IComponent<{
               name='expiredAt'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Expired At</FormLabel>
-                  <FormDescription>Set expired date for this token. Leave empty for no expired date.</FormDescription>
+                  <FormLabel>{t('expiry.label')}</FormLabel>
+                  <FormDescription>{t.raw('expiry.hint')}</FormDescription>
                   <div className='flex items-center space-x-2'>
                     <Switch
                       id='unlimited-mode'
@@ -221,7 +218,7 @@ export const TokenPopup: IComponent<{
                         field.onChange(val ? undefined : (new Date().toISOString().substr(0, 10) as any))
                       }}
                     />
-                    <Label htmlFor='unlimited-mode'>Never Expired</Label>
+                    <Label htmlFor='unlimited-mode'>{t('expiry.neverExpire')}</Label>
                   </div>
                   <FormControl>
                     <Input disabled={form.watch('expiredAt') === undefined} type='date' {...field} />
@@ -235,10 +232,8 @@ export const TokenPopup: IComponent<{
               disabled={!isAdmin}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Master Token</FormLabel>
-                  <FormDescription>
-                    Allow execute all workflow. Only Admin can create this type of token.
-                  </FormDescription>
+                  <FormLabel>{t('master.label')}</FormLabel>
+                  <FormDescription>{t.raw('master.hint')}</FormDescription>
                   <FormControl>
                     <Switch disabled={!isAdmin} checked={field.value} onCheckedChange={field.onChange} />
                   </FormControl>
@@ -251,8 +246,8 @@ export const TokenPopup: IComponent<{
               disabled={isMasterToken}
               render={() => (
                 <FormItem>
-                  <FormLabel>Workflows</FormLabel>
-                  <FormDescription>Select workflows that this token can execute.</FormDescription>
+                  <FormLabel>{t('workflows.label')}</FormLabel>
+                  <FormDescription>{t.raw('workflows.hint')}</FormDescription>
                   <FormControl>
                     <MultiSelect
                       disabled={isMasterToken}
@@ -262,7 +257,7 @@ export const TokenPopup: IComponent<{
                       onValueChange={(val) => {
                         form.setValue('workflowIds', val)
                       }}
-                      placeholder='Select Workflows'
+                      placeholder={t('workflows.placeholder')}
                       variant='inverted'
                       animation={1}
                     />
@@ -278,10 +273,10 @@ export const TokenPopup: IComponent<{
                 onClick={() => setIsOpen(false)}
                 variant='secondary'
               >
-                Cancel <X size={16} className='ml-1' />
+                {t('actions.cancel')} <X size={16} className='ml-1' />
               </Button>
               <LoadableButton type='submit' loading={creator.isPending || updater.isPending}>
-                {!tokenId ? 'Create' : 'Update'} <Check size={16} className='ml-1' />
+                {!tokenId ? t('actions.create') : t('actions.update')} <Check size={16} className='ml-1' />
               </LoadableButton>
             </DialogFooter>
           </form>

@@ -253,6 +253,57 @@
         "edit": "Edit token",
         "delete": "Delete token"
       }
+    },
+    "tokenPopup": {
+      "title": {
+        "update": "Update API Token",
+        "create": "Create API Token"
+      },
+      "description": {
+        "label": "Description",
+        "hint": "A description of the token. This will help you identify the token later.",
+        "placeholder": "This is a test token..."
+      },
+      "type": {
+        "label": "Type",
+        "hint": "Type of this token. Set <strong>Both</strong> for running in Web and API.",
+        "both": "Both",
+        "web": "Web",
+        "api": "Api"
+      },
+      "balance": {
+        "label": "Balance",
+        "hint": "Balance of this token. Set <strong>-1</strong> for sync with owner balance. Any other value will reduce your balance.",
+        "placeholder": "-1"
+      },
+      "weight": {
+        "label": "Weight Offset",
+        "hint": "More offset mean lower priority. Only Admin can create negative offset.",
+        "placeholder": "0"
+      },
+      "expiry": {
+        "label": "Expired At",
+        "hint": "Set expired date for this token. Leave empty for no expired date.",
+        "neverExpire": "Never Expired"
+      },
+      "master": {
+        "label": "Master Token",
+        "hint": "Allow execute all workflow. Only Admin can create this type of token."
+      },
+      "workflows": {
+        "label": "Workflows",
+        "hint": "Select workflows that this token can execute.",
+        "placeholder": "Select Workflows"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Create",
+        "update": "Update"
+      },
+      "toast": {
+        "updateError": "Failed to update token",
+        "createError": "Failed to create token"
+      }
     }
   }
 }
