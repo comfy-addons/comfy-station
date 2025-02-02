@@ -151,7 +151,8 @@
     },
     "authLayout": {
       "themeToggle": "Chuyển đổi giao diện - {theme}",
-      "pageTitle": "Đăng nhập | ComfyUI-Station"
+      "pageTitle": "Đăng nhập | ComfyUI-Station",
+      "selectLanguage": "Chọn ngôn ngữ"
     },
     "gallery": {
       "select": "Chọn...",
@@ -182,14 +183,14 @@
       "repeat": "Lặp lại",
       "files": "Tập tin",
       "credits": "Tín dụng",
-      "seconds": "{value}s", 
+      "seconds": "{value}s",
       "delete": "Xóa",
       "text": "VĂN BẢN"
     },
     "mainLayout": {
       "tabs": {
         "workflows": "Quy trình",
-        "gallery": "Thư viện", 
+        "gallery": "Thư viện",
         "setting": "Cài đặt",
         "execute": "Thực thi",
         "tasks": "Tác vụ",
@@ -229,7 +230,7 @@
       },
       "repeatPassword": {
         "label": "Nhập lại mật khẩu",
-        "placeholder": "****", 
+        "placeholder": "****",
         "description": "Nhập lại mật khẩu mới",
         "mismatch": "Mật khẩu không khớp"
       },

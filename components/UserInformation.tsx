@@ -8,10 +8,14 @@ import { cn } from '@/utils/style'
 import { useState } from 'react'
 import { MiniBadge } from './MiniBadge'
 import { UserNotificationCenter } from './UserNotificationCenter'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
+import { usePathname, useRouter } from '@routing'
+import { Languages } from 'lucide-react'
 
 export const UserInformation: IComponent = () => {
+  const tLang = useTranslations('lang')
   const t = useTranslations('components.userInformation')
+  const locale = useLocale()
   const session = useSession()
   const [balance, setBalance] = useState(session.data?.user.balance || -1)
   const shortUsername = (session.data?.user?.email || '?').split('@')[0].slice(0, 2).toUpperCase()
@@ -41,6 +45,12 @@ export const UserInformation: IComponent = () => {
   const email = session.data?.user?.email
   const shortEmail = email?.split('@')[0]
 
+  const router = useRouter()
+  const pathname = usePathname()
+
+  // Get list of supported locales
+  const locales = ['en', 'vi', 'zh']
+
   return (
     <div className='w-full flex gap-2 items-center px-2'>
       <DropdownMenu>
@@ -58,7 +68,9 @@ export const UserInformation: IComponent = () => {
             <span className={cn('px-2 hidden md:block')}>{session.data?.user?.email}</span>
             <span className={cn('px-2 md:hidden block')}>@{shortEmail}</span>
             <div className='w-full text-xs px-2 text-foreground/50 hidden md:flex items-center gap-2'>
-              <span>{balance === -1 ? t('unlimited') : balance.toFixed(2)} {t('credits')}</span>
+              <span>
+                {balance === -1 ? t('unlimited') : balance.toFixed(2)} {t('credits')}
+              </span>
               <MiniBadge
                 title={EUserRole[session.data!.user.role]}
                 className={cn('w-min', {
@@ -71,7 +83,27 @@ export const UserInformation: IComponent = () => {
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent align='start' sideOffset={10}>
-          <DropdownMenuItem onClick={handlePressLogout} className='min-w-[100px] flex justify-between cursor-pointer'>
+          {/* Language options */}
+          {locales.map((rLocale) => (
+            <DropdownMenuItem
+              key={rLocale}
+              onClick={() => router.replace(pathname, { locale: rLocale })}
+              className='min-w-[100px] flex justify-between cursor-pointer'
+            >
+              {tLang(rLocale as any)}
+              <Languages
+                size={16}
+                className={cn({
+                  'opacity-100': locale === rLocale,
+                  'opacity-20': locale !== rLocale
+                })}
+              />
+            </DropdownMenuItem>
+          ))}
+          <DropdownMenuItem
+            onClick={handlePressLogout}
+            className='min-w-[100px] flex justify-between cursor-pointer border-t mt-1'
+          >
             <span>{t('logout')}</span>
             <ExitIcon className='ml-2' width={16} height={16} />
           </DropdownMenuItem>

@@ -151,7 +151,8 @@
     },
     "authLayout": {
       "themeToggle": "Toggle theme - {theme}",
-      "pageTitle": "Login | ComfyUI-Station"
+      "pageTitle": "Login | ComfyUI-Station",
+      "selectLanguage": "Select language"
     },
     "gallery": {
       "select": "Select...",

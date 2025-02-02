@@ -155,7 +155,8 @@
     },
     "authLayout": {
       "themeToggle": "切换主题 - {theme}",
-      "pageTitle": "登录 | ComfyUI-Station"
+      "pageTitle": "登录 | ComfyUI-Station",
+      "selectLanguage": "选择语言"
     },
     "gallery": {
       "select": "选择...",

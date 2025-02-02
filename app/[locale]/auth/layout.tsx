@@ -1,5 +1,6 @@
 'use client'
 import { Card } from '@/components/ui/card'
+import { LanguageSelector } from '@/components/LanguageSelector'
 
 import AuthBackground from '@/assets/auth-background.jpg'
 import Image from 'next/image'
@@ -74,7 +75,8 @@ const Layout: IComponent = ({ children }) => {
       <div className='absolute bottom-1 right-2 text-sm font-normal text-secondary-foreground opacity-50'>
         {t('app.version')} {PackageInfo.version}
       </div>
-      <div className='fixed top-4 right-4'>
+      <div className='fixed top-4 right-4 flex gap-2'>
+        <LanguageSelector />
         <Button
           title={t('components.authLayout.themeToggle', { theme })}
           onClick={toggleTheme}
