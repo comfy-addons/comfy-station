@@ -16,6 +16,8 @@ import { trpc } from '@/utils/trpc'
 import { useToast } from '@/hooks/useToast'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
 import { ECompressPreset } from '@/constants/enum'
+import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
+import { useTranslations } from 'next-intl'
 
 const NewUserSchema = z.object({
   avatarId: z.string().optional(),
@@ -95,6 +97,8 @@ export const AddUserDialog: IComponent = () => {
 
   const avatarUrl = avatar ? URL.createObjectURL(avatar) : undefined
 
+  const t = useTranslations('settings.addUser')
+
   return (
     <Dialog open={show} modal onOpenChange={setShow}>
       <DialogTrigger asChild>
@@ -110,7 +114,7 @@ export const AddUserDialog: IComponent = () => {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add new user</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
         </DialogHeader>
         <Form {...createForm}>
           <input
@@ -136,11 +140,11 @@ export const AddUserDialog: IComponent = () => {
                 name='email'
                 render={({ field }) => (
                   <FormItem className='flex-1'>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t('email.title')}</FormLabel>
                     <FormControl>
                       <Input placeholder='user@exampler.com' {...field} />
                     </FormControl>
-                    <FormDescription>Email of new user</FormDescription>
+                    <FormDescription>{t('email.description')}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -150,7 +154,7 @@ export const AddUserDialog: IComponent = () => {
               name='role'
               render={({ field }) => (
                 <FormItem className='w-full'>
-                  <FormLabel>Type of user</FormLabel>
+                  <FormLabel>{t('role.title')}</FormLabel>
                   <div className='flex gap-2'>
                     <Select
                       onValueChange={(val: any) => field.onChange(EUserRole[val as EUserRole])}
@@ -163,18 +167,18 @@ export const AddUserDialog: IComponent = () => {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value={EUserRole[EUserRole.Admin]}>
-                          <div className='flex items-center'>Admin</div>
+                          <div className='flex items-center'>{t('role.options.admin')}</div>
                         </SelectItem>
                         <SelectItem value={EUserRole[EUserRole.Editor]}>
-                          <div className='flex items-center'>Editor</div>
+                          <div className='flex items-center'>{t('role.options.editor')}</div>
                         </SelectItem>
                         <SelectItem value={EUserRole[EUserRole.User]}>
-                          <div className='flex items-center'>User</div>
+                          <div className='flex items-center'>{t('role.options.user')}</div>
                         </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <FormDescription>Set the role of the user</FormDescription>
+                  <FormDescription>{t('role.description')}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -184,11 +188,11 @@ export const AddUserDialog: IComponent = () => {
                 name='balance'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Balance</FormLabel>
+                    <FormLabel>{t('balance.title')}</FormLabel>
                     <FormControl>
                       <Input type='number' placeholder='-1' {...field} />
                     </FormControl>
-                    <FormDescription>Set the balance of the user (-1 for infinity)</FormDescription>
+                    <FormDescription>{t('balance.description')}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -197,11 +201,11 @@ export const AddUserDialog: IComponent = () => {
                 name='weightOffset'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Priority</FormLabel>
+                    <FormLabel>{t('priority.title')}</FormLabel>
                     <FormControl>
                       <Input type='number' placeholder='-1' {...field} />
                     </FormControl>
-                    <FormDescription>Set the priority of the user (higher mean lower priority)</FormDescription>
+                    <FormDescription>{t('priority.description')}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -212,11 +216,11 @@ export const AddUserDialog: IComponent = () => {
                 name='password'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t('password.title')}</FormLabel>
                     <FormControl>
                       <Input placeholder='****' type='password' {...field} />
                     </FormControl>
-                    <FormDescription>Set new password for user</FormDescription>
+                    <FormDescription>{t('password.description')}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -225,11 +229,11 @@ export const AddUserDialog: IComponent = () => {
                 name='reEnterPassword'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Repeat password</FormLabel>
+                    <FormLabel>{t('repeatPassword.title')}</FormLabel>
                     <FormControl>
                       <Input placeholder='****' type='password' {...field} />
                     </FormControl>
-                    <FormDescription>Re-enter your new password</FormDescription>
+                    <FormDescription>{t('repeatPassword.description')}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -243,10 +247,10 @@ export const AddUserDialog: IComponent = () => {
                 variant='ghost'
               >
                 <ChevronLeft className='w-4 h-4 mr-2' />
-                Cancel
+                {t('cancel')}
               </Button>
               <LoadableButton loading={creator.isPending || uploader.isPending} type='submit'>
-                <Plus className='w-4 h-4 mr-2' /> Create
+                <Plus className='w-4 h-4 mr-2' /> {t('create')}
               </LoadableButton>
             </div>
           </form>

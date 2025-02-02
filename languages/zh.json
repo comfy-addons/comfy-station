@@ -252,7 +252,7 @@
         "executed": "已执行",
         "actions": "操作"
       },
-      "status": {
+     "status": {
         "unlimited": "无限制"
       },
       "id": "ID：{id}"
@@ -397,6 +397,40 @@
         "avatarSuccess": "头像已上传",
         "avatarError": "头像上传失败"
       }
+    },
+    "addUser": {
+      "title": "添加新用户",
+      "email": {
+        "title": "邮箱",
+        "description": "新用户邮箱"
+      },
+      "role": {
+        "title": "角色",
+        "description": "设置用户角色",
+        "options": {
+          "admin": "管理员",
+          "editor": "编辑者",
+          "user": "普通用户"
+        }
+      },
+      "balance": {
+        "title": "余额",
+        "description": "设置用户余额（-1为无限制）"
+      },
+      "priority": {
+        "title": "优先级",
+        "description": "设置用户优先级（数值越大优先级越低）"
+      },
+      "password": {
+        "title": "密码",
+        "description": "设置新密码"
+      },
+      "repeatPassword": {
+        "title": "重复密码",
+        "description": "再次输入新密码"
+      },
+      "create": "添加",
+      "cancel": "取消"
     }
   }
 }
