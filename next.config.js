@@ -1,4 +1,3 @@
-const million = require('million/compiler')
 const createNextIntlPlugin = require('next-intl/plugin')
 
 /**
@@ -11,8 +10,7 @@ const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
   experimental: {
-    reactCompiler: process.env.NODE_ENV === 'production',
-    webpackMemoryOptimizations: process.env.NODE_ENV !== 'production'
+    reactCompiler: process.env.NODE_ENV === 'production'
   },
   webpack: (config, { dev, isServer, nextRuntime, webpack }) => {
     /**
@@ -31,4 +29,4 @@ const nextConfig = {
     return config
   }
 }
-module.exports = million.next(withNextIntl(nextConfig), { rsc: true })
+module.exports = withNextIntl(nextConfig)
