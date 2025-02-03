@@ -397,6 +397,55 @@
         "avatarSuccess": "Đã tải lên ảnh đại diện",
         "avatarError": "Tải lên ảnh đại diện thất bại"
       }
+    },  
+    "addUser": {
+      "title": "Thêm người dùng mới",
+      "email": {
+        "title": "Email",
+        "description": "Email của người dùng mới"
+      },
+      "role": {
+        "title": "Vai trò",
+        "description": "Thiết lập vai trò người dùng",
+        "options": {
+          "admin": "Quản trị viên",
+          "editor": "Biên tập viên",
+          "user": "Người dùng thông thường"
+        }
+      },
+      "balance": {
+        "title": "Số dư",
+        "description": "Thiết lập số dư người dùng (-1 là không giới hạn)"
+      },
+      "priority": {
+        "title": "Ưu tiên",
+        "description": "Thiết lập mức độ ưu tiên (giá trị càng lớn, mức độ ưu tiên càng thấp)"
+      },
+      "password": {
+        "title": "Mật khẩu",
+        "description": "Thiết lập mật khẩu mới"
+      },
+      "repeatPassword": {
+        "title": "Nhập lại mật khẩu",
+        "description": "Nhập lại mật khẩu mới"
+      },
+      "create": "Thêm",
+      "cancel": "Hủy",
+      "validation": {
+        "invalidEmail": "Địa chỉ email không hợp lệ",
+        "passwordMinLength": "Mật khẩu phải dài ít nhất 8 ký tự",
+        "passwordMismatch": "Hai mật khẩu đã nhập không khớp nhau"
+      },
+      "toast": {
+        "success": {
+          "title": "Người dùng đã được tạo thành công",
+          "description": "Người dùng mới đã được tạo thành công"
+        },
+        "error": {
+          "title": "Tạo người dùng không thành công",
+          "description": "Không thể tạo người dùng mới"
+        }
+      }
     }
   }
 }

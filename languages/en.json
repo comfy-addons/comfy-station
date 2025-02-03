@@ -397,6 +397,55 @@
         "avatarSuccess": "Avatar uploaded",
         "avatarError": "Avatar upload failed"
       }
+    },
+    "addUser": {
+      "title": "Add New User",
+      "email": {
+        "title": "Email",
+        "description": "New user email"
+      },
+      "role": {
+        "title": "Role",
+        "description": "Set user role",
+        "options": {
+          "admin": "Admin",
+          "editor": "Editor",
+          "user": "User"
+        }
+      },
+      "balance": {
+        "title": "Balance",
+        "description": "Set user balance (-1 for unlimited)"
+      },
+      "priority": {
+        "title": "Priority",
+        "description": "Set user priority (higher value means lower priority)"
+      },
+      "password": {
+        "title": "Password",
+        "description": "Set new password"
+      },
+      "repeatPassword": {
+        "title": "Repeat Password",
+        "description": "Re-enter new password"
+      },
+      "create": "Add",
+      "cancel": "Cancel",
+      "validation": {
+        "invalidEmail": "Invalid email address",
+        "passwordMinLength": "Password must be at least 8 characters",
+        "passwordMismatch": "The passwords entered twice do not match"
+      },
+      "toast": {
+        "success": {
+          "title": "User creation successful",
+          "description": "New user has been successfully created"
+        },
+        "error": {
+          "title": "User creation failed",
+          "description": "Unable to create a new user"
+        }
+      }
     }
   }
 }
