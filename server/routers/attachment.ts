@@ -3,9 +3,11 @@ import { privateProcedure } from '../procedure'
 import { router } from '../trpc'
 import { Attachment } from '@/entities/attachment'
 import AttachmentService from '@/server/services/attachment'
-import { EAttachmentStatus, EUserRole } from '@/entities/enum'
+import { EAttachmentStatus, EUserRole, EValueType } from '@/entities/enum'
 import { ImageUtil } from '../utils/ImageUtil'
 import { ECompressPreset } from '@/constants/enum'
+import mine from 'mime'
+import { classifyMine } from '../utils/file'
 
 const getAttachmentURL = async (attachment: Attachment, baseUrl = 'http://localhost:3001') => {
   const prevName = `${attachment.fileName}_preview.jpg`
@@ -82,26 +84,32 @@ export const attachmentRouter = router({
     const buffArr = await file.arrayBuffer()
     let buff = Buffer.from(buffArr)
     const imgObj = new ImageUtil(buff)
-    if (inputData.maxWidthHeightSize) {
-      await imgObj.ensureMax(inputData.maxWidthHeightSize)
-    }
-    switch (inputData.type) {
-      case ECompressPreset.PREVIEW:
-        buff = await imgObj.intoPreviewJPG()
-        break
-      case ECompressPreset.HIGH_JPG:
-        buff = await imgObj.intoHighJPG()
-        break
-      case ECompressPreset.JPG:
-        buff = await imgObj.intoJPG()
-        break
+
+    // Check if the file is an image
+    if (imgObj.isValid) {
+      if (inputData.maxWidthHeightSize) {
+        await imgObj.ensureMax(inputData.maxWidthHeightSize)
+      }
+      switch (inputData.type) {
+        case ECompressPreset.PREVIEW:
+          buff = await imgObj.intoPreviewJPG()
+          break
+        case ECompressPreset.HIGH_JPG:
+          buff = await imgObj.intoHighJPG()
+          break
+        case ECompressPreset.JPG:
+          buff = await imgObj.intoJPG()
+          break
+      }
     }
     /**
      * Avoid uploading the same file multiple times
      */
     const fileMd5 = await Attachment.fileMD5(buff)
-    const fileExtendsion = file.name.split('.').pop()
-    const newName = `${fileMd5}.${fileExtendsion}`
+    const fileExtension = file.name.split('.').pop()
+    const newName = `${fileMd5}.${fileExtension}`
+    const mineType = fileExtension ? mine.getType(fileExtension) : ''
+    const fileType = mineType ? classifyMine(mineType) : EValueType.File
     const size = buff.byteLength
 
     const existingAttachment = await ctx.em.findOne(Attachment, { fileName: newName })
@@ -112,9 +120,18 @@ export const attachmentRouter = router({
         await ctx.em.removeAndFlush(existingAttachment)
       }
     }
-    const attachment = ctx.em.create(Attachment, { fileName: newName, size }, { partial: true })
+    const attachment = ctx.em.create(Attachment, { fileName: newName, type: fileType, size }, { partial: true })
     await ctx.em.persistAndFlush(attachment)
     try {
+      if (imgObj.isValid && inputData.type !== ECompressPreset.PREVIEW) {
+        try {
+          const previewObj = await imgObj.ensureMax(1024)
+          const previewBuff = await previewObj.intoPreviewJPG()
+          await storageService.uploadFile(previewBuff, newName + '_preview.jpg')
+        } catch (e) {
+          console.error('Failed to create preview image', newName, e)
+        }
+      }
       await storageService.uploadFile(buff, newName)
       attachment.status = EAttachmentStatus.UPLOADED
       await ctx.em.persistAndFlush(attachment)

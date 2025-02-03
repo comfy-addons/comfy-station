@@ -3,9 +3,20 @@ import sharp from 'sharp'
 export class ImageUtil {
   private raw: string
   private image: sharp.Sharp
+  public isValid = false
   constructor(image: string | Buffer) {
     this.raw = typeof image !== 'string' ? image.toString('base64') : image
-    this.image = sharp(Buffer.from(this.raw, 'base64'))
+    // Check if this is a image or not
+    try {
+      // Try to create a sharp instance from the input
+      this.image = sharp(Buffer.from(this.raw, 'base64'))
+      // If no error is thrown, it's likely an image
+      this.isValid = true
+    } catch (e) {
+      // If sharp throws an error, input is not a valid image
+      this.isValid = false
+      throw new Error('Invalid image input')
+    }
   }
 
   /**

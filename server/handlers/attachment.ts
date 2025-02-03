@@ -3,9 +3,12 @@ import { EnsureMikroORMPlugin } from '../plugins/ensure-mikro-orm.plugin'
 import { Attachment } from '@/entities/attachment'
 import AttachmentService from '@/server/services/attachment'
 import { AttachmentSchema, AttachmentURLSchema } from '../schemas/attachment'
-import { EAttachmentStatus } from '@/entities/enum'
+import { EAttachmentStatus, EValueType } from '@/entities/enum'
 import { EnsureTokenPlugin } from '../plugins/ensure-token-plugin'
 import { EnsureBaseURL } from '../plugins/ensure-baseurl-plugin'
+import mine from 'mime'
+import { classifyMine } from '../utils/file'
+import { ImageUtil } from '../utils/ImageUtil'
 
 export const AttachmentPlugin = new Elysia({ prefix: '/attachment', detail: { tags: ['Attachment'] } })
   .use(EnsureMikroORMPlugin)
@@ -71,6 +74,8 @@ export const AttachmentPlugin = new Elysia({ prefix: '/attachment', detail: { ta
         const fileMd5 = await Attachment.fileMD5(buff)
         const fileExtension = file.name.split('.').pop()
         const newName = `${fileMd5}.${fileExtension}`
+        const mineType = fileExtension ? mine.getType(fileExtension) : ''
+        const fileType = mineType ? classifyMine(mineType) : EValueType.File
         const size = buff.byteLength
 
         const existingAttachment = await em.findOne(Attachment, { fileName: newName })
@@ -81,9 +86,18 @@ export const AttachmentPlugin = new Elysia({ prefix: '/attachment', detail: { ta
             await em.removeAndFlush(existingAttachment)
           }
         }
-        const attachment = em.create(Attachment, { fileName: newName, size }, { partial: true })
+        const attachment = em.create(Attachment, { fileName: newName, type: fileType, size }, { partial: true })
         await em.persistAndFlush(attachment)
         try {
+          if (fileType === EValueType.Image) {
+            try {
+              const imgObj = await new ImageUtil(buff).ensureMax(1024)
+              const previewBuff = await imgObj.intoPreviewJPG()
+              await storageService.uploadFile(previewBuff, newName + '_preview.jpg')
+            } catch (e) {
+              console.error('Failed to create preview image', newName, e)
+            }
+          }
           const uploaded = await storageService.uploadFile(buff, newName)
           if (!uploaded) {
             throw new Error('Failed to upload file')

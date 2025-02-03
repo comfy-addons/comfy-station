@@ -39,7 +39,7 @@ const AttachmentTooltipPopup: IComponent<{
   })
   const { copyToClipboard } = useCopyAction()
   return (
-    <div className='p-1 text-foreground'>
+    <div className='py-1 text-foreground'>
       <div className='flex flex-col justify-between max-w-[420px] text-justify p-2'>
         <code className='font-bold'>{t('workflow')}</code>
         <span>{detail?.workflow.name}</span>
@@ -48,17 +48,18 @@ const AttachmentTooltipPopup: IComponent<{
         Object.entries(detail.inputValues).map(([key, value], idx) => {
           const type = detail.workflow.mapInput?.[key]?.type
           if (type === EValueType.Image || type === EValueType.Video) {
-            return (
+            const inputData = Array.isArray(value) ? value : ([value] as string[])
+            return inputData.map((id) => (
               <AddonDiv
-                key={key}
+                key={`${key}-${id}`}
                 className={cn(
                   'flex flex-col justify-between max-w-[420px] break-words even:bg-secondary/50 hover:opacity-80 cursor-pointer active:opacity-100'
                 )}
               >
-                <code className='font-bold pointer-events-none px-2 pb-1'>{key}</code>
-                <AttachmentImage containerClassName='w-full aspect-square' alt='sources' key={key} data={{ id: value as string }} />
+                <code className='font-bold pointer-events-none px-2 pt-2 pb-1'>{key}</code>
+                <AttachmentImage containerClassName='w-full min-h-[120px]' alt='sources' key={key} data={{ id }} />
               </AddonDiv>
-            )
+            ))
           }
           return (
             <AddonDiv

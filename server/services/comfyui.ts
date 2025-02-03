@@ -467,7 +467,7 @@ export class ComfyPoolInstance {
                                   // Check if v is Video, Image or others
                                   const blobType = classifyBlob(v)
                                   switch (blobType) {
-                                    case 'image': {
+                                    case EValueType.Image: {
                                       return await this.handleImageOutput(
                                         v,
                                         { key, idx, task, workflow },
@@ -475,7 +475,7 @@ export class ComfyPoolInstance {
                                         em
                                       )
                                     }
-                                    case 'video': {
+                                    case EValueType.Video: {
                                       return await this.handleVideoOutput(
                                         v,
                                         { key, idx, task, workflow },
