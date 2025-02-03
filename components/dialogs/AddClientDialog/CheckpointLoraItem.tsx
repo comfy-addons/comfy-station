@@ -19,6 +19,7 @@ import { Box, Tag } from 'lucide-react'
 import { FocusEventHandler, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { useTranslations } from 'next-intl' // Import the translation hook
 
 export const CheckpointLoraItem: IComponent<{
   resourceFileName: string
@@ -28,6 +29,7 @@ export const CheckpointLoraItem: IComponent<{
   const { toast } = useToast()
   const debounce = useActionDebounce(1000, true)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const t = useTranslations('components.checkpointLoraItem') // Initialize the translation hook
 
   const {
     data: resourceInfo,
@@ -124,7 +126,7 @@ export const CheckpointLoraItem: IComponent<{
     }).then((res) => {
       if (res.status === EAttachmentStatus.UPLOADED) {
         toast({
-          title: 'Image uploaded'
+          title: t('imageUploaded')
         })
         updater
           .mutateAsync({
@@ -134,7 +136,7 @@ export const CheckpointLoraItem: IComponent<{
           .finally(refetch)
       } else {
         toast({
-          title: 'Image upload failed',
+          title: t('imageUploadFailed'),
           color: 'destructive'
         })
       }
@@ -158,19 +160,16 @@ export const CheckpointLoraItem: IComponent<{
         suffix: (
           <Tooltip>
             <TooltipTrigger className='flex flex-auto justify-end gap-1 ml-4'>
-              {/* <Badge variant='outline'>
-                {tag.countExtension} <Blocks width={12} height={12} className='ml-1' />
-              </Badge> */}
               <Badge variant='outline'>
                 {tag.countResource} <Box width={12} height={12} className='ml-1' />
               </Badge>
             </TooltipTrigger>
-            <TooltipContent>Used in {tag.countResource} resources</TooltipContent>
+            <TooltipContent>{t('usedInResources', { count: tag.countResource })}</TooltipContent>
           </Tooltip>
         )
       }
     })
-  }, [tags])
+  }, [tags, t])
 
   return (
     <div className='w-full flex p-2 py-4 gap-2'>
@@ -201,9 +200,9 @@ export const CheckpointLoraItem: IComponent<{
               name='displayName'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Display Name</FormLabel>
+                  <FormLabel>{t('displayName')}</FormLabel>
                   <FormControl>
-                    <Input placeholder='Same as file name...' {...field} />
+                    <Input placeholder={t('displayNamePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -213,9 +212,9 @@ export const CheckpointLoraItem: IComponent<{
               name='description'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>{t('description')}</FormLabel>
                   <FormControl>
-                    <Textarea placeholder='A cool model for anime drawing...' {...field} />
+                    <Textarea placeholder={t('descriptionPlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -232,7 +231,7 @@ export const CheckpointLoraItem: IComponent<{
             onCreateNew={(tag) => {
               createTag.mutateAsync(tag).then(() => refetchTags().then(() => setSelectedTags([...selectedTags, tag])))
             }}
-            placeholder='Select tags'
+            placeholder={t('selectTags')}
             variant='inverted'
             animation={1}
           />
@@ -250,7 +249,7 @@ export const CheckpointLoraItem: IComponent<{
                   </LoadableButton>
                 </TooltipTrigger>
                 <TooltipContent side='left'>
-                  Resource&apos;s information is {updater.isPending ? 'updating...' : 'saved'}
+                  {t('resourceInfo', { status: updater.isPending ? t('updating') : t('saved') })}
                 </TooltipContent>
               </Tooltip>
             </div>

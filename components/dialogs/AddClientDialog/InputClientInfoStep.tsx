@@ -4,31 +4,37 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { EnterIcon } from '@radix-ui/react-icons'
 import { useContext, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { AddClientDialogContext, EImportStep } from '.'
 import { trpc } from '@/utils/trpc'
 import { useToast } from '@/hooks/useToast'
-import { ArrowLongRightIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { ArrowRight } from 'lucide-react'
+import { useTranslations } from 'next-intl' // Import the translation hook
 
 export const InputClientInfoStep: IComponent = () => {
   const { clientInfo, setClientInfo, setStep } = useContext(AddClientDialogContext)
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
+  const t = useTranslations('components.inputClientInfoStep') // Initialize the translation hook
   const formSchema = z.object({
     // Regex is url host name
     host: z
       .string()
-      .min(2, { message: 'Host must be at least 2 characters' })
+      .min(2, { message: t('hostMinLength') }) // Use translation for error message
       .regex(/^(https?:\/\/)?(localhost:\d{1,5}|[a-zA-Z0-9.-]+(?:\.[a-zA-Z]{2,})?(:\d{1,5})?)$/, {
-        message: 'Invalid host'
+        message: t('invalidHost') // Use translation for error message
       }),
     auth: z.boolean().default(false),
-    username: z.string().min(2, { message: 'Username must be at least 2 characters' }).optional(),
-    password: z.string().min(6, { message: 'Password must be at least 6 characters' }).optional()
+    username: z
+      .string()
+      .min(2, { message: t('usernameMinLength') })
+      .optional(), // Use translation for error message
+    password: z
+      .string()
+      .min(6, { message: t('passwordMinLength') })
+      .optional() // Use translation for error message
   })
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -80,9 +86,9 @@ export const InputClientInfoStep: IComponent = () => {
           name='host'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Server address</FormLabel>
+              <FormLabel>{t('serverAddress')}</FormLabel>
               <FormControl>
-                <Input placeholder='localhost:8188...' {...field} />
+                <Input placeholder={t('serverAddressPlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -94,7 +100,7 @@ export const InputClientInfoStep: IComponent = () => {
             <FormItem>
               <div className='flex items-center space-x-2'>
                 <Switch checked={field.value} onCheckedChange={field.onChange} />
-                <Label htmlFor='airplane-mode'>Basic authentication</Label>
+                <Label htmlFor='airplane-mode'>{t('basicAuth')}</Label>
               </div>
               <FormMessage />
             </FormItem>
@@ -105,9 +111,9 @@ export const InputClientInfoStep: IComponent = () => {
           disabled={!haveAuth}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>{t('username')}</FormLabel>
               <FormControl>
-                <Input placeholder='Enter your user name...' {...field} />
+                <Input placeholder={t('usernamePlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -118,9 +124,9 @@ export const InputClientInfoStep: IComponent = () => {
           disabled={!haveAuth}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>{t('password')}</FormLabel>
               <FormControl>
-                <Input type='password' placeholder='Enter your password' {...field} />
+                <Input type='password' placeholder={t('passwordPlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -128,7 +134,7 @@ export const InputClientInfoStep: IComponent = () => {
         />
         <div className='flex justify-end w-full'>
           <LoadableButton loading={loading} type='submit' color='primary'>
-            Next <ArrowRight className='ml-2 w-4 h-4' />
+            {t('next')} <ArrowRight className='ml-2 w-4 h-4' />
           </LoadableButton>
         </div>
       </form>

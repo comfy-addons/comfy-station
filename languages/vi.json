@@ -214,6 +214,80 @@
       "parentTask": "ID: #{id}",
       "subTask": "ID: #{id}",
       "timeAgo": "vi-VN"
+    },
+    "inputClientInfoStep": {
+      "hostMinLength": "Tên máy chủ phải có ít nhất 2 ký tự",
+      "invalidHost": "Tên máy chủ không hợp lệ",
+      "usernameMinLength": "Tên người dùng phải có ít nhất 2 ký tự",
+      "passwordMinLength": "Mật khẩu phải có ít nhất 6 ký tự",
+      "serverAddress": "Địa chỉ máy chủ",
+      "serverAddressPlaceholder": "localhost:8188...",
+      "basicAuth": "Xác thực cơ bản",
+      "username": "Tên người dùng",
+      "usernamePlaceholder": "Nhập tên người dùng của bạn...",
+      "password": "Mật khẩu",
+      "passwordPlaceholder": "Nhập mật khẩu của bạn",
+      "next": "Tiếp theo"
+    },
+    "informationCheckingStep": {
+      "nodes": "nút",
+      "checkpoints": "Mô hình",
+      "checkpointsDescription": "Danh sách các mô hình có sẵn trong máy chủ này",
+      "extensions": "Tiện ích mở rộng",
+      "extensionsDescription": "Danh sách các tiện ích mở rộng có sẵn trong máy chủ này",
+      "loras": "Loras",
+      "lorasDescription": "Danh sách các lora có sẵn trong máy chủ này",
+      "samplers": "Bộ lấy mẫu",
+      "samplersDescription": "Thuật toán được sử dụng khi lấy mẫu, điều này có thể ảnh hưởng đến chất lượng, tốc độ và phong cách của kết quả được tạo ra.",
+      "schedulers": "Bộ lập lịch",
+      "schedulersDescription": "Bộ lập lịch kiểm soát cách nhiễu được loại bỏ dần dần để tạo thành hình ảnh.",
+      "nodeInformation": "THÔNG TIN NÚT",
+      "nodeDetails": "Nhập chi tiết nút trước khi tạo",
+      "serverAddress": "ĐỊA CHỈ MÁY CHỦ",
+      "currentAddress": "Địa chỉ hiện tại của nút này",
+      "authentication": "XÁC THỰC",
+      "authenticationMode": "Chế độ xác thực của chế độ này",
+      "enabled": "Đã bật",
+      "disabled": "Đã tắt",
+      "nodeName": "TÊN NÚT",
+      "naming": "Đặt tên cho nút này",
+      "back": "Quay lại",
+      "add": "Thêm"
+    },
+    "importClientStep": {
+      "pingServer": "Ping đến máy chủ",
+      "createClient": "Tạo máy khách",
+      "importedCheckpoint": "Đã nhập các mô hình",
+      "importedLora": "Đã nhập lora",
+      "importedSamplerScheduler": "Đã nhập bộ lấy mẫu và bộ lập lịch",
+      "importedExtension": "Đã nhập tiện ích mở rộng",
+      "back": "Quay lại",
+      "finish": "Hoàn thành",
+      "waitMessage": "Điều này có thể mất vài phút, vui lòng chờ."
+    },
+    "checkpointLoraItem": {
+      "imageUploaded": "Hình ảnh đã được tải lên",
+      "imageUploadFailed": "Tải lên hình ảnh thất bại",
+      "usedInResources": "Được sử dụng trong {count} tài nguyên",
+      "displayName": "Tên hiển thị",
+      "displayNamePlaceholder": "Giống như tên tệp...",
+      "description": "Mô tả",
+      "descriptionPlaceholder": "Một mô hình tuyệt vời cho vẽ anime...",
+      "selectTags": "Chọn thẻ",
+      "resourceInfo": "Thông tin tài nguyên đã {status}",
+      "updating": "đang cập nhật...",
+      "saved": "đã lưu"
+    },
+    "checkingFeatureStep": {
+      "serverConnected": "Máy chủ đã kết nối",
+      "managerInstalled": "ComfyUI - Manager đã được cài đặt",
+      "managerNotInstalled": "ComfyUI - Manager chưa được cài đặt",
+      "crystoolInstalled": "ComfyUI - Crystool đã được cài đặt",
+      "crystoolNotInstalled": "ComfyUI - Crystool chưa được cài đặt",
+      "back": "Quay lại",
+      "continue": "Tiếp tục",
+      "crystoolInfo": "Crystools cần thiết để theo dõi tài nguyên của nút, nếu không có nó, bạn không thể theo dõi GPU, CPU và HDD.",
+      "managerInfo": "ComfyUI-Manager được sử dụng để quản lý các tiện ích mở rộng và tệp mô hình."
     }
   },
   "settings": {
@@ -397,7 +471,7 @@
         "avatarSuccess": "Đã tải lên ảnh đại diện",
         "avatarError": "Tải lên ảnh đại diện thất bại"
       }
-    },  
+    },
     "addUser": {
       "title": "Thêm người dùng mới",
       "email": {

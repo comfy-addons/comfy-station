@@ -3,7 +3,6 @@ import { AddClientDialogContext, EImportStep } from '.'
 import { SimpleInfoItem } from '@/components/SimpleInfoItem'
 import {
   ArrowRightIcon,
-  ArrowTopRightOnSquareIcon,
   CheckIcon,
   ChevronLeftIcon,
   XMarkIcon
@@ -14,10 +13,12 @@ import { EImportingClient } from '@/constants/enum'
 import { trpc } from '@/utils/trpc'
 import { LoadingSVG } from '@/components/svg/LoadingSVG'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
+import { useTranslations } from 'next-intl' // Import the translation hook
 
 export const ImportClientStep: IComponent = () => {
   const [importStatuses, setImportStatuses] = useState<EImportingClient[]>([])
   const { clientInfo, setStep, setDialog } = useContext(AddClientDialogContext)
+  const t = useTranslations('components.importClientStep') // Initialize the translation hook
 
   trpc.client.addNewClient.useSubscription(
     {
@@ -57,12 +58,12 @@ export const ImportClientStep: IComponent = () => {
   return (
     <>
       <div className='flex flex-col gap-2 max-w-sm w-full'>
-        {renderStatus(EImportingClient.PING_OK, 'Ping to server')}
-        {renderStatus(EImportingClient.CLIENT_CREATED, 'Create client')}
-        {renderStatus(EImportingClient.IMPORTED_CHECKPOINT, 'Imported checkpoint')}
-        {renderStatus(EImportingClient.IMPORTED_LORA, 'Imported lora')}
-        {renderStatus(EImportingClient.IMPORTED_SAMPLER_SCHEDULER, 'Imported sampler scheduler')}
-        {renderStatus(EImportingClient.IMPORTED_EXTENSION, 'Imported extension')}
+        {renderStatus(EImportingClient.PING_OK, t('pingServer'))}
+        {renderStatus(EImportingClient.CLIENT_CREATED, t('createClient'))}
+        {renderStatus(EImportingClient.IMPORTED_CHECKPOINT, t('importedCheckpoint'))}
+        {renderStatus(EImportingClient.IMPORTED_LORA, t('importedLora'))}
+        {renderStatus(EImportingClient.IMPORTED_SAMPLER_SCHEDULER, t('importedSamplerScheduler'))}
+        {renderStatus(EImportingClient.IMPORTED_EXTENSION, t('importedExtension'))}
       </div>
       <div className='flex gap-2 w-full justify-center mt-4'>
         <Button
@@ -71,17 +72,17 @@ export const ImportClientStep: IComponent = () => {
           variant='secondary'
           className=''
         >
-          Back
+          {t('back')}
           <ChevronLeftIcon width={16} height={16} className='ml-2' />
         </Button>
         <LoadableButton disabled={!isDone || isFailed} loading={!isDone && !isFailed} onClick={handleFinish}>
-          Finish
+          {t('finish')}
           <ArrowRightIcon width={16} height={16} className='ml-2' />
         </LoadableButton>
       </div>
       <div className='flex flex-col gap-2 w-full justify-center mt-4'>
         <p className='text-sm font-normal text-zinc-400 max-w-lg text-center'>
-          This may take a few minutes, please wait.
+          {t('waitMessage')}
         </p>
       </div>
     </>

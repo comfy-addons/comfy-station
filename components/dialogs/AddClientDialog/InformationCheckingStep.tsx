@@ -15,6 +15,7 @@ import { AccordionItem, AccordionTrigger, AccordionContent } from '@radix-ui/rea
 import { toReadableName } from '@/utils/node'
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@radix-ui/react-collapsible'
 import { EResourceType } from '@/entities/enum'
+import { useTranslations } from 'next-intl' // Import the translation hook
 
 const extraCls = 'border rounded-lg bg-secondary/20 shadow-inner'
 
@@ -39,6 +40,7 @@ export const InformationCheckingStep: IComponent = () => {
     },
     { enabled: clientInfo !== undefined }
   )
+  const t = useTranslations('components.informationCheckingStep') // Initialize the translation hook
 
   const itemCount = useMemo(() => {
     switch (activeTab) {
@@ -90,7 +92,9 @@ export const InformationCheckingStep: IComponent = () => {
               <CollapsibleTrigger className='p-2 px-4 w-full flex gap-2 items-center'>
                 <Blocks width={16} height={16} />
                 {name}
-                <span className='ml-auto text-xs text-secondary-foreground'>{extNodes.length} nodes</span>
+                <span className='ml-auto text-xs text-secondary-foreground'>
+                  {extNodes.length} {t('nodes')}
+                </span>
                 <ChevronsUpDown className='h-4 w-4' />
               </CollapsibleTrigger>
               <CollapsibleContent className='bg-secondary/50 shadow-inner divide-y-[1px]'>
@@ -138,7 +142,7 @@ export const InformationCheckingStep: IComponent = () => {
           return null
       }
     },
-    [activeTab, data]
+    [activeTab, data, t]
   )
 
   const renderListContent = useMemo(() => {
@@ -162,40 +166,40 @@ export const InformationCheckingStep: IComponent = () => {
         <ResourceItem
           active={activeTab === EActiveTab.Checkpoints}
           onClick={() => setActiveTab(EActiveTab.Checkpoints)}
-          title='Checkpoints'
-          description='List of available checkpoint in this server'
+          title={t('checkpoints')}
+          description={t('checkpointsDescription')}
           loading={isLoading}
           count={data?.checkpoints.length}
         />
         <ResourceItem
           active={activeTab === EActiveTab.Extensions}
           onClick={() => setActiveTab(EActiveTab.Extensions)}
-          title='Extensions'
-          description='List of available extensions in this server'
+          title={t('extensions')}
+          description={t('extensionsDescription')}
           loading={isLoading}
           count={data ? Object.keys(data.extensions).length : undefined}
         />
         <ResourceItem
           active={activeTab === EActiveTab.Loras}
           onClick={() => setActiveTab(EActiveTab.Loras)}
-          title='Loras'
-          description='List of available lora in this server'
+          title={t('loras')}
+          description={t('lorasDescription')}
           loading={isLoading}
           count={data?.lora.length}
         />
         <ResourceItem
           active={activeTab === EActiveTab.Samplers}
           onClick={() => setActiveTab(EActiveTab.Samplers)}
-          title='Samplers'
-          description={data?.samplerInfo.sampler?.[1]?.tooltip ?? 'List of available sampler in this server'}
+          title={t('samplers')}
+          description={t('samplersDescription')}
           loading={isLoading}
           count={data?.samplerInfo.sampler?.[0]?.length}
         />
         <ResourceItem
           active={activeTab === EActiveTab.Schedulers}
           onClick={() => setActiveTab(EActiveTab.Schedulers)}
-          title='Schedulers'
-          description={data?.samplerInfo.scheduler?.[1]?.tooltip ?? 'List of available scheduler in this server'}
+          title={t('schedulers')}
+          description={t('schedulersDescription')}
           loading={isLoading}
           count={data?.samplerInfo.scheduler?.[0]?.length}
         />
@@ -227,25 +231,25 @@ export const InformationCheckingStep: IComponent = () => {
         </SimpleTransitionLayout>
       </AnimateDiv>
       <AnimateDiv delayShow={400} className={cn('w-1/4 p-2', extraCls)}>
-        <h1 className='font-semibold'>NODE INFORMATION</h1>
-        <p className='text-sm font-light'>Input the node details before created</p>
+        <h1 className='font-semibold'>{t('nodeInformation')}</h1>
+        <p className='text-sm font-light'>{t('nodeDetails')}</p>
         <div className='mt-3 flex flex-col gap-3'>
           <InputItem
             Icon={Home}
-            title='SERVER ADDRESS'
-            description='Current address of this node'
+            title={t('serverAddress')}
+            description={t('currentAddress')}
             value={clientInfo?.host}
           />
           <InputItem
             Icon={Lock}
-            title='AUTHENTICATION'
-            description='Authentication mode of this mode'
-            value={clientInfo?.auth ? 'Enabled' : 'Disabled'}
+            title={t('authentication')}
+            description={t('authenticationMode')}
+            value={clientInfo?.auth ? t('enabled') : t('disabled')}
           />
           <InputItem
             Icon={Tag}
-            title='NODE NAME'
-            description='Naming for this node'
+            title={t('nodeName')}
+            description={t('naming')}
             inputType='input'
             value={clientInfo?.displayName ?? ''}
             onChange={(e) => setDisplayName?.(e)}
@@ -254,11 +258,11 @@ export const InformationCheckingStep: IComponent = () => {
         </div>
         <div className='flex gap-2 w-full justify-end mt-4'>
           <Button onClick={() => setStep?.(EImportStep.FEATURE_CHECKING)} variant='secondary' className=''>
-            Back
+            {t('back')}
             <ChevronLeftIcon width={16} height={16} className='ml-2' />
           </Button>
           <LoadableButton onClick={() => setStep?.(EImportStep.IMPORTING)}>
-            Add
+            {t('add')}
             <Save width={16} height={16} className='ml-2' />
           </LoadableButton>
         </div>

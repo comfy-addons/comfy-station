@@ -27,7 +27,7 @@ export const ResourceItem: IComponent<{
         <div className='font-medium leading-none'>{title}</div>
         {count !== undefined && <MiniBadge Icon={CopyIcon} count={count} />}
       </div>
-      <p className='line-clamp-2 text-sm leading-snug text-muted-foreground'>{description}</p>
+      <p className='text-sm leading-snug text-muted-foreground'>{description}</p>
     </Card>
   )
 }
