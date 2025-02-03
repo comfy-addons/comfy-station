@@ -1,6 +1,5 @@
 # Step 1: Use the official Bun image
-FROM node:lts-slim AS base
-RUN npm i -g bun@latest
+FROM oven/bun:alpine AS base
 WORKDIR /usr/src/app
 
 # install dependencies into temp directory
@@ -31,7 +30,7 @@ WORKDIR /app
 
 ENV NODE_ENV production
 # Uncomment the following line in case you want to disable telemetry during runtime.
-# ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED 1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -49,4 +48,4 @@ EXPOSE 3000
 
 ENV PORT 3000
 
-CMD ["node", "server.js"]
+CMD ["bun", "server.js"]
