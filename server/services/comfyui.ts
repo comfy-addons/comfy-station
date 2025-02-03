@@ -207,7 +207,7 @@ export class ComfyPoolInstance {
       // For on click into thumbnail preview
       imgUtil
         .clone()
-        .intoPreviewJPG()
+        .intoHighJPG()
         .catch((e) => {
           this.logger.w('Error while converting to preview', e)
           return null
