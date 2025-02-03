@@ -26,6 +26,7 @@ import { EValueType } from '@/entities/enum'
 import { PlayCircleIcon } from '@heroicons/react/24/outline'
 import { useTouchDevice } from '@/hooks/useTouchDevice'
 import { EKeyboardKey, useShortcutKeyEvent } from '@/hooks/useShortcutKeyEvent'
+import { AttachmentImage } from './AttachmentImage'
 
 const AttachmentTooltipPopup: IComponent<{
   taskId?: string
@@ -44,19 +45,35 @@ const AttachmentTooltipPopup: IComponent<{
         <span>{detail?.workflow.name}</span>
       </div>
       {!!detail?.inputValues &&
-        Object.entries(detail.inputValues).map(([key, value], idx) => (
-          <AddonDiv
-            key={key}
-            title={t('downloadTitle')}
-            onDoubleClick={() => copyToClipboard(String(value), t('copyValue'))}
-            className={cn(
-              'flex flex-col justify-between max-w-[420px] break-words p-2 even:bg-secondary/50 hover:opacity-80 cursor-pointer active:opacity-100'
-            )}
-          >
-            <code className='font-bold pointer-events-none'>{key}</code>
-            <span className='pointer-events-none'>{value}</span>
-          </AddonDiv>
-        ))}
+        Object.entries(detail.inputValues).map(([key, value], idx) => {
+          const type = detail.workflow.mapInput?.[key]?.type
+          if (type === EValueType.Image || type === EValueType.Video) {
+            return (
+              <AddonDiv
+                key={key}
+                className={cn(
+                  'flex flex-col justify-between max-w-[420px] break-words even:bg-secondary/50 hover:opacity-80 cursor-pointer active:opacity-100'
+                )}
+              >
+                <code className='font-bold pointer-events-none px-2 pb-1'>{key}</code>
+                <AttachmentImage containerClassName='w-full aspect-square' alt='sources' key={key} data={{ id: value as string }} />
+              </AddonDiv>
+            )
+          }
+          return (
+            <AddonDiv
+              key={key}
+              title={t('downloadTitle')}
+              onDoubleClick={() => copyToClipboard(String(value), t('copyValue'))}
+              className={cn(
+                'flex flex-col justify-between max-w-[420px] break-words p-2 even:bg-secondary/50 hover:opacity-80 cursor-pointer active:opacity-100'
+              )}
+            >
+              <code className='font-bold pointer-events-none'>{key}</code>
+              <span className='pointer-events-none'>{value}</span>
+            </AddonDiv>
+          )
+        })}
     </div>
   )
 }
@@ -243,11 +260,14 @@ export const AttachmentReview: IComponent<{
                                 <code>{t('download')}</code> <Download width={16} height={16} className='ml-2' />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent side='left' className='bg-background/80 backdrop-blur-lg'>
+                            <DropdownMenuContent
+                              data-is-popover-content
+                              side='left'
+                              className='bg-background/80 backdrop-blur-lg'
+                            >
                               <DropdownMenuItem onClick={() => downloadFn('jpg')} className='cursor-pointer text-sm'>
                                 <span>{t('downloadHigh')}</span>
                               </DropdownMenuItem>
-
                               <DropdownMenuItem onClick={() => downloadFn()} className='cursor-pointer text-sm'>
                                 <span>{t('downloadRaw')}</span>
                               </DropdownMenuItem>

@@ -18,9 +18,9 @@ export const MiniBadge: IComponent<{
 }> = ({ Icon, className, dotClassName, title, count }) => {
   return (
     <div
-      className={cn('flex gap-1 h-min justify-center items-center text-xs border rounded px-2 py-1 shadow', className)}
+      className={cn('flex gap-1 w-min h-min justify-center whitespace-nowrap items-center text-xs border rounded px-2 py-1 shadow', className)}
     >
-      {!!Icon && <Icon width={16} height={16} className='min-w-fit' />}
+      {!!Icon && <Icon width={16} height={16} className='min-w-[16px]' />}
       {!!dotClassName && <div className={cn('w-2 h-2 rounded-full', dotClassName)} />}
       {!!title && <span>{title}</span>}
       {count !== undefined && <span>{count}</span>}

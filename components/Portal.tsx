@@ -216,8 +216,15 @@ export const Portal: IComponent<{
 
   useEffect(() => {
     if (disabled || !onClickOutside) return
-    
+
     const handleClickOutside = (event: MouseEvent) => {
+      // find ele with data-is-popover-content, if include target => ignore
+      for (const ele of document.querySelectorAll('[data-is-popover-content]')) {
+        if (ele.contains(event.target as Node)) {
+          return
+        }
+      }
+
       if (cloneEleRef.current && !cloneEleRef.current.contains(event.target as Node)) {
         onClickOutside()
       }

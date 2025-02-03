@@ -125,7 +125,7 @@ export default function TokenPage() {
                     size='icon'
                     variant='outline'
                     onClick={async (event) => {
-                      copyToClipboard(token.id)
+                      copyToClipboard(token.id, t('actions.copied'))
                       const button = event.target as HTMLButtonElement
                       button.textContent = '✓'
                       setTimeout(() => {
