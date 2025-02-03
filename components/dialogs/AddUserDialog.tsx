@@ -19,16 +19,6 @@ import { ECompressPreset } from '@/constants/enum'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { useTranslations } from 'next-intl'
 
-type TNewUserInput = {
-  avatarId?: string
-  email: string
-  role: EUserRole
-  balance?: number
-  weightOffset?: number
-  password: string
-  reEnterPassword: string
-}
-
 export const AddUserDialog: IComponent = () => {
   const t = useTranslations('settings.addUser')
 
@@ -51,6 +41,7 @@ export const AddUserDialog: IComponent = () => {
     password: z.string().min(8, t('validation.passwordMinLength')),
     reEnterPassword: z.string().min(8, t('validation.passwordMinLength'))
   })
+  type TNewUserInput = z.infer<typeof NewUserSchema>
 
   const [show, setShow] = useState(false)
   const [avatar, setAvatar] = useState<File>()
