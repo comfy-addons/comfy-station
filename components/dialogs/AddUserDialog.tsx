@@ -19,30 +19,38 @@ import { ECompressPreset } from '@/constants/enum'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { useTranslations } from 'next-intl'
 
-const NewUserSchema = z.object({
-  avatarId: z.string().optional(),
-  email: z.string().email('Invalid email'),
-  role: z.nativeEnum(EUserRole).default(EUserRole.User),
-  balance: z
-    .number({
-      coerce: true
-    })
-    .default(-1)
-    .optional(),
-  weightOffset: z
-    .number({
-      coerce: true
-    })
-    .default(1)
-    .optional(),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  reEnterPassword: z.string().min(8, 'Password must be at least 8 characters')
-})
-
-type TNewUserInput = z.infer<typeof NewUserSchema>
+type TNewUserInput = {
+  avatarId?: string
+  email: string
+  role: EUserRole
+  balance?: number
+  weightOffset?: number
+  password: string
+  reEnterPassword: string
+}
 
 export const AddUserDialog: IComponent = () => {
   const t = useTranslations('settings.addUser')
+
+  const NewUserSchema = z.object({
+    avatarId: z.string().optional(),
+    email: z.string().email(t('validation.invalidEmail')),
+    role: z.nativeEnum(EUserRole).default(EUserRole.User),
+    balance: z
+      .number({
+        coerce: true
+      })
+      .default(-1)
+      .optional(),
+    weightOffset: z
+      .number({
+        coerce: true
+      })
+      .default(1)
+      .optional(),
+    password: z.string().min(8, t('validation.passwordMinLength')),
+    reEnterPassword: z.string().min(8, t('validation.passwordMinLength'))
+  })
 
   const [show, setShow] = useState(false)
   const [avatar, setAvatar] = useState<File>()
