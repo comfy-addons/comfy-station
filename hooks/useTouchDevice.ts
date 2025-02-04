@@ -1,30 +1,42 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 /**
- * useIsTouchDevice - A hook to detect if the user is on a touch device
+ * Hook to detect if the current device supports touch input
  *
- * @returns {boolean} `true` if the user is on a touch device, `false` otherwise
+ * This hook checks multiple touch detection methods:
+ * - 'ontouchstart' in window (works for most modern devices)
+ * - navigator.maxTouchPoints (works for Windows touch devices)
+ * - matchMedia query for coarse pointer (works for modern browsers)
+ *
+ * @returns boolean indicating whether the device supports touch input
+ *
+ * @example
+ * const isTouchDevice = useTouchDevice();
+ *
+ * // In JSX
+ * {isTouchDevice ? (
+ *   <TouchInterface />
+ * ) : (
+ *   <MouseInterface />
+ * )}
  */
-export const useTouchDevice = () => {
-  const [isTouchDevice, setIsTouchDevice] = useState(false)
+export const useTouchDevice = (): boolean => {
+  const [isTouchDevice, setIsTouchDevice] = useState<boolean>(false)
+
+  const checkTouchDevice = useCallback((): boolean => {
+    if (typeof window === 'undefined') return false
+
+    return Boolean(
+      'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.matchMedia('(any-pointer: coarse)').matches
+    )
+  }, [])
 
   useEffect(() => {
-    // Function to check if the device supports touch
-    const checkTouchDevice = () => {
-      return (
-        'ontouchstart' in window || // Most modern devices
-        navigator.maxTouchPoints > 0 // For Windows devices
-      )
-    }
-
-    // Update the state
     setIsTouchDevice(checkTouchDevice())
 
-    // Clean up any potential effects in the future
-    return () => {
-      setIsTouchDevice(false) // Reset in case of unmount or reuse
-    }
-  }, []) // Run only once on mount
+    // No need for cleanup as this is a one-time check
+    // Device capabilities don't change during session
+  }, [checkTouchDevice])
 
   return isTouchDevice
 }

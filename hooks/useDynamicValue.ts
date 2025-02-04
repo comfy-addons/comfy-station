@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 
 /**
  * Make dynamic value based on client screen status
@@ -13,51 +13,50 @@ export const useDynamicValue = (
   ref?: React.RefObject<HTMLDivElement | null>
 ): (<T = undefined>(values: T[], fallBack?: T) => T) => {
   const [sel, setSel] = useState(-1)
+  const resizeObserverRef = useRef<ResizeObserver | null>(null)
 
   const handleResize = useCallback(() => {
-    // Get element dimensions
     const ele = ref?.current ?? document.documentElement
     const currentSize = mode === 'width' ? ele.offsetWidth : ele.offsetHeight
 
-    // Determine breakpoint index
-    if (breakPoints[2]) {
-      if (currentSize > breakPoints[2]) setSel(3)
-      else if (currentSize > breakPoints[1]) setSel(2)
-      else if (currentSize > breakPoints[0]) setSel(1)
-      else setSel(0)
-    } else {
-      if (currentSize > breakPoints[1]) setSel(2)
-      else if (currentSize > breakPoints[0]) setSel(1)
-      else setSel(0)
+    // Use binary search to find the appropriate breakpoint index
+    const findBreakpointIndex = (size: number): number => {
+      let index = 0
+      for (let i = 0; i < breakPoints.length; i++) {
+        if (size > breakPoints[i]) {
+          index = i + 1
+        }
+      }
+      return index
     }
+
+    setSel(findBreakpointIndex(currentSize))
   }, [breakPoints, mode, ref])
 
   useEffect(() => {
-    // Initial resize check
+    const targetElement = ref?.current ?? document.documentElement
+
+    // Use ResizeObserver for more efficient size monitoring
+    resizeObserverRef.current = new ResizeObserver(handleResize)
+    resizeObserverRef.current.observe(targetElement)
+
+    // Initial size check
     handleResize()
 
-    // Add resize event listener
-    window.addEventListener('resize', handleResize)
-
     return () => {
-      window.removeEventListener('resize', handleResize)
+      resizeObserverRef.current?.disconnect()
     }
-  }, [handleResize])
+  }, [handleResize, ref])
 
   /**
    * Get value based on current breakpoint selection
    * @param values Array of values for each breakpoint
    * @param fallBack Default value to use if selection is not determined
    */
-  const getValue = <T = undefined>(values: T[], fallBack?: T): T => {
-    // Handle initial state
+  const getValue = useCallback(<T = undefined>(values: T[], fallBack?: T): T => {
     if (sel === -1) return fallBack ?? values[0]
-
-    // Ensure we don't exceed array bounds
-    const finalSel = Math.min(sel, values.length - 1)
-
-    return values[finalSel]
-  }
+    return values[Math.min(sel, values.length - 1)]
+  }, [sel])
 
   return getValue
 }

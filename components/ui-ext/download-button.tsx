@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslations } from 'next-intl'
 
-import useImageBundler from '@/hooks/useImageBundler'
+import useFileBundler from '@/hooks/useImageBundler'
 import { cn } from '@/utils/style'
 import AnimatedCircularProgressBar from '../ui/animated-circular-progress-bar'
 import { Button } from '../ui/button'
@@ -25,7 +25,7 @@ const DownloadImagesButton: IComponent<{
   const haveVideo = !!attachments?.some((a) => a?.type === EValueType.Video)
   const haveImage = !!attachments?.some((a) => a?.type === EValueType.Image)
 
-  const { bundleImages, isLoading, progress, error } = useImageBundler()
+  const { bundleFiles, isLoading, progress, error } = useFileBundler()
 
   const downloadRawOutput = () => {
     if (isLoading) return
@@ -34,7 +34,7 @@ const DownloadImagesButton: IComponent<{
         ?.filter((a) => !!a)
         .filter((a) => !!a.raw?.url)
         .map((v) => v.raw!.url) as string[]
-      bundleImages(images)
+      bundleFiles(images)
     } catch (e) {
       console.error(e)
     }
@@ -47,7 +47,7 @@ const DownloadImagesButton: IComponent<{
         ?.filter((a) => !!a && a.type === EValueType.Image)
         .filter((a) => !!a.high?.url)
         .map((v) => v.high!.url) as string[]
-      bundleImages(images)
+      bundleFiles(images)
     } catch (e) {
       console.error(e)
     }
@@ -60,7 +60,7 @@ const DownloadImagesButton: IComponent<{
         ?.filter((a) => !!a && a.type === EValueType.Video)
         .filter((a) => !!a.raw?.url)
         .map((v) => v.raw!.url) as string[]
-      bundleImages(videos)
+      bundleFiles(videos)
     } catch (e) {
       console.error(e)
     }

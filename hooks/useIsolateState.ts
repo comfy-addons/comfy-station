@@ -33,7 +33,6 @@ export const useIsolateState = <T extends Record<string, any>>(onStateChange: (s
     return () => {
       window.removeEventListener(id, fn as any)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, onStateChange])
 
   return setState

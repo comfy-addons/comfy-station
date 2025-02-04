@@ -1,10 +1,5 @@
 import { delay } from '@/utils/tools'
-import { useState, useCallback, useRef, useId } from 'react'
-
-/**
- * Collections of timeoutID for debounceHook
- */
-const timeoutIDs: Record<string, ReturnType<typeof setTimeout> | null> = {}
+import { useState, useCallback, useRef, useId, useEffect } from 'react'
 
 /**
  * Make an action that limits calling after threshold time
@@ -23,24 +18,28 @@ const useActionThreshold = (
   refresh: () => void
 } => {
   const [ready, setReady] = useState(true)
+  const isMounted = useRef(true)
+
+  useEffect(() => {
+    return () => {
+      isMounted.current = false
+    }
+  }, [])
 
   const onAction = useCallback(
     async (action: () => Promise<void> | void): Promise<void> => {
-      if (!ready) {
-        return
-      }
+      if (!ready) return
+
       setReady(false)
       try {
         await action()
       } catch (error) {
-        setReady(true)
+        if (isMounted.current) setReady(true)
         throw error
       } finally {
-        if (once) {
-          return
-        }
+        if (once) return
         await delay(threshold)
-        setReady(true)
+        if (isMounted.current) setReady(true)
       }
     },
     [ready, once, threshold]
@@ -60,22 +59,25 @@ const useActionDebounce = (
   debounceTime = 500,
   clearWhenCallAgain = false
 ): ((_action: () => Promise<void> | void) => void) => {
-  const id = useId()
-  const action = useRef<Function | null>(null)
+  const actionRef = useRef<Function | null>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const clean = useCallback(() => {
-    const timeOut = timeoutIDs[id]
-    if (timeOut) {
-      clearTimeout(timeOut)
-      delete timeoutIDs[id]
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
     }
-    action.current = null
-  }, [id])
+    actionRef.current = null
+  }, [])
+
+  useEffect(() => {
+    return clean
+  }, [clean])
 
   const doAction = useCallback(async (): Promise<void> => {
-    if (typeof action.current === 'function') {
+    if (typeof actionRef.current === 'function') {
       try {
-        await action.current()
+        await actionRef.current()
       } catch (error) {
         console.error('Action execution failed:', error)
       }
@@ -85,23 +87,18 @@ const useActionDebounce = (
 
   const onAction = useCallback(
     (_action: () => Promise<void> | void = async (): Promise<void> => undefined): void => {
-      action.current = _action
-      const timeOut = timeoutIDs[id]
+      actionRef.current = _action
 
-      if (clearWhenCallAgain && timeOut) {
-        clearTimeout(timeOut)
+      if (clearWhenCallAgain && timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
       }
 
-      if (clearWhenCallAgain || timeoutIDs[id] === null) {
-        timeoutIDs[id] = setTimeout(() => doAction(), debounceTime)
+      if (clearWhenCallAgain || !timeoutRef.current) {
+        timeoutRef.current = setTimeout(() => doAction(), debounceTime)
       }
     },
-    [id, clearWhenCallAgain, debounceTime, doAction]
+    [clearWhenCallAgain, debounceTime, doAction]
   )
-
-  useCallback(() => {
-    return () => clean()
-  }, [clean])
 
   return onAction
 }
