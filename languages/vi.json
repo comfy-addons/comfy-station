@@ -111,7 +111,7 @@
       "status": "TRẠNG THÁI {status}",
       "parentTask": "TÁC VỤ CHA",
       "detail": "Chi tiết: {message}",
-      "lastExecuted": "Thực thi lần cuối lúc {time}",
+      "lastExecuted": "Thực thi lần cuối",
       "nothingExecuted": "Chưa thực thi tác vụ nào"
     },
     "workflowCard": {

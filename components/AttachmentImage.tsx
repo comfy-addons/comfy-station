@@ -4,7 +4,7 @@ import { trpc } from '@/utils/trpc'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 
 interface IAttachmentImage extends LoadableImageProps {
-  data?: Attachment | { id: string }
+  data?: Attachment | { id?: string }
   zoomable?: boolean
   zoomableProps?: {
     wrapperClass: string

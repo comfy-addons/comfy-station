@@ -111,7 +111,7 @@
       "status": "STATUS {status}",
       "parentTask": "PARENT TASK",
       "detail": "Detail: {message}",
-      "lastExecuted": "Last executed at {time}",
+      "lastExecuted": "Last executed",
       "nothingExecuted": "Nothing executed yet"
     },
     "workflowCard": {

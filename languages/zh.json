@@ -105,7 +105,7 @@
       "status": "状态 {status}",
       "parentTask": "父任务",
       "detail": "详情：{message}",
-      "lastExecuted": "最后执行于 {time}",
+      "lastExecuted": "最后执行",
       "nothingExecuted": "尚未执行任何任务"
     },
     "workflowCard": {
@@ -326,7 +326,7 @@
         "executed": "已执行",
         "actions": "操作"
       },
-     "status": {
+      "status": {
         "unlimited": "无限制"
       },
       "id": "ID：{id}"

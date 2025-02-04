@@ -3,24 +3,15 @@ import { trpc } from '@/utils/trpc'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from './ui/button'
-import { BellIcon, Check, ListChecks, Trash2 } from 'lucide-react'
+import { BellIcon, ListChecks } from 'lucide-react'
 import { cn } from '@/utils/style'
-import TimeAgo from 'javascript-time-ago'
-import en from 'javascript-time-ago/locale/en'
-import vi from 'javascript-time-ago/locale/vi'
-import zh from 'javascript-time-ago/locale/zh'
 import type { UserNotification } from '@/entities/user_notifications'
 import { ENotificationTarget } from '@/entities/enum'
 import LoadableImage from './LoadableImage'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import { LoadingSVG } from './svg/LoadingSVG'
 import DownloadImagesButton from './ui-ext/download-button'
-
-TimeAgo.addLocale(en)
-TimeAgo.addLocale(vi)
-TimeAgo.addLocale(zh)
-// Initialize TimeAgo with the current locale
-const getTimeAgo = (locale: string) => new TimeAgo(locale)
+import { TimeAgoSpan } from './TimeAgo'
 
 const dotLoading = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
 
@@ -77,9 +68,8 @@ const NotificationItem = ({ notification, onClick }: { notification: UserNotific
         {!!notification.target?.targetId && !!taskInfo?.parent && isSubTask && (
           <span className='text-xs'>{t('subTask', { id: taskInfo!.parent!.id.toString().split('-').at(-1) })}</span>
         )}
-        <p className='text-xs text-muted-foreground'>
-          {getTimeAgo(t('timeAgo')).format(new Date(notification.createdAt))}
-        </p>
+        <br />
+        <TimeAgoSpan className='text-xs text-muted-foreground' date={new Date(notification.createdAt)} />
       </div>
       {!!notification.target && notification.target.targetType === ENotificationTarget.WorkflowTask && (
         <DownloadImagesButton workflowTaskId={String(notification.target!.targetId)} />
