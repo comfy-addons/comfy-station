@@ -124,6 +124,7 @@
       "actions": {
         "edit": "Edit workflow",
         "download": "Download workflow",
+        "duplicate": "Duplicate workflow",
         "activate": "Activated",
         "deactivate": "Deactivated",
         "delete": "Delete"
@@ -131,7 +132,8 @@
       "toast": {
         "activated": "Workflow Activated",
         "deactivated": "Workflow Deactivated",
-        "deleted": "Workflow Deleted"
+        "deleted": "Workflow Deleted",
+        "duplicated": "Workflow Duplicated"
       },
       "stats": {
         "executed": "Executed",

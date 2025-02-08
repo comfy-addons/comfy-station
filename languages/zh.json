@@ -118,6 +118,7 @@
       "actions": {
         "edit": "编辑工作流",
         "download": "下载工作流",
+        "duplicate": "复制工作流",
         "activate": "启用",
         "deactivate": "停用",
         "delete": "删除"
@@ -125,7 +126,8 @@
       "toast": {
         "activated": "工作流已启用",
         "deactivated": "工作流已停用",
-        "deleted": "工作流已删除"
+        "deleted": "工作流已删除",
+        "duplicated": "工作流已复制"
       },
       "stats": {
         "executed": "已执行",

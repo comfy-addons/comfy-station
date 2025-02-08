@@ -463,5 +463,45 @@ export const workflowRouter = router({
       const attachment = await ctx.em.findOneOrFail(Attachment, { id: input.attachmentId })
       workflow.avatar = attachment
       await ctx.em.persist(workflow).flush()
-    })
+    }),
+  duplicate: editorProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
+    // Find original workflow
+    const originalWorkflow = await ctx.em.findOneOrFail(Workflow, { id: input }, { populate: ['rawWorkflow'] })
+
+    // Create new workflow with copied data
+    const duplicatedWorkflow = ctx.em.create(
+      Workflow,
+      {
+        name: `${originalWorkflow.name} (Copy)`,
+        description: originalWorkflow.description,
+        rawWorkflow: originalWorkflow.rawWorkflow,
+        hideWorkflow: originalWorkflow.hideWorkflow,
+        allowLocalhost: originalWorkflow.allowLocalhost,
+        mapInput: originalWorkflow.mapInput,
+        mapOutput: originalWorkflow.mapOutput,
+        cost: originalWorkflow.cost,
+        baseWeight: originalWorkflow.baseWeight,
+        status: EWorkflowActiveStatus.Deactivated, // Start as Deactivated
+        author: ctx.session.user!
+      },
+      { partial: true }
+    )
+
+    // Create edit event
+    const action = ctx.em.create(
+      WorkflowEditEvent,
+      {
+        workflow: duplicatedWorkflow,
+        user: ctx.session.user!,
+        type: EWorkflowEditType.Create,
+        info: { duplicatedFrom: originalWorkflow.id }
+      },
+      { partial: true }
+    )
+
+    duplicatedWorkflow.editedActions.add(action)
+
+    await ctx.em.persistAndFlush([duplicatedWorkflow, action])
+    return duplicatedWorkflow
+  })
 })

@@ -124,6 +124,7 @@
       "actions": {
         "edit": "Chỉnh sửa workflow",
         "download": "Tải xuống workflow",
+        "duplicate": "Nhân bản workflow",
         "activate": "Kích hoạt",
         "deactivate": "Vô hiệu hóa",
         "delete": "Xóa"
@@ -131,7 +132,8 @@
       "toast": {
         "activated": "Đã kích hoạt workflow",
         "deactivated": "Đã vô hiệu hóa workflow",
-        "deleted": "Đã xóa workflow"
+        "deleted": "Đã xóa workflow",
+        "duplicated": "Đã nhân bản workflow"
       },
       "stats": {
         "executed": "Đã thực thi",

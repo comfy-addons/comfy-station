@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { trpc } from '@/utils/trpc'
 import { MiniBadge } from './MiniBadge'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from './ui/context-menu'
-import { DownloadCloud, PenBox, Pencil, Trash2 } from 'lucide-react'
+import { CopyPlus, DownloadCloud, PenBox, Pencil, Trash2 } from 'lucide-react'
 import { LoadableButton } from './LoadableButton'
 import { useToast } from '@/hooks/useToast'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
@@ -25,6 +25,7 @@ export const WorkflowCard: IComponent<{
   const stator = trpc.workflowTask.workflowTaskStats.useQuery(data.id)
   const statusChanger = trpc.workflow.changeStatus.useMutation()
   const downloader = trpc.workflow.getRawWorkflow.useMutation()
+  const duplicator = trpc.workflow.duplicate.useMutation()
   const { setShowDialog, setTargetWfId } = useWorkflowStore()
   const router = useRouter()
   const session = useSession()
@@ -37,6 +38,14 @@ export const WorkflowCard: IComponent<{
     })
     toast({
       title: t('toast.activated')
+    })
+    dispatchGlobalEvent(EGlobalEvent.RLOAD_WORKFLOW)
+  }
+
+  const handlePressDuplicate = async () => {
+    const newWf = await duplicator.mutateAsync(data.id)
+    toast({
+      title: t('toast.duplicated')
     })
     dispatchGlobalEvent(EGlobalEvent.RLOAD_WORKFLOW)
   }
@@ -167,6 +176,20 @@ export const WorkflowCard: IComponent<{
             >
               <DownloadCloud className='w-4 h-4 mr-2' />
               {t('actions.download')}
+            </LoadableButton>
+          </ContextMenuItem>
+        )}
+        {session.data?.user.role !== EUserRole.User && (
+          <ContextMenuItem>
+            <LoadableButton
+              onClick={handlePressDuplicate}
+              loading={duplicator.isPending}
+              variant='ghost'
+              size='sm'
+              className='justify-start p-0 w-full'
+            >
+              <CopyPlus className='w-4 h-4 mr-2' />
+              {t('actions.duplicate')}
             </LoadableButton>
           </ContextMenuItem>
         )}
