@@ -5,7 +5,7 @@ import { Attachment } from '@/entities/attachment'
 import { cn } from '@/utils/style'
 import { PhotoView } from 'react-photo-view'
 import { Button } from './ui/button'
-import { Download, ImageIcon, MoreHorizontal, Star } from 'lucide-react'
+import { Download, ImageIcon, MoreHorizontal, Share, Star } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
 import LoadableImage from './LoadableImage'
@@ -27,6 +27,7 @@ import { PlayCircleIcon } from '@heroicons/react/24/outline'
 import { useTouchDevice } from '@/hooks/useTouchDevice'
 import { EKeyboardKey, useShortcutKeyEvent } from '@/hooks/useShortcutKeyEvent'
 import { AttachmentImage } from './AttachmentImage'
+import { useFileDragStore } from '@/states/fileDrag'
 
 const AttachmentTooltipPopup: IComponent<{
   taskId?: string
@@ -110,6 +111,7 @@ export const AttachmentReview: IComponent<{
 
   const ref = useRef<HTMLDivElement>(null)
   const portalRef = useTargetRefById<HTMLDivElement>('portal-me')
+  const { addReqFiles, dragIds } = useFileDragStore()
 
   const [floatLeft, setFloatLeft] = useState(false)
   const [showDetail, setShowDetail] = useState(false)
@@ -384,6 +386,28 @@ export const AttachmentReview: IComponent<{
               </TooltipContent>
             </Tooltip>
           </div>
+        )}
+        {dragIds.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild className='absolute top-1 right-1 flex items-center'>
+              <Button variant='secondary' size='icon'>
+                <Share width={16} height={16} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent data-is-popover-content side='left' className='bg-background/80 backdrop-blur-lg'>
+              {dragIds.map((id) => {
+                return (
+                  <DropdownMenuItem
+                    key={id}
+                    onClick={() => data && addReqFiles(id, [data.id])}
+                    className='cursor-pointer text-sm'
+                  >
+                    Send to <span className='ml-1'>{id}</span>
+                  </DropdownMenuItem>
+                )
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
     )

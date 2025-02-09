@@ -158,6 +158,7 @@ export const FinalizeStep: IComponent = () => {
             )}
             {[EValueType.File, EValueType.Image, EValueType.Video].includes(input.type as EValueType) && (
               <DropFileInput
+                dragId={val}
                 disabled={loading}
                 defaultFiles={inputWorkflowTest.current[val]}
                 maxFiles={1}

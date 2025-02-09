@@ -16,6 +16,7 @@ import { cloneDeep } from 'lodash'
 import { ChevronLeft, Play } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { IInputFileType } from '@/states/fileDrag'
 
 export const WorkflowSidePicker: IComponent = () => {
   const t = useTranslations('components.workflowSidePicker')
@@ -94,7 +95,7 @@ export const WorkflowSidePicker: IComponent = () => {
         inputRecord[key] = Number(inputData[key] || crrInput.default)
       }
       if ([EValueType.File, EValueType.Video, EValueType.Image].includes(crrInput.type as EValueType)) {
-        const files = inputData[key] as File[]
+        const files = inputData[key] as IInputFileType[]
         if (!files || files.length === 0) {
           toast({
             title: t('inputRequired', { field: key }),
@@ -103,9 +104,11 @@ export const WorkflowSidePicker: IComponent = () => {
           setLoading(false)
           return
         }
-        const ids = await Promise.all(files.map((file) => uploadAttachment(file))).then((attach) =>
-          attach.map((a) => a.id)
-        )
+        const uploadedIds = await Promise.all(
+          files.filter((v) => typeof v !== 'string').map((file) => uploadAttachment(file))
+        ).then((attach) => attach.map((a) => a.id))
+        const ids = [...files.filter((v) => typeof v === 'string'), ...uploadedIds]
+
         inputRecord[key] = ids
       } else {
         inputRecord[key] = inputData[key] || crrInput.default
@@ -186,8 +189,7 @@ export const WorkflowSidePicker: IComponent = () => {
                   {selection.name}
                 </div>
                 <p className='text-xs'>
-                  {selection.status === EWorkflowActiveStatus.Deactivated && t('deactivated')}{' '}
-                  {selection.description}
+                  {selection.status === EWorkflowActiveStatus.Deactivated && t('deactivated')} {selection.description}
                 </p>
               </SelectItem>
             ))}

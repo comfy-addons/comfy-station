@@ -108,6 +108,7 @@ export const WorkflowInputArea: IComponent<{
           )}
           {[EValueType.File, EValueType.Image].includes(input.type as EValueType) && (
             <DropFileInput
+              dragId={val}
               disabled={disabled}
               onChanges={(files) => {
                 handleUpdateInput.current(val, files)
@@ -241,7 +242,9 @@ export const WorkflowInputArea: IComponent<{
           </div>
           <div>
             <Label>{t('baseCost')}</Label>
-            <p className='text-sm'>{workflow?.cost} {t('credits')}</p>
+            <p className='text-sm'>
+              {workflow?.cost} {t('credits')}
+            </p>
           </div>
           <div>
             <Label>{t('author')}</Label>

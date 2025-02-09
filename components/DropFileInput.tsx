@@ -1,23 +1,25 @@
 import { useDropzone } from 'react-dropzone'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { cn } from '@/utils/style'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { X } from 'lucide-react'
 import { PhotoView } from 'react-photo-view'
-import { useFileDragStore } from '@/states/fileDrag'
+import { IInputFileType, useFileDragStore } from '@/states/fileDrag'
+import { AttachmentImage } from './AttachmentImage'
 
 const DropFileInput: IComponent<{
-  defaultFiles?: File[]
+  dragId: string
+  defaultFiles?: IInputFileType[]
   maxFiles?: number
   disabled?: boolean
-  onChanges?: (files: File[]) => void
-}> = ({ defaultFiles, disabled, onChanges, maxFiles }) => {
-  const { draggingFile, setDraggingFile } = useFileDragStore()
+  onChanges?: (files: IInputFileType[]) => void
+}> = ({ defaultFiles, disabled, onChanges, maxFiles, dragId }) => {
+  const { draggingFile, setDraggingFile, addDragId, removeDragId, reqFiles, removeReqFiles } = useFileDragStore()
   const cacheRef = useRef(new Map<File, string>())
-  const [files, setFiles] = useState<File[]>(defaultFiles?.filter((v) => v instanceof File) || [])
+  const [files, setFiles] = useState<IInputFileType[]>(defaultFiles?.filter((v) => v instanceof File) || [])
 
   const addFiles = useCallback(
-    (newFiles: File[]) => {
+    (newFiles: IInputFileType[]) => {
       if (disabled) return
       if (maxFiles && files.length + newFiles.length > maxFiles) {
         setFiles([...newFiles])
@@ -31,7 +33,7 @@ const DropFileInput: IComponent<{
   )
 
   const removeFile = useCallback(
-    (file: File) => {
+    (file: IInputFileType) => {
       if (disabled) return
       setFiles(files.filter((f) => f !== file))
       onChanges?.(files.filter((f) => f !== file))
@@ -56,6 +58,7 @@ const DropFileInput: IComponent<{
 
   const filesURL = useMemo(() => {
     return files.map((file) => {
+      if (typeof file === 'string') return file
       if (!cacheRef.current.has(file)) {
         cacheRef.current.set(file, URL.createObjectURL(file))
       }
@@ -70,13 +73,26 @@ const DropFileInput: IComponent<{
     noClick: !!draggingFile // Prevent click when dragging between components
   })
 
+  useEffect(() => {
+    addDragId(dragId)
+    return () => removeDragId(dragId)
+  }, [addDragId, dragId, removeDragId])
+
+  useEffect(() => {
+    console.log('trigger')
+    if (reqFiles.has(dragId)) {
+      addFiles(reqFiles.get(dragId)!)
+      removeReqFiles(dragId)
+    }
+  }, [addFiles, dragId, removeReqFiles, reqFiles])
+
   const renderFiles = useMemo(() => {
     return files.map((file, idx) => {
-      const isImage = file.type.startsWith('image/')
+      const isImage = typeof file === 'string' || file.type.startsWith('image/')
       if (isImage) {
         return (
           <div
-            key={file.name}
+            key={typeof file === 'string' ? file : file.name}
             draggable
             onDragStart={() => setDraggingFile(file)}
             onDragEnd={() => {
@@ -89,18 +105,22 @@ const DropFileInput: IComponent<{
             }}
             className='flex items-center gap-2 relative group w-full aspect-square animate-fade'
           >
-            <PhotoView src={filesURL[idx]}>
-              <Avatar className='!rounded-md w-full h-full'>
-                <AvatarImage src={filesURL[idx]} />
-                <AvatarFallback>{file.name}</AvatarFallback>
-              </Avatar>
-            </PhotoView>
+            {typeof file === 'string' ? (
+              <AttachmentImage alt='image' data={{ id: file }} className='!rounded-md w-full h-full' />
+            ) : (
+              <PhotoView src={filesURL[idx]}>
+                <Avatar className='!rounded-md w-full h-full'>
+                  <AvatarImage src={filesURL[idx]} />
+                  <AvatarFallback>{file.name}</AvatarFallback>
+                </Avatar>
+              </PhotoView>
+            )}
             <div className='absolute bottom-1 right-1 hidden group-hover:block'>
               <button
                 onClick={() => removeFile(file)}
                 className='bg-destructive text-white p-1 aspect-square rounded-full active:scale-75 transition-all'
               >
-                <X width={16} height={16}/>
+                <X width={16} height={16} />
               </button>
             </div>
           </div>
