@@ -21,12 +21,18 @@ const DropFileInput: IComponent<{
   const addFiles = useCallback(
     (newFiles: IInputFileType[]) => {
       if (disabled) return
-      if (maxFiles && files.length + newFiles.length > maxFiles) {
-        setFiles([...newFiles])
-        onChanges?.([...newFiles])
+      // Convert files to Set to remove duplicates
+      const uniqueFiles = new Set([...files, ...newFiles])
+      const filesArray = Array.from(uniqueFiles)
+
+      if (maxFiles && filesArray.length > maxFiles) {
+        // If exceeding max files, only take the newest files up to maxFiles
+        const newFilesArray = filesArray.slice(-maxFiles)
+        setFiles(newFilesArray)
+        onChanges?.(newFilesArray)
       } else {
-        setFiles([...files, ...newFiles])
-        onChanges?.([...files, ...newFiles])
+        setFiles(filesArray)
+        onChanges?.(filesArray)
       }
     },
     [disabled, files, maxFiles, onChanges]
@@ -44,14 +50,20 @@ const DropFileInput: IComponent<{
 
   const onDrop = useCallback(
     (acceptedFiles: File[], fileRejections: any[], event: any) => {
-      // Handle files from another DropFileInput
-      if (acceptedFiles.length === 0 && draggingFile) {
+      console.log('WTF', acceptedFiles, draggingFile, fileRejections, event)
+      event?.preventDefault()
+
+      // Handle files from another component
+      if (draggingFile) {
         addFiles([draggingFile])
-        // Remove from source component
         setDraggingFile(null)
         return
       }
-      addFiles(acceptedFiles)
+
+      // Handle files from file system
+      if (acceptedFiles.length > 0) {
+        addFiles(acceptedFiles)
+      }
     },
     [addFiles, draggingFile, setDraggingFile]
   )
@@ -73,13 +85,34 @@ const DropFileInput: IComponent<{
     noClick: !!draggingFile // Prevent click when dragging between components
   })
 
+  const isHaveDragFiles = isDragActive || draggingFile
+
+  const dropzoneProps = {
+    ...getRootProps(),
+    onDragOver: (e: React.DragEvent) => {
+      e.preventDefault()
+      getRootProps().onDragOver?.(e as any)
+    },
+    onDrop: (e: React.DragEvent) => {
+      e.preventDefault()
+      if (e.dataTransfer.files.length === 0) {
+        if (draggingFile) {
+          addFiles([draggingFile])
+          setDraggingFile(null)
+          return
+        }
+      } else {
+        getRootProps().onDrop?.(e as any)
+      }
+    }
+  }
+
   useEffect(() => {
     addDragId(dragId)
     return () => removeDragId(dragId)
   }, [addDragId, dragId, removeDragId])
 
   useEffect(() => {
-    console.log('trigger')
     if (reqFiles.has(dragId)) {
       addFiles(reqFiles.get(dragId)!)
       removeReqFiles(dragId)
@@ -167,18 +200,22 @@ const DropFileInput: IComponent<{
       })}
     >
       <div
-        {...getRootProps()}
+        {...dropzoneProps}
         className={cn(
           'border px-10 py-5 h-[128px] rounded-xl border-dashed text-center hover:border-blue-300 cursor-pointer transition-all',
           'flex items-center justify-center',
           {
-            'border-blue-500': isDragActive,
+            'border-blue-500': isHaveDragFiles,
             'cursor-not-allowed': disabled
           }
         )}
       >
         <input {...getInputProps()} />
-        {isDragActive ? <p>Drop the files here ...</p> : <p>Drag and drop some files here, or click to select files</p>}
+        {isHaveDragFiles ? (
+          <p>Drop the files here ...</p>
+        ) : (
+          <p>Drag and drop some files here, or click to select files</p>
+        )}
       </div>
       <div className='w-full grid grid-cols-4 gap-2'>{renderFiles}</div>
     </div>

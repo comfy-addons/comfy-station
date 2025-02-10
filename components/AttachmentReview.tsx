@@ -5,7 +5,7 @@ import { Attachment } from '@/entities/attachment'
 import { cn } from '@/utils/style'
 import { PhotoView } from 'react-photo-view'
 import { Button } from './ui/button'
-import { Download, ImageIcon, MoreHorizontal, Share, Star } from 'lucide-react'
+import { Download, ImageIcon, MoreHorizontal, Plus, Share, Star } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
 import LoadableImage from './LoadableImage'
@@ -111,7 +111,7 @@ export const AttachmentReview: IComponent<{
 
   const ref = useRef<HTMLDivElement>(null)
   const portalRef = useTargetRefById<HTMLDivElement>('portal-me')
-  const { addReqFiles, dragIds } = useFileDragStore()
+  const { addReqFiles, dragIds, setDraggingFile } = useFileDragStore()
 
   const [floatLeft, setFloatLeft] = useState(false)
   const [showDetail, setShowDetail] = useState(false)
@@ -189,6 +189,15 @@ export const AttachmentReview: IComponent<{
             >
               <div className='w-full h-full relative'>
                 <m.div
+                  draggable
+                  onDragStart={() => {
+                    if (data?.id) {
+                      setDraggingFile(data.id)
+                    }
+                  }}
+                  onDragEnd={() => {
+                    setDraggingFile(null)
+                  }}
                   className={cn('w-full h-full', {
                     'rounded-tl-lg rounded-bl-lg': isPop
                   })}
@@ -390,8 +399,8 @@ export const AttachmentReview: IComponent<{
         {dragIds.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild className='absolute top-1 right-1 flex items-center'>
-              <Button variant='secondary' size='icon'>
-                <Share width={16} height={16} />
+              <Button title="Use this image" variant='secondary' size='icon'>
+                <Plus width={16} height={16} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent data-is-popover-content side='left' className='bg-background/80 backdrop-blur-lg'>
@@ -402,7 +411,7 @@ export const AttachmentReview: IComponent<{
                     onClick={() => data && addReqFiles(id, [data.id])}
                     className='cursor-pointer text-sm'
                   >
-                    Send to <span className='ml-1'>{id}</span>
+                    Add to <span className='ml-1 font-medium'>{id}</span>
                   </DropdownMenuItem>
                 )
               })}
