@@ -8,6 +8,7 @@ import { trpc } from '@/utils/trpc'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { Check, Copy, DollarSign, Hourglass, Image, Repeat, Trash2 } from 'lucide-react'
+import { useFileDragStore } from '@/states/fileDrag'
 import { useMemo, useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -25,6 +26,7 @@ export const TaskItem: IComponent<{
   deleting?: boolean
   onPressDelete?: () => void
 }> = ({ data, onPressDelete, deleting }) => {
+  const { setDraggingFile } = useFileDragStore()
   const t = useTranslations('components.taskItem')
   const [showImages, setShowImages] = useState(false)
   const { data: task, refetch } = trpc.workflowTask.detail.useQuery(data.id, {
@@ -222,7 +224,7 @@ export const TaskItem: IComponent<{
           )}
           <div className='flex-1 flex-col px-1 py-3'>
             <Label className='text-base font-semibold'>{task.workflow.name}</Label>
-            <p className='text-xs md:text-sm'>{t('id', {id: task.id.split('-').pop()})}</p>
+            <p className='text-xs md:text-sm'>{t('id', { id: task.id.split('-').pop() })}</p>
             <div className='text-xs md:text-sm'>
               {t('triggerBy')}{' '}
               <Badge className='text-xs p-1' variant='outline'>
@@ -241,7 +243,9 @@ export const TaskItem: IComponent<{
                 })}
                 title={currentStatus}
               />
-              {runningTime >= 0 && <MiniBadge Icon={Hourglass} title={t('take')} count={t('seconds', {value: runningTime})} />}
+              {runningTime >= 0 && (
+                <MiniBadge Icon={Hourglass} title={t('take')} count={t('seconds', { value: runningTime })} />
+              )}
               {task.repeatCount > 1 && <MiniBadge Icon={Repeat} title={t('repeat')} count={task.repeatCount} />}
               {!!attachments?.length && <MiniBadge Icon={Image} title={t('files')} count={attachments.length} />}
               {task.computedCost > 0 && (
@@ -249,7 +253,14 @@ export const TaskItem: IComponent<{
               )}
             </div>
           </div>
-          {previewAttachment}
+          <div
+            draggable
+            onDragStart={() => attachments && setDraggingFile(attachments?.map((a) => a.id))}
+            onDragEnd={() => setDraggingFile(null)}
+            className='h-full w-auto cursor-grab active:cursor-grabbing'
+          >
+            {previewAttachment}
+          </div>
 
           <div className='flex absolute top-1 right-1'>
             <DownloadImagesButton

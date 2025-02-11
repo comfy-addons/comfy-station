@@ -192,7 +192,7 @@ export const AttachmentReview: IComponent<{
                   draggable
                   onDragStart={() => {
                     if (data?.id) {
-                      setDraggingFile(data.id)
+                      setDraggingFile([data.id])
                     }
                   }}
                   onDragEnd={() => {
@@ -399,7 +399,7 @@ export const AttachmentReview: IComponent<{
         {dragIds.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild className='absolute top-1 right-1 flex items-center'>
-              <Button title="Use this image" variant='secondary' size='icon'>
+              <Button title='Use this image' variant='secondary' size='icon'>
                 <Plus width={16} height={16} />
               </Button>
             </DropdownMenuTrigger>

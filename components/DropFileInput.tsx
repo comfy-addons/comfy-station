@@ -55,7 +55,7 @@ const DropFileInput: IComponent<{
 
       // Handle files from another component
       if (draggingFile) {
-        addFiles([draggingFile])
+        addFiles([...draggingFile])
         setDraggingFile(null)
         return
       }
@@ -85,7 +85,7 @@ const DropFileInput: IComponent<{
     noClick: !!draggingFile // Prevent click when dragging between components
   })
 
-  const isHaveDragFiles = isDragActive || draggingFile
+  const isHaveDragFiles = isDragActive || !!draggingFile
 
   const dropzoneProps = {
     ...getRootProps(),
@@ -97,7 +97,7 @@ const DropFileInput: IComponent<{
       e.preventDefault()
       if (e.dataTransfer.files.length === 0) {
         if (draggingFile) {
-          addFiles([draggingFile])
+          addFiles([...draggingFile])
           setDraggingFile(null)
           return
         }
@@ -127,7 +127,7 @@ const DropFileInput: IComponent<{
           <div
             key={typeof file === 'string' ? file : file.name}
             draggable
-            onDragStart={() => setDraggingFile(file)}
+            onDragStart={() => setDraggingFile([file])}
             onDragEnd={() => {
               setDraggingFile(null)
               removeFile(file)
@@ -166,7 +166,7 @@ const DropFileInput: IComponent<{
           <div
             key={file.name}
             draggable
-            onDragStart={() => setDraggingFile(file)}
+            onDragStart={() => setDraggingFile([file])}
             onDragEnd={() => {
               setDraggingFile(null)
               removeFile(file)
@@ -212,7 +212,7 @@ const DropFileInput: IComponent<{
       >
         <input {...getInputProps()} />
         {isHaveDragFiles ? (
-          <p>Drop the files here ...</p>
+          <p>Drop attachments here...</p>
         ) : (
           <p>Drag and drop some files here, or click to select files</p>
         )}

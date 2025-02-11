@@ -8,13 +8,13 @@ export type IInputFileType = File | string
 
 interface FileDragState {
   dragIds: string[]
-  draggingFile: IInputFileType | null
+  draggingFile: IInputFileType[] | null
   reqFiles: Map<string, IInputFileType[]>
   addReqFiles: (id: string, files: IInputFileType[]) => void
   removeReqFiles: (id: string) => void
   addDragId: (id: string) => void
   removeDragId: (id: string) => void
-  setDraggingFile: (file: IInputFileType | null) => void
+  setDraggingFile: (files: IInputFileType[] | null) => void
 }
 
 export const useFileDragStore = create<FileDragState>((set) => ({
@@ -34,5 +34,5 @@ export const useFileDragStore = create<FileDragState>((set) => ({
     }),
   addDragId: (id) => set((state) => ({ dragIds: [...state.dragIds, id] })),
   removeDragId: (id) => set((state) => ({ dragIds: state.dragIds.filter((v) => v !== id) })),
-  setDraggingFile: (file) => set({ draggingFile: file })
+  setDraggingFile: (files) => set({ draggingFile: files })
 }))
