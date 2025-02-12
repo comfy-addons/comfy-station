@@ -9,7 +9,8 @@ import {
   DollarSign,
   CheckCheck,
   Variable,
-  CornerDownRight
+  CornerDownRight,
+  GripVertical
 } from 'lucide-react'
 import { AddWorkflowDialogContext, EImportStep } from '..'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
@@ -22,7 +23,7 @@ import * as Icons from '@heroicons/react/16/solid'
 import { IMapperInput } from '@/entities/workflow'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/utils/style'
-import { AlertDialogFooter } from '@/components/ui/alert-dialog'
+import { ReactSortable } from 'react-sortablejs'
 
 export const ViewInputNode: IComponent<{
   readonly?: boolean
@@ -30,7 +31,7 @@ export const ViewInputNode: IComponent<{
   onEdit?: (inputConfig: IMapperInput) => void
 }> = ({ readonly, onCreateNew, onEdit }) => {
   const { gen } = useKeygen()
-  const { setStep, workflow, rawWorkflow } = useContext(AddWorkflowDialogContext)
+  const { setStep, workflow, rawWorkflow, setWorkflow } = useContext(AddWorkflowDialogContext)
   const mappedInput = workflow?.mapInput
 
   // Check if all inputs is valid, valid mean all node target is exist in workflow
@@ -39,8 +40,9 @@ export const ViewInputNode: IComponent<{
     return inputs.every((input) => input.target.every((target) => rawWorkflow?.[target.nodeName]))
   }, [mappedInput, rawWorkflow])
 
+  const inputs = Object.entries(mappedInput || {})
+
   const renderMappedInput = useMemo(() => {
-    const inputs = Object.entries(mappedInput || {})
     if (!inputs.length) {
       return (
         <Alert>
@@ -62,12 +64,17 @@ export const ViewInputNode: IComponent<{
               onEdit?.(input)
             }
           }}
-          className={cn('hover:opacity-70 transition-all', {
+          className={cn('hover:opacity-70 transition-all pl-8', {
             'cursor-pointer': !readonly,
             'border-destructive bg-red-50': !isValid
           })}
         >
-          <Icon className='w-4 h-4' />
+          {!readonly && (
+            <div className='absolute left-2 top-1/2 -translate-y-1/2 cursor-grab'>
+              <GripVertical className='w-4 h-4 text-muted-foreground' />
+            </div>
+          )}
+
           <AlertTitle>
             <div
               className={cx('gap-2 flex whitespace-nowrap flex-wrap', {
@@ -75,6 +82,7 @@ export const ViewInputNode: IComponent<{
                 'flex-row': input.target.length === 1
               })}
             >
+              <Icon className='w-4 h-4' />
               <span>{input.key}</span>
               {input.target.length === 1 &&
                 input.target.map((target) => {
@@ -133,7 +141,7 @@ export const ViewInputNode: IComponent<{
         </Alert>
       )
     })
-  }, [gen, mappedInput, onEdit, rawWorkflow, readonly])
+  }, [gen, inputs, onEdit, rawWorkflow, readonly])
 
   return (
     <>
@@ -145,7 +153,19 @@ export const ViewInputNode: IComponent<{
         MAP INPUT NODE
       </h1>
       <div className='space-y-4 min-w-80 pt-2'>
-        {renderMappedInput}
+        <ReactSortable
+          list={inputs.map((data) => ({ id: data[0], value: data[1] }))}
+          swap
+          className='space-y-4'
+          setList={(newState: any) => {
+            setWorkflow?.((prev) => ({
+              ...prev,
+              mapInput: Object.fromEntries(newState.map((data: any) => [data.id, data.value]))
+            }))
+          }}
+        >
+          {renderMappedInput}
+        </ReactSortable>
         {!readonly && (
           <>
             <Button onClick={onCreateNew} className='w-full' variant='outline'>
