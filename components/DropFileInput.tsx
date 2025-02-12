@@ -2,10 +2,12 @@ import { useDropzone } from 'react-dropzone'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { cn } from '@/utils/style'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
-import { X } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { PhotoView } from 'react-photo-view'
 import { IInputFileType, useFileDragStore } from '@/states/fileDrag'
 import { AttachmentImage } from './AttachmentImage'
+import { CreateMaskingDialog } from './dialogs/CreateMaskingDialog'
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from './ui/context-menu'
 
 const DropFileInput: IComponent<{
   dragId: string
@@ -14,6 +16,9 @@ const DropFileInput: IComponent<{
   disabled?: boolean
   onChanges?: (files: IInputFileType[]) => void
 }> = ({ defaultFiles, disabled, onChanges, maxFiles, dragId }) => {
+  const [maskingFile, setMaskingFile] = useState<IInputFileType | null>(null)
+  const [showCreateMasking, setShowCreateMasking] = useState(false)
+
   const { draggingFile, setDraggingFile, addDragId, removeDragId, reqFiles, removeReqFiles } = useFileDragStore()
   const cacheRef = useRef(new Map<File, string>())
   const [files, setFiles] = useState<IInputFileType[]>(defaultFiles?.filter((v) => v instanceof File) || [])
@@ -136,18 +141,36 @@ const DropFileInput: IComponent<{
               animationDelay: `${idx * 30}ms`,
               cursor: 'grab'
             }}
-            className='flex items-center gap-2 relative group w-full aspect-square animate-fade'
+            className='flex items-center gap-2 relative group w-full aspect-square animate-fade border !rounded-md overflow-hidden'
           >
-            {typeof file === 'string' ? (
-              <AttachmentImage alt='image' data={{ id: file }} className='!rounded-md w-full h-full' />
-            ) : (
-              <PhotoView src={filesURL[idx]}>
-                <Avatar className='!rounded-md w-full h-full'>
-                  <AvatarImage src={filesURL[idx]} />
-                  <AvatarFallback>{file.name}</AvatarFallback>
-                </Avatar>
-              </PhotoView>
-            )}
+            <ContextMenu>
+              <ContextMenuTrigger>
+                {typeof file === 'string' ? (
+                  <AttachmentImage alt='image' data={{ id: file }} className='w-full h-full object-cover' />
+                ) : (
+                  <PhotoView src={filesURL[idx]}>
+                    <Avatar className='!rounded-none w-full h-full'>
+                      <AvatarImage src={filesURL[idx]} />
+                      <AvatarFallback>{file.name}</AvatarFallback>
+                    </Avatar>
+                  </PhotoView>
+                )}
+              </ContextMenuTrigger>
+              <ContextMenuContent>
+                <ContextMenuItem>
+                  <button
+                    onClick={() => {
+                      setMaskingFile(file)
+                      setShowCreateMasking(true)
+                    }}
+                    className='flex items-center gap-2'
+                  >
+                    Create Mask <Plus width={16} height={16} />
+                  </button>
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
+
             <div className='absolute bottom-1 right-1 hidden group-hover:block'>
               <button
                 onClick={() => removeFile(file)}
@@ -199,6 +222,18 @@ const DropFileInput: IComponent<{
         'opacity-75 cursor-not-allowed': disabled
       })}
     >
+      <CreateMaskingDialog
+        open={showCreateMasking}
+        file={maskingFile!}
+        onOpenChange={(open) => {
+          setShowCreateMasking(open)
+        }}
+        onSave={(mask) => {
+          // Convert blob to file
+          const file = new File([mask], `mask-${Date.now()}.png`, { type: 'image/png' })
+          addFiles([file])
+        }}
+      />
       <div
         {...dropzoneProps}
         className={cn(

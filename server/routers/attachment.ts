@@ -170,5 +170,9 @@ export const attachmentRouter = router({
         populate: ['workflow', 'task']
       }
     )
+  }),
+  getFileUrlMutation: privateProcedure.input(z.string()).mutation(async ({ ctx, input }) => {
+    const attachment = await ctx.em.findOneOrFail(Attachment, { id: input })
+    return getAttachmentURL(attachment, ctx.baseUrl)
   })
 })
