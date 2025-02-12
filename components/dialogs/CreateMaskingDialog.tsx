@@ -2,12 +2,12 @@ import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import CreateMasking from '../CreateMasking'
-import { IInputFileType } from '@/states/fileDrag'
+import { TInputFileType } from '@/states/fileDrag'
 
 interface CreateMaskingDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  file?: IInputFileType
+  file?: TInputFileType
   onSave?: (maskBlob: Blob) => void
 }
 
@@ -42,7 +42,7 @@ export const CreateMaskingDialog: React.FC<CreateMaskingDialogProps> = ({ open, 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='max-w-2xl max-h-[95vh] w-full flex flex-col p-0'>
         <DialogHeader className='pt-4 px-4'>
-          <DialogTitle>Create Mask</DialogTitle>
+          <DialogTitle>{file?.type === 'mask' ? 'Edit Mask' : 'Create Mask'}</DialogTitle>
         </DialogHeader>
 
         <div className='flex flex-col gap-4 flex-grow'>

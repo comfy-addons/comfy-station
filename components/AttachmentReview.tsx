@@ -192,7 +192,12 @@ export const AttachmentReview: IComponent<{
                   draggable
                   onDragStart={() => {
                     if (data?.id) {
-                      setDraggingFile([data.id])
+                      setDraggingFile([
+                        {
+                          type: 'attachment',
+                          data: data.id
+                        }
+                      ])
                     }
                   }}
                   onDragEnd={() => {
@@ -408,7 +413,15 @@ export const AttachmentReview: IComponent<{
                 return (
                   <DropdownMenuItem
                     key={id}
-                    onClick={() => data && addReqFiles(id, [data.id])}
+                    onClick={() =>
+                      data &&
+                      addReqFiles(id, [
+                        {
+                          type: 'attachment',
+                          data: data.id
+                        }
+                      ])
+                    }
                     className='cursor-pointer text-sm'
                   >
                     Add to <span className='ml-1 font-medium'>{id}</span>

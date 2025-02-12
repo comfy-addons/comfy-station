@@ -1,9 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react'
-import { IInputFileType } from '@/states/fileDrag'
+import { TInputFileType } from '@/states/fileDrag'
 import { trpc } from '@/utils/trpc'
+import { removeWhiteBackground } from '@/utils/image'
+import { LoadableButton } from './LoadableButton'
+import { LoadingSVG } from './svg/LoadingSVG'
 
 interface CreateMaskingProps {
-  file: IInputFileType | null
+  file: TInputFileType | null
   brushSize?: number
   onMaskChange?: (maskURL: string | null) => void
   onBrushSizeChange?: (size: number) => void
@@ -18,6 +21,7 @@ const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMa
 
   // Local state for image, drawing status, and the exported mask URL
   const [imageLoaded, setImageLoaded] = useState(false)
+  const [maskLoading, setMaskLoading] = useState(false)
   const [isDrawing, setIsDrawing] = useState(false)
   const [lastPos, setLastPos] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
@@ -60,15 +64,14 @@ const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMa
 
   useEffect(() => {
     if (file) {
+      setMaskLoading(true)
       const img = new Image()
+      const baseCanvas = baseCanvasRef.current
+      const drawingCanvas = drawingCanvasRef.current
+      if (!baseCanvas || !drawingCanvas) return
       img.onload = () => {
-        const baseCanvas = baseCanvasRef.current
-        const drawingCanvas = drawingCanvasRef.current
-        if (!baseCanvas || !drawingCanvas) return
-
         // Set original dimensions
         setOriginalSize({ width: img.width, height: img.height })
-
         // Set canvas drawing dimensions
         baseCanvas.width = img.width
         baseCanvas.height = img.height
@@ -85,16 +88,47 @@ const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMa
         if (!drawingCtx) return
         drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height)
 
+        if (file.type === 'mask') {
+          const maskFile = file.data
+          removeWhiteBackground(maskFile).then((blob) => {
+            const maskImg = new Image()
+            maskImg.onload = () => {
+              drawingCtx.drawImage(maskImg, 0, 0)
+              setMaskLoading(false)
+            }
+            maskImg.src = URL.createObjectURL(blob)
+          })
+        } else {
+          setMaskLoading(false)
+        }
+
         setImageLoaded(true)
       }
-      if (typeof file === 'string') {
-        getFileUrlMut.mutateAsync(file).then((urls) => {
-          if (urls.high) {
-            img.src = urls.high.url
+      switch (file.type) {
+        case 'attachment': {
+          getFileUrlMut.mutateAsync(file.data).then((urls) => {
+            if (urls.high) {
+              img.src = urls.high.url
+            }
+          })
+          break
+        }
+        case 'mask': {
+          if (file.original.type === 'attachment') {
+            getFileUrlMut.mutateAsync(file.original.data).then((urls) => {
+              if (urls.high) {
+                img.src = urls.high.url
+              }
+            })
+          } else {
+            img.src = URL.createObjectURL(file.original.data)
           }
-        })
-      } else {
-        img.src = URL.createObjectURL(file)
+          break
+        }
+        case 'file': {
+          img.src = URL.createObjectURL(file.data)
+          break
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -384,6 +418,11 @@ const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMa
       onMouseLeave={handleMouseUpGeneral}
       style={{ cursor: isSpacePressed ? 'grab' : 'default' }}
     >
+      {maskLoading && (
+        <div className='absolute top-0 left-0 w-full h-full z-10 flex items-center justify-center bg-black/50'>
+          <LoadingSVG width={32} height={32} className='text-white' />
+        </div>
+      )}
       <div
         style={{
           position: 'relative',

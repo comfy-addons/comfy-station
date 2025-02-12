@@ -4,17 +4,30 @@ import { create } from 'zustand'
 /**
  * Allow file or attachment-id
  */
-export type IInputFileType = File | string
+export type TInputFileType =
+  | {
+      type: 'file'
+      data: File
+    }
+  | {
+      type: 'attachment'
+      data: string
+    }
+  | {
+      type: 'mask'
+      data: File
+      original: TInputFileType
+    }
 
 interface FileDragState {
   dragIds: string[]
-  draggingFile: IInputFileType[] | null
-  reqFiles: Map<string, IInputFileType[]>
-  addReqFiles: (id: string, files: IInputFileType[]) => void
+  draggingFile: TInputFileType[] | null
+  reqFiles: Map<string, TInputFileType[]>
+  addReqFiles: (id: string, files: TInputFileType[]) => void
   removeReqFiles: (id: string) => void
   addDragId: (id: string) => void
   removeDragId: (id: string) => void
-  setDraggingFile: (files: IInputFileType[] | null) => void
+  setDraggingFile: (files: TInputFileType[] | null) => void
 }
 
 export const useFileDragStore = create<FileDragState>((set) => ({

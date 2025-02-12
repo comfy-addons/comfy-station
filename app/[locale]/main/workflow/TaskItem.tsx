@@ -255,7 +255,15 @@ export const TaskItem: IComponent<{
           </div>
           <div
             draggable
-            onDragStart={() => attachments && setDraggingFile(attachments?.map((a) => a.id))}
+            onDragStart={() =>
+              attachments &&
+              setDraggingFile(
+                attachments?.map((a) => ({
+                  type: 'attachment',
+                  data: a.id
+                }))
+              )
+            }
             onDragEnd={() => setDraggingFile(null)}
             className='h-full w-auto cursor-grab active:cursor-grabbing'
           >

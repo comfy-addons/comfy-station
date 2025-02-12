@@ -2,29 +2,30 @@ import { useDropzone } from 'react-dropzone'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { cn } from '@/utils/style'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
-import { Plus, X } from 'lucide-react'
+import { Pencil, Plus, X } from 'lucide-react'
 import { PhotoView } from 'react-photo-view'
-import { IInputFileType, useFileDragStore } from '@/states/fileDrag'
+import { TInputFileType, useFileDragStore } from '@/states/fileDrag'
 import { AttachmentImage } from './AttachmentImage'
 import { CreateMaskingDialog } from './dialogs/CreateMaskingDialog'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from './ui/context-menu'
+import { cloneDeep } from 'lodash'
 
 const DropFileInput: IComponent<{
   dragId: string
-  defaultFiles?: IInputFileType[]
+  defaultFiles?: TInputFileType[]
   maxFiles?: number
   disabled?: boolean
-  onChanges?: (files: IInputFileType[]) => void
+  onChanges?: (files: TInputFileType[]) => void
 }> = ({ defaultFiles, disabled, onChanges, maxFiles, dragId }) => {
-  const [maskingFile, setMaskingFile] = useState<IInputFileType | null>(null)
+  const [maskingFile, setMaskingFile] = useState<TInputFileType | null>(null)
   const [showCreateMasking, setShowCreateMasking] = useState(false)
 
   const { draggingFile, setDraggingFile, addDragId, removeDragId, reqFiles, removeReqFiles } = useFileDragStore()
   const cacheRef = useRef(new Map<File, string>())
-  const [files, setFiles] = useState<IInputFileType[]>(defaultFiles?.filter((v) => v instanceof File) || [])
+  const [files, setFiles] = useState<TInputFileType[]>(defaultFiles?.filter((v) => v instanceof File) || [])
 
   const addFiles = useCallback(
-    (newFiles: IInputFileType[]) => {
+    (newFiles: TInputFileType[]) => {
       if (disabled) return
       // Convert files to Set to remove duplicates
       const uniqueFiles = new Set([...files, ...newFiles])
@@ -44,7 +45,7 @@ const DropFileInput: IComponent<{
   )
 
   const removeFile = useCallback(
-    (file: IInputFileType) => {
+    (file: TInputFileType) => {
       if (disabled) return
       setFiles(files.filter((f) => f !== file))
       onChanges?.(files.filter((f) => f !== file))
@@ -55,7 +56,6 @@ const DropFileInput: IComponent<{
 
   const onDrop = useCallback(
     (acceptedFiles: File[], fileRejections: any[], event: any) => {
-      console.log('WTF', acceptedFiles, draggingFile, fileRejections, event)
       event?.preventDefault()
 
       // Handle files from another component
@@ -67,7 +67,7 @@ const DropFileInput: IComponent<{
 
       // Handle files from file system
       if (acceptedFiles.length > 0) {
-        addFiles(acceptedFiles)
+        addFiles(acceptedFiles.map((file) => ({ type: 'file', data: file })))
       }
     },
     [addFiles, draggingFile, setDraggingFile]
@@ -75,11 +75,11 @@ const DropFileInput: IComponent<{
 
   const filesURL = useMemo(() => {
     return files.map((file) => {
-      if (typeof file === 'string') return file
-      if (!cacheRef.current.has(file)) {
-        cacheRef.current.set(file, URL.createObjectURL(file))
+      if (file.type === 'attachment') return file.data
+      if (!cacheRef.current.has(file.data)) {
+        cacheRef.current.set(file.data, URL.createObjectURL(file.data))
       }
-      return cacheRef.current.get(file)!
+      return cacheRef.current.get(file.data)!
     })
   }, [files])
 
@@ -126,11 +126,11 @@ const DropFileInput: IComponent<{
 
   const renderFiles = useMemo(() => {
     return files.map((file, idx) => {
-      const isImage = typeof file === 'string' || file.type.startsWith('image/')
+      const isImage = file.type === 'attachment' || file.data.type.startsWith('image/')
       if (isImage) {
         return (
           <div
-            key={typeof file === 'string' ? file : file.name}
+            key={file.type === 'attachment' ? file.data : file.data.name}
             draggable
             onDragStart={() => setDraggingFile([file])}
             onDragEnd={() => {
@@ -145,13 +145,13 @@ const DropFileInput: IComponent<{
           >
             <ContextMenu>
               <ContextMenuTrigger>
-                {typeof file === 'string' ? (
-                  <AttachmentImage alt='image' data={{ id: file }} className='w-full h-full object-cover' />
+                {file.type === 'attachment' ? (
+                  <AttachmentImage alt='image' data={{ id: file.data }} className='w-full h-full object-cover' />
                 ) : (
                   <PhotoView src={filesURL[idx]}>
                     <Avatar className='!rounded-none w-full h-full'>
                       <AvatarImage src={filesURL[idx]} />
-                      <AvatarFallback>{file.name}</AvatarFallback>
+                      <AvatarFallback>{file.data.name}</AvatarFallback>
                     </Avatar>
                   </PhotoView>
                 )}
@@ -165,7 +165,8 @@ const DropFileInput: IComponent<{
                     }}
                     className='flex items-center gap-2'
                   >
-                    Create Mask <Plus width={16} height={16} />
+                    {file.type === 'mask' ? 'Update Mask' : 'Create Mask'}
+                    {file.type === 'mask' ? <Pencil width={16} height={16} /> : <Plus width={16} height={16} />}
                   </button>
                 </ContextMenuItem>
               </ContextMenuContent>
@@ -183,11 +184,11 @@ const DropFileInput: IComponent<{
         )
       } else {
         // Other file types
-        const shortName = file.name.slice(0, 4)
-        const extension = file.name.split('.').pop()
+        const shortName = file.data.name.slice(0, 4)
+        const extension = file.data.name.split('.').pop()
         return (
           <div
-            key={file.name}
+            key={file.data.name}
             draggable
             onDragStart={() => setDraggingFile([file])}
             onDragEnd={() => {
@@ -229,9 +230,30 @@ const DropFileInput: IComponent<{
           setShowCreateMasking(open)
         }}
         onSave={(mask) => {
-          // Convert blob to file
-          const file = new File([mask], `mask-${Date.now()}.png`, { type: 'image/png' })
-          addFiles([file])
+          const newFile = new File([mask], `mask-${Date.now()}.png`, { type: 'image/png' })
+          if (maskingFile?.type === 'mask') {
+            // Update mask
+            const newFiles = files.map((file) => {
+              if (file === maskingFile) {
+                return {
+                  type: 'mask',
+                  data: newFile,
+                  original: maskingFile.original
+                } as const
+              }
+              return file
+            })
+            setFiles(newFiles)
+          } else {
+            // Convert blob to file
+            addFiles([
+              {
+                type: 'mask',
+                data: newFile,
+                original: cloneDeep(maskingFile!)
+              }
+            ])
+          }
         }}
       />
       <div

@@ -16,7 +16,7 @@ import { cloneDeep } from 'lodash'
 import { ChevronLeft, Play } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { IInputFileType } from '@/states/fileDrag'
+import { TInputFileType } from '@/states/fileDrag'
 
 export const WorkflowSidePicker: IComponent = () => {
   const t = useTranslations('components.workflowSidePicker')
@@ -95,7 +95,7 @@ export const WorkflowSidePicker: IComponent = () => {
         inputRecord[key] = Number(inputData[key] || crrInput.default)
       }
       if ([EValueType.File, EValueType.Video, EValueType.Image].includes(crrInput.type as EValueType)) {
-        const files = inputData[key] as IInputFileType[]
+        const files = inputData[key] as TInputFileType[]
         if (!files || files.length === 0) {
           toast({
             title: t('inputRequired', { field: key }),
@@ -105,10 +105,9 @@ export const WorkflowSidePicker: IComponent = () => {
           return
         }
         const uploadedIds = await Promise.all(
-          files.filter((v) => typeof v !== 'string').map((file) => uploadAttachment(file))
+          files.filter((v) => v.type === 'file' || v.type === 'mask').map((file) => uploadAttachment(file.data))
         ).then((attach) => attach.map((a) => a.id))
-        const ids = [...files.filter((v) => typeof v === 'string'), ...uploadedIds]
-
+        const ids = [...files.filter((v) => v.type === 'attachment').map((v) => v.data), ...uploadedIds]
         inputRecord[key] = ids
       } else {
         inputRecord[key] = inputData[key] || crrInput.default
