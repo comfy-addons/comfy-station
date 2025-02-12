@@ -3,6 +3,7 @@ import { TInputFileType } from '@/states/fileDrag'
 import { trpc } from '@/utils/trpc'
 import { removeBackground } from '@/utils/image'
 import { LoadingSVG } from './svg/LoadingSVG'
+import { cn } from '@/utils/style'
 
 interface CreateMaskingProps {
   file: TInputFileType | null
@@ -30,6 +31,7 @@ const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMa
   // Pan state
   const [isPanning, setIsPanning] = useState(false)
   const [isSpacePressed, setIsSpacePressed] = useState(false)
+  const [isAltPressed, setIsAltPressed] = useState(false)
   const [panPosition, setPanPosition] = useState({ x: 0, y: 0 })
   const [lastPanPos, setLastPanPos] = useState({ x: 0, y: 0 })
 
@@ -142,12 +144,16 @@ const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMa
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file])
 
-  // Handle keyboard events for space key
+  // Handle keyboard events for space and alt keys
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Space' && !isSpacePressed) {
         e.preventDefault()
         setIsSpacePressed(true)
+      }
+      if (e.code === 'AltLeft' || e.code === 'AltRight') {
+        e.preventDefault()
+        setIsAltPressed(true)
       }
     }
 
@@ -156,6 +162,10 @@ const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMa
         e.preventDefault()
         setIsSpacePressed(false)
         setIsPanning(false)
+      }
+      if (e.code === 'AltLeft' || e.code === 'AltRight') {
+        e.preventDefault()
+        setIsAltPressed(false)
       }
     }
 
@@ -255,7 +265,8 @@ const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMa
     }
 
     // Adjust line width and radius to counter the CSS scaling
-    ctx.strokeStyle = 'black'
+    ctx.strokeStyle = isAltPressed ? 'white' : 'black'
+    ctx.fillStyle = isAltPressed ? 'white' : 'black'
     ctx.lineWidth = brushSize / effectiveScale
     ctx.lineCap = 'round'
 
@@ -285,7 +296,7 @@ const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMa
       effectiveScale = scaleVal * zoom
     }
 
-    ctx.strokeStyle = 'black'
+    ctx.strokeStyle = isAltPressed ? 'white' : 'black'
     ctx.lineWidth = brushSize / effectiveScale
     ctx.lineCap = 'round'
 
@@ -451,7 +462,7 @@ const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMa
             opacity: 0.6,
             cursor: isSpacePressed ? 'grab' : 'crosshair'
           }}
-          className='bg-foreground/50'
+          className='bg-foreground'
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -460,7 +471,10 @@ const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMa
       </div>
       {!isSpacePressed && (
         <div
-          className='pointer-events-none absolute border-2 border-white rounded-full z-10'
+          className={cn('pointer-events-none absolute border-2 rounded-full z-10', {
+            'border-white': !isAltPressed,
+            'border-red-400': isAltPressed
+          })}
           style={{
             width: brushSize,
             height: brushSize,
@@ -470,8 +484,8 @@ const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMa
           }}
         />
       )}
-      <div className='absolute bottom-4 right-4 bg-background/80 backdrop-blur px-2 py-1 rounded text-sm'>
-        {Math.round(zoom * 100)}% (Ctrl+Wheel to zoom, Space+Drag to pan)
+      <div className='absolute right-4 bottom-4 bg-background/80 backdrop-blur px-2 py-1 rounded text-sm'>
+        {Math.round(zoom * 100)}% | Ctrl+Wheel to zoom | Space+Drag to pan | Ctrl+z to undo | Hold alt key to erase
       </div>
     </div>
   )
