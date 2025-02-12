@@ -2,13 +2,14 @@ import { useDropzone } from 'react-dropzone'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { cn } from '@/utils/style'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
-import { Pencil, Plus, X } from 'lucide-react'
+import { CopyPlus, Pencil, Plus, X } from 'lucide-react'
 import { PhotoView } from 'react-photo-view'
 import { TInputFileType, useFileDragStore } from '@/states/fileDrag'
 import { AttachmentImage } from './AttachmentImage'
 import { CreateMaskingDialog } from './dialogs/CreateMaskingDialog'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from './ui/context-menu'
 import { cloneDeep } from 'lodash'
+import { useKeygen } from '@/hooks/useKeygen'
 
 const DropFileInput: IComponent<{
   dragId: string
@@ -17,6 +18,7 @@ const DropFileInput: IComponent<{
   disabled?: boolean
   onChanges?: (files: TInputFileType[]) => void
 }> = ({ defaultFiles, disabled, onChanges, maxFiles, dragId }) => {
+  const { gen } = useKeygen()
   const [maskingFile, setMaskingFile] = useState<TInputFileType | null>(null)
   const [showCreateMasking, setShowCreateMasking] = useState(false)
 
@@ -130,7 +132,7 @@ const DropFileInput: IComponent<{
       if (isImage) {
         return (
           <div
-            key={file.type === 'attachment' ? file.data : file.data.name}
+            key={gen(file)}
             draggable
             onDragStart={() => setDraggingFile([file])}
             onDragEnd={() => {
@@ -163,10 +165,20 @@ const DropFileInput: IComponent<{
                       setMaskingFile(file)
                       setShowCreateMasking(true)
                     }}
-                    className='flex items-center gap-2'
+                    className='flex items-center gap-2 h-full w-full'
                   >
-                    {file.type === 'mask' ? 'Update Mask' : 'Create Mask'}
                     {file.type === 'mask' ? <Pencil width={16} height={16} /> : <Plus width={16} height={16} />}
+                    {file.type === 'mask' ? 'Update Mask' : 'Create Mask'}
+                  </button>
+                </ContextMenuItem>
+                <ContextMenuItem>
+                  <button
+                    onClick={() => {
+                      addFiles([cloneDeep(file)])
+                    }}
+                    className='flex items-center gap-2 h-full w-full'
+                  >
+                    <CopyPlus className='w-4 h-4' /> Duplicate
                   </button>
                 </ContextMenuItem>
               </ContextMenuContent>
