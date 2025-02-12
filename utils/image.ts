@@ -1,13 +1,17 @@
 /**
- * Converts white pixels in an image to transparent pixels
+ * Converts either white or black pixels in an image to transparent pixels
  * @param file - The input image File object
+ * @param removeColor - The color to remove ('white' | 'black')
+ * @param tolerance - How close to pure white/black to consider (0-255, default 5)
  * @returns Promise<Blob> - A promise that resolves to a PNG blob with transparent background
  */
-export const removeWhiteBackground = async (file: File): Promise<Blob> => {
-  // Create a new promise to handle the image processing
+export const removeBackground = async (
+  file: File,
+  removeColor: 'white' | 'black' = 'white',
+  tolerance: number = 5
+): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     try {
-      // Create temporary image and canvas elements
       const img = new Image()
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')
@@ -16,38 +20,34 @@ export const removeWhiteBackground = async (file: File): Promise<Blob> => {
         throw new Error('Failed to get canvas context')
       }
 
-      // When image loads, process it
       img.onload = () => {
-        // Set canvas size to match image
         canvas.width = img.width
         canvas.height = img.height
-
-        // Draw the image on canvas
         ctx.drawImage(img, 0, 0)
 
-        // Get image data to process pixels
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
         const data = imageData.data
 
-        // Process each pixel
-        // Note: data array contains [r,g,b,a,r,g,b,a,...] values
         for (let i = 0; i < data.length; i += 4) {
           const r = data[i]
           const g = data[i + 1]
           const b = data[i + 2]
 
-          // Check if pixel is white-ish (allowing some tolerance)
-          // You can adjust these values for different levels of "whiteness"
-          if (r > 250 && g > 250 && b > 250) {
-            // Set alpha to 0 (transparent)
-            data[i + 3] = 0
+          if (removeColor === 'white') {
+            // Check if pixel is close to white
+            if (r >= 255 - tolerance && g >= 255 - tolerance && b >= 255 - tolerance) {
+              data[i + 3] = 0 // Set alpha to transparent
+            }
+          } else {
+            // Check if pixel is close to black
+            if (r <= tolerance && g <= tolerance && b <= tolerance) {
+              data[i + 3] = 0 // Set alpha to transparent
+            }
           }
         }
 
-        // Put the processed image data back on the canvas
         ctx.putImageData(imageData, 0, 0)
 
-        // Convert canvas to PNG blob
         canvas.toBlob((blob) => {
           if (blob) {
             resolve(blob)
@@ -57,18 +57,13 @@ export const removeWhiteBackground = async (file: File): Promise<Blob> => {
         }, 'image/png')
       }
 
-      // Handle image load errors
       img.onerror = () => {
         reject(new Error('Failed to load image'))
       }
 
-      // Load the image from the File object
       img.src = URL.createObjectURL(file)
     } catch (error) {
       reject(error)
     }
   })
 }
-
-// Example usage:
-// const processedBlob = await removeWhiteBackground(imageFile);

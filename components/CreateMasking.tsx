@@ -1,8 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { TInputFileType } from '@/states/fileDrag'
 import { trpc } from '@/utils/trpc'
-import { removeWhiteBackground } from '@/utils/image'
-import { LoadableButton } from './LoadableButton'
+import { removeBackground } from '@/utils/image'
 import { LoadingSVG } from './svg/LoadingSVG'
 
 interface CreateMaskingProps {
@@ -90,10 +89,19 @@ const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMa
 
         if (file.type === 'mask') {
           const maskFile = file.data
-          removeWhiteBackground(maskFile).then((blob) => {
+          removeBackground(maskFile, 'black').then((blob) => {
             const maskImg = new Image()
             maskImg.onload = () => {
               drawingCtx.drawImage(maskImg, 0, 0)
+              // Invert the mask colors
+              const imageData = drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height)
+              const data = imageData.data
+              for (let i = 0; i < data.length; i += 4) {
+                data[i] = 255 - data[i]
+                data[i + 1] = 255 - data[i + 1]
+                data[i + 2] = 255 - data[i + 2]
+              }
+              drawingCtx.putImageData(imageData, 0, 0)
               setMaskLoading(false)
             }
             maskImg.src = URL.createObjectURL(blob)
@@ -388,15 +396,15 @@ const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMa
       // Calculate the average brightness
       const avg = (data[i] + data[i + 1] + data[i + 2]) / 3
       if (avg < threshold) {
-        // Pixel is considered black
-        data[i] = 0
-        data[i + 1] = 0
-        data[i + 2] = 0
-      } else {
         // Pixel is considered white
         data[i] = 255
         data[i + 1] = 255
         data[i + 2] = 255
+      } else {
+        // Pixel is considered black
+        data[i] = 0
+        data[i + 1] = 0
+        data[i + 2] = 0
       }
       data[i + 3] = 255 // Fully opaque
     }
@@ -443,6 +451,7 @@ const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMa
             opacity: 0.6,
             cursor: isSpacePressed ? 'grab' : 'crosshair'
           }}
+          className='bg-foreground/50'
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
