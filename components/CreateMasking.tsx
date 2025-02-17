@@ -4,6 +4,7 @@ import { trpc } from '@/utils/trpc'
 import { removeBackground } from '@/utils/image'
 import { LoadingSVG } from './svg/LoadingSVG'
 import { cn } from '@/utils/style'
+import { useTranslations } from 'next-intl'
 
 interface CreateMaskingProps {
   file: TInputFileType | null
@@ -12,6 +13,7 @@ interface CreateMaskingProps {
   onBrushSizeChange?: (size: number) => void
 }
 const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMaskChange, onBrushSizeChange }) => {
+  const t = useTranslations('components.createMasking')
   // Refs for the canvases
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 })
   // Refs for the canvases
@@ -484,8 +486,8 @@ const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMa
           }}
         />
       )}
-      <div className='absolute right-4 bottom-4 bg-background/80 backdrop-blur px-2 py-1 rounded text-sm'>
-        {Math.round(zoom * 100)}% | Ctrl+Wheel to zoom | Space+Drag to pan | Ctrl+z to undo | Hold alt key to erase
+      <div className='absolute border flex justify-center left-4 right-4 bottom-4 bg-background/80 backdrop-blur px-2 py-1 rounded text-sm pointer-events-none'>
+        {t('zoomPercentage', { zoom: Math.round(zoom * 100) })} | {t('instructions')}
       </div>
     </div>
   )

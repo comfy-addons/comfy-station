@@ -292,6 +292,10 @@
       "continue": "Tiếp tục",
       "crystoolInfo": "Crystools cần thiết để theo dõi tài nguyên của nút, nếu không có nó, bạn không thể theo dõi GPU, CPU và HDD.",
       "managerInfo": "ComfyUI-Manager được sử dụng để quản lý các tiện ích mở rộng và tệp mô hình."
+    },
+    "createMasking": {
+      "zoomPercentage": "{zoom}%",
+      "instructions": "Ctrl+Lăn chuột để phóng to | Giữ Space+Kéo để di chuyển | Ctrl+z để hoàn tác | Giữ phím Alt để xóa"
     }
   },
   "settings": {

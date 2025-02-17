@@ -40,6 +40,12 @@
       "submit": "登录"
     }
   },
+  "main": {
+    "emptyWorkflow": {
+      "title": "工作流为空",
+      "description": "创建您的第一个工作流"
+    }
+  },
   "components": {
     "userInformation": {
       "credits": "积分",
@@ -175,7 +181,7 @@
       "resetGrid": "重置为自动"
     },
     "taskItem": {
-      "id": "ID: #{id}",
+      "id": "ID：#{id}",
       "triggerBy": "触发者：",
       "take": "用时",
       "repeat": "重复",
@@ -286,12 +292,10 @@
       "continue": "继续",
       "crystoolInfo": "Crystools 用于跟踪节点资源，没有它，您无法跟踪 GPU、CPU 和 HDD。",
       "managerInfo": "ComfyUI-Manager 用于管理扩展和模型文件。"
-    }
-  },
-  "main": {
-    "emptyWorkflow": {
-      "title": "工作流为空",
-      "description": "创建您的第一个工作流"
+    },
+    "createMasking": {
+      "zoomPercentage": "{zoom}%",
+      "instructions": "Ctrl+滚轮缩放 | 按住空格+拖动平移 | Ctrl+z撤销 | 按住Alt键擦除"
     }
   },
   "settings": {

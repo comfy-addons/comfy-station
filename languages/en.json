@@ -290,8 +290,12 @@
       "crystoolNotInstalled": "ComfyUI - Crystool is not Installed",
       "back": "Back",
       "continue": "Continue",
-      "crystoolInfo": "Crystools is needed for tracking node’s resources, without it, you can not track GPU CPU and HDD.",
+      "crystoolInfo": "Crystools is needed for tracking node's resources, without it, you can not track GPU CPU and HDD.",
       "managerInfo": "ComfyUI-Manager is used for managing extensions and model files."
+    },
+    "createMasking": {
+      "zoomPercentage": "{zoom}%",
+      "instructions": "Ctrl+Wheel to zoom | Space+Drag to pan | Ctrl+z to undo | Hold alt key to erase"
     }
   },
   "settings": {
