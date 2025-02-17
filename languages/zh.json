@@ -170,7 +170,9 @@
         "more": "更多数据...",
         "loading": "正在加载更多数据...",
         "noMore": "没有更多数据"
-      }
+      },
+      "imagePerRow": "每行图片数",
+      "resetGrid": "重置为自动"
     },
     "taskItem": {
       "id": "ID: #{id}",

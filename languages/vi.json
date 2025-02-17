@@ -166,7 +166,9 @@
         "more": "Thêm dữ liệu...",
         "loading": "Đang tải thêm dữ liệu...",
         "noMore": "Không còn dữ liệu"
-      }
+      },
+      "imagePerRow": "Số hình ảnh mỗi hàng",
+      "resetGrid": "Đặt lại tự động"
     },
     "attachmentDetail": {
       "workflow": "Workflow",

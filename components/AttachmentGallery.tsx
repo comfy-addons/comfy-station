@@ -2,14 +2,16 @@
 
 import { ImageGallery } from '@/components/ImageGallery'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Slider } from '@/components/ui/slider'
 import { EUserRole } from '@/entities/enum'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
 import { useDynamicValue } from '@/hooks/useDynamicValue'
 import { trpc } from '@/utils/trpc'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { useSession } from 'next-auth/react'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { useStorageState } from '@/hooks/useStorageState'
 
 const PASSIVE_WATCH_PENDING_INTERVAL = 3000
 
@@ -92,6 +94,9 @@ export const AttachmentGallery: IComponent<{
   }
 
   const t = useTranslations('components.gallery')
+  const [manualImgPerRow, setManualImgPerRow] = useStorageState<number | null>('gallery-item', null)
+
+  const effectiveImgPerRow = manualImgPerRow ?? dyn([2, 3, 4, 5])
 
   return (
     <div ref={containerRef} className='absolute top-0 left-0 w-full h-full flex flex-col shadow-inner'>
@@ -115,7 +120,7 @@ export const AttachmentGallery: IComponent<{
         </div>
       )}
       <ImageGallery
-        imgPerRow={dyn([2, 3, 4, 5])}
+        imgPerRow={effectiveImgPerRow}
         items={[...pending, ...images]}
         favoriteIds={[taskInfo.data?.avatar?.id ?? '']}
         onPressFavorite={allowFav ? handlePressFavorite : undefined}
@@ -132,6 +137,34 @@ export const AttachmentGallery: IComponent<{
           )
         }}
       />
+      <div className='absolute bottom-4 right-4 z-10 group hidden md:block'>
+        <div className='flex items-center gap-4'>
+          <div className='bg-background/80 backdrop-blur-sm shadow-lg border rounded-full h-10 w-10 flex items-center justify-center overflow-hidden group-hover:w-[200px] transition-all duration-200 ease-out'>
+            <div className='flex items-center gap-2 w-full'>
+              <code className='flex-none w-6 px-2 group-hover:px-4 text-center font-medium m-auto'>
+                {manualImgPerRow ?? effectiveImgPerRow}
+              </code>
+              <div className='flex-grow hidden group-hover:flex transition-opacity duration-200 items-center gap-2'>
+                <Slider
+                  className='w-[100px]'
+                  min={1}
+                  max={6}
+                  step={1}
+                  value={[manualImgPerRow ?? effectiveImgPerRow]}
+                  onValueChange={([value]) => setManualImgPerRow(value)}
+                />
+                <button
+                  disabled={manualImgPerRow === null}
+                  onClick={() => setManualImgPerRow(null)}
+                  className='text-xs text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:text-foreground transition-colors'
+                >
+                  {t('resetGrid')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

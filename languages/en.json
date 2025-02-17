@@ -166,7 +166,9 @@
         "more": "More data...",
         "loading": "Loading more data...",
         "noMore": "No more data"
-      }
+      },
+      "imagePerRow": "Images per row",
+      "resetGrid": "Reset to auto"
     },
     "attachmentDetail": {
       "workflow": "Workflow",
