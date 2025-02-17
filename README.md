@@ -8,32 +8,91 @@
 
 ![ComfyUI Station Logo or Screenshot](https://r2.550studios.com/comfy-station-bg.jpg)
 
-## 🗺️ Navigation Menu
+## 📚 Table of Contents
 
-- [Project Title & Description](#-project-title--description)
-- [Installation](#-installation)
-- [How to Use](#-how-to-use)
+- [Overview](#-overview)
+- [Technology Stack](#-technology-stack)
+- [Getting Started](#-getting-started)
+  - [Docker Installation](#docker-installation)
+  - [Local Development](#local-development)
+- [Usage Guide](#-usage-guide)
 - [Features](#-features)
+- [API Reference](#-api-reference)
 - [Contributing](#-contributing)
 - [License](#-license)
-- [Contact Info](#-contact-info)
+- [Contact & Support](#-contact--support)
 - [Acknowledgments](#-acknowledgments)
 
-## 🌟 Project Title & Description
+## 🌟 Overview
 
-### ✨ ComfyUI Station: Your Creative Control Center
+ComfyUI Station is a modern, open-source application designed to streamline the management of multiple ComfyUI instances. Whether you're a seasoned AI artist or just starting out, our platform provides an intuitive interface for handling complex workflows, task scheduling, and resource management. The application is built with performance, scalability, and user experience in mind.
 
-ComfyUI Station is your go-to open-source application for interacting with and managing multiple ComfyUI instances. 😎 It's designed to make complex workflows accessible and fun. Whether you're a seasoned AI artist or just starting out, this app simplifies the process of image generation, letting you focus on your creativity, not the hassle. 🖼️⚙️ It's all about making ComfyUI more user-friendly and powerful, providing you with a station that handles everything from task scheduling to resource management.
+## 💻 Technology Stack
 
-## 🛠 Installation
+- **Frontend**
 
-Ready to get started? Here's how to set up ComfyUI Station:
+  - Next.js 15 with React 19
+  - TypeScript for type safety
+  - TailwindCSS for styling
+  - Radix UI components
+  - Framer Motion for animations
+  - next-intl for internationalization
+  - React Query for data fetching
 
-1. **Prerequisites:** 📝
+- **Backend**
 
-   - **Docker:** Docker and Docker Compose is needed for containerization. Get it at [https://www.docker.com](https://www.docker.com).
+  - Bun runtime
+  - Elysia for API server
+  - tRPC for type-safe API communication
+  - MikroORM with LibSQL for database
+  - Next-Auth for authentication
+  - LangChain for AI integrations
 
-2. **Docker compose file** 📥
+- **Development & Tools**
+  - Bun as package manager
+  - ESLint & Prettier for code quality
+  - Docker for containerization
+  - GitHub Actions for CI/CD
+
+## 🚀 Getting Started
+
+### Docker Installation
+
+1. **Prerequisites**
+
+   - Docker and Docker Compose ([Get Docker](https://www.docker.com))
+
+2. **Configuration Files**
+
+   Create a `.env` file:
+
+   ```bash
+   # Required
+   NEXTAUTH_SECRET="your_nextauth_secret_here"
+   INTERNAL_SECRET="your_internal_secret_here"
+
+   # Optional - S3 Storage Configuration
+   S3_ENDPOINT=
+   S3_BUCKET_NAME=
+   S3_REGION=
+   S3_ACCESS_KEY=
+   S3_SECRET_KEY=
+
+   # Optional - OpenAI Integration
+   OPENAI_BASE_URL=
+   OPENAI_API_KEY=
+   OPENAI_MODEL=
+   ```
+
+   Download nginx configuration:
+
+   ```bash
+   curl -o nginx.conf https://raw.githubusercontent.com/comfy-addons/comfy-station/refs/heads/main/nginx.conf
+   ```
+
+3. **Docker Compose Setup**
+
+   Create `docker-compose.yml`:
 
    ```yml
    version: '3.8'
@@ -87,117 +146,146 @@ Ready to get started? Here's how to set up ComfyUI Station:
        driver: bridge
    ```
 
-3. **Set up your `.env` file:** ⚙️
-   Copy content below to your `.env` and fill in your details.
-
-   ```bash
-   # Secret key for NextAuth authentication
-   NEXTAUTH_SECRET="your_nextauth_secret_here"
-
-   # Backend and frontend internal secret
-   INTERNAL_SECRET="your_internal_secret_here"
-
-   # S3 storage configuration (Optional - Storage file on S3 services)
-   S3_ENDPOINT=
-   S3_BUCKET_NAME=
-   S3_REGION=
-   S3_ACCESS_KEY=
-   S3_SECRET_KEY=
-
-   # Support for OpenAI (Optional - Auto fill input feature)
-   OPENAI_BASE_URL=
-   OPENAI_API_KEY=
-   OPENAI_MODEL=
-   ```
-
-   You will need:
-
-   - `NEXTAUTH_SECRET`
-   - `INTERNAL_SECRET`
-   - Your S3 credentials (optional): `S3_ENDPOINT`, `S3_BUCKET_NAME`, etc.
-     - If you don't have S3 credentials, don't fill these fields, the app will use local storage.
-   - Your OpenAI credentials (optional): `OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL`
-
-4. **Download `nginx` config file:** 📥
-
-   ```bash
-   curl -o nginx.conf https://raw.githubusercontent.com/comfy-addons/comfy-station/refs/heads/main/nginx.conf
-   ```
-
-5. **Start with Docker Compose:** 🐳
+4. **Launch**
 
    ```bash
    docker-compose up -d
    ```
 
-6. **Access the Application:** 🌐
-   Open your browser and go to `http://localhost:8080` to create your first account.
+5. **Access**
+   Open `http://localhost:8080` to create your first account.
 
-## 🚀 How to Use
+### Local Development
 
-Getting started with ComfyUI Station is a breeze:
+1. **Prerequisites**
 
-1. **Login:** Access the application at `http://localhost:3000` and sign in using your username and password, or an existing API token.
-2. **Add a ComfyUI Client:**
-   - Login with admin account and add your ComfyUI server by its URL.
-   - Input any necessary authentication.
-3. **Start Creating Workflows:**
-   - Download your workflow from ComfyUI web interface using `Workflow` -> `Export API`.
-   - Upload your own in the top bar.
-   - Select a workflow to run from the main workflow picker
-   - Use the workflow parameters area to adjust the input configuration.
-   - Click "Run" to start the task on one of your connected ComfyUI nodes.
-4. **Manage and Monitor:**
-   - Track the status of running tasks.
-   - View and download generated images.
-   - Manage your API tokens for secure access to the API.
-5. **Settings:**
-   - In the setting menu, you can manage your user account such as change password and avatar.
-   - Admin can manage their users and API tokens
+   - Bun v1.0.0 or higher ([Install Bun](https://bun.sh))
+   - Node.js 18 or higher
+
+2. **Clone & Install**
+
+   ```bash
+   git clone https://github.com/comfy-addons/comfy-station.git
+   cd comfy-station
+   bun install
+   ```
+
+3. **Environment Setup**
+
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+4. **Development Server**
+
+   ```bash
+   # Start both frontend and backend in development mode
+   bun dev
+
+   # Or start them separately
+   bun dev:next     # Frontend only
+   bun dev:trpc     # Backend only
+   ```
+
+5. **Available Scripts**
+   - `bun dev` - Start development servers
+   - `bun build` - Build for production
+   - `bun start` - Start production server
+   - `bun lint` - Run ESLint
+   - `bun format` - Format code with Prettier
+   - `bun cli` - Run CLI commands
+   - `bun mikro` - MikroORM CLI commands
+
+## 🎯 Usage Guide
+
+1. **Initial Setup**
+
+   - Access the application and create your first account
+   - For admin access, use the first account created
+
+2. **Managing ComfyUI Clients**
+
+   - Login with admin account
+   - Add ComfyUI servers via their URLs
+   - Configure authentication if needed
+
+3. **Working with Workflows**
+
+   - Export workflows from ComfyUI web interface (`Workflow` -> `Export API`)
+   - Upload workflows through the top bar
+   - Configure workflow parameters
+   - Execute tasks on connected ComfyUI nodes
+
+4. **Task Management**
+
+   - Monitor task progress in real-time
+   - View and download generated images
+   - Manage API tokens for automation
+
+5. **User Settings**
+   - Customize your account settings
+   - Change password and avatar
+   - Manage API tokens (Admin)
 
 ## 🎨 Features
 
-- **Multi-Instance Management**: Connect and manage multiple ComfyUI instances seamlessly. 🔗
-- **Intuitive UI**: Enjoy a user-friendly interface designed for both beginners and experts. ✨
-- **Real-Time Monitoring:** Track the progress and status of your tasks and connected ComfyUI nodes with real-time updates. 📊
-- **Advanced Image Handling**: Preview, and download your generated images with ease. 🖼️
-- **API Token Management**: Securely generate and manage API tokens for programmatic interaction. 🔑
-- **AI Suggestion for prompt**: Use integrated AI tool for better prompt. 🧙
+- **Multi-Instance Management**: Connect and manage multiple ComfyUI instances seamlessly
+- **Intuitive UI**: User-friendly interface for both beginners and experts
+- **Real-Time Monitoring**: Track progress and status with live updates
+- **Advanced Image Handling**: Preview and download generated images
+- **API Token Management**: Secure programmatic access
+- **AI-Powered Suggestions**: Integrated AI tools for better prompts
+- **Internationalization**: Support for multiple languages
+- **Resource Management**: Monitor and optimize resource usage
+
+## 📡 API Reference
+
+The ComfyUI Station API is built with tRPC, providing type-safe API endpoints. For detailed API documentation:
+
+1. Start the development server
+2. Access the Swagger documentation at `/api/docs`
+3. Use the provided API tokens for authentication
 
 ## 👐 Contributing
 
-We welcome contributions! Here's how you can help improve ComfyUI Station:
+1. **Fork & Clone**
 
-1. **Fork the Repository:** 🍴
-   Start by forking the project repository on GitHub.
+   ```bash
+   git clone https://github.com/your-username/comfy-station.git
+   ```
 
-2. **Create a Branch:** 🌿
-   Create a new branch for your changes: `git checkout -b feature/your-new-feature`.
+2. **Branch**
 
-3. **Make Your Changes:** 💻
-   Make sure to follow the existing code style.
+   ```bash
+   git checkout -b feature/your-feature
+   ```
 
-4. **Test Your Changes:** ✅
-   Ensure your changes don't break anything by testing them thoroughly.
+3. **Development**
 
-5. **Submit a Pull Request:** 🚀
-   Submit a pull request to the main branch when you're ready, including a brief summary of the changes and their purpose.
+   - Follow the code style guidelines
+   - Add tests for new features
+   - Update documentation
+
+4. **Submit**
+   - Push your changes
+   - Create a Pull Request with a clear description
 
 ## 📜 License
 
-ComfyUI Station is released under the MIT License. 📄 This means you have the freedom to use, modify, and distribute the software, as long as you include the original copyright and license notice. Please see the `LICENSE` file for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
-## 📞 Contact Info
+## 📞 Contact & Support
 
-Have questions or need support? Feel free to reach out!
-
-- **Email:** <tctien342@gmail.com>
-- **GitHub:** [https://github.com/tctien342](https://github.com/tctien342)
+- **Email**: <tctien342@gmail.com>
+- **GitHub**: [tctien342](https://github.com/tctien342)
+- **Issues**: [GitHub Issues](https://github.com/comfy-addons/comfy-station/issues)
+- **Support**: [Buy Me a Coffee](https://www.buymeacoffee.com/tctien342)
 
 ## 💖 Acknowledgments
 
-A huge thanks to everyone who inspired this project and provided support, especially:
+Special thanks to:
 
-- The ComfyUI team.
-- The open-source community for its inspiration.
-- All contributors to the project! 🙌
+- The ComfyUI team
+- Our amazing contributors
+- The open-source community
