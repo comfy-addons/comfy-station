@@ -462,7 +462,7 @@ const CreateMasking: React.FC<CreateMaskingProps> = ({ file, brushSize = 5, onMa
             opacity: 0.6,
             cursor: isSpacePressed ? 'grab' : 'crosshair'
           }}
-          className='bg-foreground'
+          className='bg-white'
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}

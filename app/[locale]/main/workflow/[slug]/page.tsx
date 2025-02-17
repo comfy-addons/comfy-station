@@ -1,7 +1,6 @@
-'use client'
+import { AttachmentGallery } from '@/components/AttachmentGallery'
 
-import WorkflowGallery from './Gallery'
-
-export default function WorkflowDetail() {
-  return <WorkflowGallery />
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+  const slug = (await params).slug
+  return <AttachmentGallery slug={slug} />
 }

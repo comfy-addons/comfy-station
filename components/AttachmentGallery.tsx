@@ -8,21 +8,24 @@ import { useDynamicValue } from '@/hooks/useDynamicValue'
 import { trpc } from '@/utils/trpc'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { useSession } from 'next-auth/react'
-import { useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 
-export default function WorkflowGallery() {
-  const { slug, router } = useCurrentRoute()
+const PASSIVE_WATCH_PENDING_INTERVAL = 3000
+
+export const AttachmentGallery: IComponent<{
+  slug?: string
+}> = ({ slug }) => {
+  const { router } = useCurrentRoute()
   const { data: session } = useSession()
   const taskInfo = trpc.workflow.get.useQuery(slug!, { enabled: !!slug })
   const infoLoader = trpc.workflow.attachments.useInfiniteQuery(
     {
-      workflowId: slug!,
+      workflowId: slug,
       limit: 20
     },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
-      enabled: !!slug,
       trpc: {
         context: {
           skipBatch: true
@@ -40,14 +43,9 @@ export default function WorkflowGallery() {
     router.push(`/main/workflow/${id}`)
   }
 
-  const runningTask = trpc.workflowTask.getRunning.useQuery(
-    {
-      workflowId: slug!
-    },
-    {
-      enabled: !!slug
-    }
-  )
+  const runningTask = trpc.workflowTask.getRunning.useQuery({
+    workflowId: slug
+  })
 
   trpc.watch.workflow.useSubscription(slug!, {
     onData: () => {
@@ -57,39 +55,65 @@ export default function WorkflowGallery() {
     enabled: !!slug
   })
 
-  const pending = runningTask.data ? runningTask.data.map((d) => ({ ...d, loading: true }) as const) : []
+  trpc.watch.historyList.useSubscription(undefined, {
+    onData: () => {
+      infoLoader.refetch()
+      runningTask.refetch()
+    },
+    enabled: !slug
+  })
+
+  const pending = useMemo(() => {
+    return runningTask.data ? runningTask.data.map((d) => ({ ...d, loading: true }) as const) : []
+  }, [runningTask.data])
   const images = infoLoader.data ? infoLoader.data.pages.flatMap((d) => d.items) : []
-  const allowFav = !!session?.user.role && session.user.role > EUserRole.User
+  const allowFav = !!session?.user.role && session.user.role > EUserRole.User && !!slug
+
+  useEffect(() => {
+    if (!!slug) return
+    let interval: Timer
+    if (pending.length > 0) {
+      interval = setInterval(() => {
+        infoLoader.refetch()
+        runningTask.refetch()
+      }, PASSIVE_WATCH_PENDING_INTERVAL)
+    }
+    return () => clearInterval(interval)
+  }, [infoLoader, pending, runningTask, slug])
 
   const handlePressFavorite = async (imageId: string) => {
-    await avatarSetter.mutateAsync({
-      workflowId: slug!,
-      attachmentId: imageId
-    })
-    await taskInfo.refetch()
+    if (!!slug) {
+      await avatarSetter.mutateAsync({
+        workflowId: slug!,
+        attachmentId: imageId
+      })
+      await taskInfo.refetch()
+    }
   }
 
   const t = useTranslations('components.gallery')
 
   return (
     <div ref={containerRef} className='absolute top-0 left-0 w-full h-full flex flex-col shadow-inner'>
-      <div className='p-2 w-full md:hidden'>
-        <Select defaultValue={slug} onValueChange={handlePickWorkflow}>
-          <SelectTrigger>
-            <SelectValue placeholder={t('select')} className='w-full' />
-          </SelectTrigger>
-          <SelectContent>
-            {workflowListLoader.data?.map((selection) => (
-              <SelectItem key={selection.id} value={selection.id} className='flex flex-col w-full items-start'>
-                <div className='md:w-[300px] font-semibold whitespace-normal break-words text-left'>
-                  {selection.name}
-                </div>
-                <p className='text-xs'>{selection.description}</p>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {!!slug && (
+        <div className='p-2 w-full md:hidden'>
+          <Select defaultValue={slug} onValueChange={handlePickWorkflow}>
+            <SelectTrigger>
+              <SelectValue placeholder={t('select')} className='w-full' />
+            </SelectTrigger>
+            <SelectContent>
+              {workflowListLoader.data?.map((selection) => (
+                <SelectItem key={selection.id} value={selection.id} className='flex flex-col w-full items-start'>
+                  <div className='md:w-[300px] font-semibold whitespace-normal break-words text-left'>
+                    {selection.name}
+                  </div>
+                  <p className='text-xs'>{selection.description}</p>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       <ImageGallery
         imgPerRow={dyn([2, 3, 4, 5])}
         items={[...pending, ...images]}

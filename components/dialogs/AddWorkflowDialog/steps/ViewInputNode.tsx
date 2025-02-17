@@ -66,7 +66,7 @@ export const ViewInputNode: IComponent<{
           }}
           className={cn('hover:opacity-70 transition-all pl-8', {
             'cursor-pointer': !readonly,
-            'border-destructive bg-red-50': !isValid
+            'border-destructive bg-red-50 dark:bg-red-500/10': !isValid
           })}
         >
           {!readonly && (

@@ -9,6 +9,7 @@ import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { TTab, WorkflowDetailContext } from './context'
 import { forceRecalculatePortal, Portal } from '@/components/Portal'
 import { useTranslations } from 'next-intl'
+import { AttachmentGallery } from '@/components/AttachmentGallery'
 
 const Layout: IComponent = ({ children }) => {
   const t = useTranslations('components.workflowLayout')
@@ -47,6 +48,7 @@ const Layout: IComponent = ({ children }) => {
           <TabsList>
             <TabsTrigger value='history'>{t('tabs.history')}</TabsTrigger>
             <TabsTrigger value='visualize'>{t('tabs.gallery')}</TabsTrigger>
+            <TabsTrigger value='all'>All</TabsTrigger>
           </TabsList>
         </div>
       </Portal>
@@ -67,6 +69,9 @@ const Layout: IComponent = ({ children }) => {
           </TabsContent>
           <TabsContent value='visualize' className='w-full h-full mt-0 z-0 relative !ring-0'>
             {children}
+          </TabsContent>
+          <TabsContent value='all' className='w-full h-full mt-0 z-0 relative !ring-0'>
+            <AttachmentGallery />
           </TabsContent>
         </SimpleTransitionLayout>
       </Tabs>
