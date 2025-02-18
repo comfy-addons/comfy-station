@@ -48,7 +48,7 @@ const Layout: IComponent = ({ children }) => {
           <TabsList>
             <TabsTrigger value='history'>{t('tabs.history')}</TabsTrigger>
             <TabsTrigger value='visualize'>{t('tabs.gallery')}</TabsTrigger>
-            <TabsTrigger value='all'>All</TabsTrigger>
+            <TabsTrigger value='all'>{t('tabs.all')}</TabsTrigger>
           </TabsList>
         </div>
       </Portal>

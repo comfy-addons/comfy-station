@@ -204,7 +204,8 @@
     "workflowLayout": {
       "tabs": {
         "history": "历史记录",
-        "gallery": "图库"
+        "gallery": "图库",
+        "all": "全部"
       }
     },
     "downloadButton": {

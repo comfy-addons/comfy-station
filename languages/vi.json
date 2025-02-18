@@ -204,7 +204,8 @@
     "workflowLayout": {
       "tabs": {
         "history": "Lịch sử",
-        "gallery": "Thư viện"
+        "gallery": "Thư viện",
+        "all": "Tất cả"
       }
     },
     "downloadButton": {
