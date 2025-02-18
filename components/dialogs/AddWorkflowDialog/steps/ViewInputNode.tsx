@@ -10,7 +10,8 @@ import {
   CheckCheck,
   Variable,
   CornerDownRight,
-  GripVertical
+  GripVertical,
+  SlidersHorizontal
 } from 'lucide-react'
 import { AddWorkflowDialogContext, EImportStep } from '..'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
@@ -109,6 +110,12 @@ export const ViewInputNode: IComponent<{
                 <Badge variant='secondary' className='mt-2'>
                   <CheckCheck width={14} height={14} className='mr-1' />
                   Selections {input.selections.length}
+                </Badge>
+              )}
+              {!!input.useSlider && (
+                <Badge variant='secondary' className='mt-2'>
+                  <SlidersHorizontal width={14} height={14} className='mr-1' />
+                  Slider
                 </Badge>
               )}
               {!!input.cost?.related && (

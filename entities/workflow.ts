@@ -23,16 +23,22 @@ export interface IMapTarget {
   mapVal: string
 }
 
-export interface IMaperBase {
+export interface IMapperBase {
   key: string
   type: EValueType | EValueSelectionType | EValueUtilityType
   iconName?: string
   description?: string
 }
 
-export interface IMapperInput extends IMaperBase {
+export interface IMapperInput extends IMapperBase {
   target: Array<IMapTarget>
+  /**
+   * Only for type = 'Number'
+   */
   min?: number
+  /**
+   * Only for type = 'Number'
+   */
   max?: number
   /**
    * Only for type = 'Number'
@@ -44,6 +50,11 @@ export interface IMapperInput extends IMaperBase {
      */
     costPerUnit: number
   }
+  /**
+   * Only for type = 'Number'
+   * If true, the input will be a slider
+   */
+  useSlider?: boolean
   /**
    * Only for types = Checkpoint | Lora | Sampler | Scheduler
    */
@@ -58,7 +69,7 @@ export interface IMapperInput extends IMaperBase {
   default?: string | number | boolean
 }
 
-export interface IMapperOutput extends IMaperBase {
+export interface IMapperOutput extends IMapperBase {
   target: IMapTarget
   /**
    * If true, the output will join all array elements to a string (Only used with type = 'String')

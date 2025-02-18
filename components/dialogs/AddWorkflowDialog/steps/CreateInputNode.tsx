@@ -65,6 +65,7 @@ export const CreateInputNode: IComponent<{
     default: z.union([z.string(), z.number(), z.boolean()]).optional(),
     min: z.coerce.number().optional(),
     max: z.coerce.number().optional(),
+    useSlider: z.boolean().optional(),
     name: z.string(),
     generative: z.boolean().default(false),
     generativeInstruction: z.string().optional(),
@@ -81,6 +82,7 @@ export const CreateInputNode: IComponent<{
       min: config?.min,
       max: config?.max,
       name: config?.key,
+      useSlider: config?.useSlider ?? false,
       generative: config?.generative?.enabled,
       generativeInstruction: config?.generative?.instruction,
       description: config?.description
@@ -378,6 +380,21 @@ export const CreateInputNode: IComponent<{
           )}
           {mappingType === EValueType.Number && (
             <>
+              <FormField
+                name='useSlider'
+                render={({ field }) => (
+                  <FormItem>
+                    <div className='flex items-center space-x-2'>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      <Label htmlFor='airplane-mode'>Input as slider</Label>
+                    </div>
+                    <FormDescription>
+                      If this input is a number, you can set this to use slider instead of input box.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 name='costRelated'
                 render={({ field }) => (

@@ -48,6 +48,7 @@ const InputSchema = z.record(
       target: z.array(TargetSchema),
       min: z.number().optional(),
       max: z.number().optional(),
+      useSlider: z.boolean().optional(),
       cost: z
         .object({
           related: z.boolean(),

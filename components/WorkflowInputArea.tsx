@@ -20,6 +20,7 @@ import { useGenerative } from '@/hooks/useGenerative'
 import { GenerativeTextarea } from './GenerativeTextarea'
 import { useIsolateState } from '@/hooks/useIsolateState'
 import { useTranslations } from 'next-intl'
+import { Slider } from './ui/slider'
 
 const SelectionSchema = z.nativeEnum(EValueSelectionType)
 
@@ -119,32 +120,47 @@ export const WorkflowInputArea: IComponent<{
           {[EValueType.Number, EValueUtilityType.Seed].includes(input.type as EValueType) && (
             <>
               <div className='w-full gap-2 flex'>
-                <Input
-                  startAdornment={
-                    input.type === EValueType.Number ? (
-                      <div className='flex items-center gap-2'>
-                        {input.min} <ChevronLeft size={16} />
-                      </div>
-                    ) : undefined
-                  }
-                  endAdornment={
-                    input.type === EValueType.Number ? (
-                      <div className='flex items-center gap-2'>
-                        <ChevronLeft size={16} /> {input.max}
-                      </div>
-                    ) : undefined
-                  }
-                  adornmentCls='text-sm pt-[1px]'
-                  disabled={disabled}
-                  placeholder={String(input.default ?? '')}
-                  value={data}
-                  onChange={(e) => {
-                    handleUpdateInput.current(val, e.target.value)
-                  }}
-                  min={input.min}
-                  max={input.max}
-                  type='number'
-                />
+                {!input.useSlider && (
+                  <Input
+                    startAdornment={
+                      input.type === EValueType.Number ? (
+                        <div className='flex items-center gap-2'>
+                          {input.min} <ChevronLeft size={16} />
+                        </div>
+                      ) : undefined
+                    }
+                    endAdornment={
+                      input.type === EValueType.Number ? (
+                        <div className='flex items-center gap-2'>
+                          <ChevronLeft size={16} /> {input.max}
+                        </div>
+                      ) : undefined
+                    }
+                    adornmentCls='text-sm pt-[1px]'
+                    disabled={disabled}
+                    placeholder={String(input.default ?? '')}
+                    value={data}
+                    onChange={(e) => {
+                      handleUpdateInput.current(val, e.target.value)
+                    }}
+                    min={input.min}
+                    max={input.max}
+                    type='number'
+                  />
+                )}
+                {!!input.useSlider && (
+                  <div className='flex w-full items-center gap-2'>
+                    <Slider
+                      value={[Number(data)]}
+                      min={input.min}
+                      max={input.max}
+                      className='w-full'
+                      disabled={disabled}
+                      onValueChange={(value) => handleUpdateInput.current(val, value[0])}
+                    />
+                    <code className='px-2'>{data}</code>
+                  </div>
+                )}
                 {input.type === EValueUtilityType.Seed && (
                   <Button
                     onClick={() => {
