@@ -77,6 +77,37 @@ const DropFileInput: IComponent<{
     [addFiles, draggingFile, setDraggingFile]
   )
 
+  const handleOnSaveMask = useCallback(
+    (mask: Blob) => {
+      const newFile = new File([mask], `mask-${Date.now()}.png`, { type: 'image/png' })
+      if (maskingFile?.type === 'mask') {
+        // Update mask
+        const newFiles = files.map((file) => {
+          if (file === maskingFile) {
+            return {
+              type: 'mask',
+              data: newFile,
+              original: maskingFile.original
+            } as const
+          }
+          return file
+        })
+        setFiles(newFiles)
+        onChanges?.(newFiles)
+      } else {
+        // Convert blob to file
+        addFiles([
+          {
+            type: 'mask',
+            data: newFile,
+            original: cloneDeep(maskingFile!)
+          }
+        ])
+      }
+    },
+    [addFiles, files, maskingFile, onChanges]
+  )
+
   const filesURL = useMemo(() => {
     return files.map((file) => {
       if (file.type === 'attachment') return file.data
@@ -229,7 +260,7 @@ const DropFileInput: IComponent<{
         )
       }
     })
-  }, [files, filesURL, removeFile, setDraggingFile])
+  }, [addFiles, files, filesURL, gen, removeFile, setDraggingFile, t])
 
   return (
     <div
@@ -243,32 +274,7 @@ const DropFileInput: IComponent<{
         onOpenChange={(open) => {
           setShowCreateMasking(open)
         }}
-        onSave={(mask) => {
-          const newFile = new File([mask], `mask-${Date.now()}.png`, { type: 'image/png' })
-          if (maskingFile?.type === 'mask') {
-            // Update mask
-            const newFiles = files.map((file) => {
-              if (file === maskingFile) {
-                return {
-                  type: 'mask',
-                  data: newFile,
-                  original: maskingFile.original
-                } as const
-              }
-              return file
-            })
-            setFiles(newFiles)
-          } else {
-            // Convert blob to file
-            addFiles([
-              {
-                type: 'mask',
-                data: newFile,
-                original: cloneDeep(maskingFile!)
-              }
-            ])
-          }
-        }}
+        onSave={handleOnSaveMask}
       />
       <div
         {...dropzoneProps}
