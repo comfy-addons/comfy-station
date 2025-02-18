@@ -296,6 +296,13 @@
     "createMasking": {
       "zoomPercentage": "{zoom}%",
       "instructions": "Ctrl+Lăn chuột để phóng to | Giữ Space+Kéo để di chuyển | Ctrl+z để hoàn tác | Giữ phím Alt để xóa"
+    },
+    "dropFileInput": {
+      "dropHere": "Thả tệp đính kèm vào đây...",
+      "dragAndDrop": "Kéo và thả tệp vào đây, hoặc nhấp để chọn tệp",
+      "updateMask": "Cập nhật mặt nạ",
+      "createMask": "Tạo mặt nạ",
+      "duplicate": "Nhân bản"
     }
   },
   "settings": {

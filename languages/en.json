@@ -296,6 +296,13 @@
     "createMasking": {
       "zoomPercentage": "{zoom}%",
       "instructions": "Ctrl+Wheel to zoom | Space+Drag to pan | Ctrl+z to undo | Hold alt key to erase"
+    },
+    "dropFileInput": {
+      "dropHere": "Drop attachments here...",
+      "dragAndDrop": "Drag and drop some files here, or click to select files",
+      "updateMask": "Update Mask",
+      "createMask": "Create Mask",
+      "duplicate": "Duplicate"
     }
   },
   "settings": {

@@ -296,6 +296,13 @@
     "createMasking": {
       "zoomPercentage": "{zoom}%",
       "instructions": "Ctrl+滚轮缩放 | 按住空格+拖动平移 | Ctrl+z撤销 | 按住Alt键擦除"
+    },
+    "dropFileInput": {
+      "dropHere": "在此处放置附件...",
+      "dragAndDrop": "拖拽文件到此处，或点击选择文件",
+      "updateMask": "更新蒙版",
+      "createMask": "创建蒙版",
+      "duplicate": "复制"
     }
   },
   "settings": {

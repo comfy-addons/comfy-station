@@ -10,6 +10,7 @@ import { CreateMaskingDialog } from './dialogs/CreateMaskingDialog'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from './ui/context-menu'
 import { cloneDeep } from 'lodash'
 import { useKeygen } from '@/hooks/useKeygen'
+import { useTranslations } from 'next-intl'
 
 const DropFileInput: IComponent<{
   dragId: string
@@ -18,6 +19,7 @@ const DropFileInput: IComponent<{
   disabled?: boolean
   onChanges?: (files: TInputFileType[]) => void
 }> = ({ defaultFiles, disabled, onChanges, maxFiles, dragId }) => {
+  const t = useTranslations('components.dropFileInput')
   const { gen } = useKeygen()
   const [maskingFile, setMaskingFile] = useState<TInputFileType | null>(null)
   const [showCreateMasking, setShowCreateMasking] = useState(false)
@@ -168,7 +170,7 @@ const DropFileInput: IComponent<{
                     className='flex items-center gap-2 h-full w-full'
                   >
                     {file.type === 'mask' ? <Pencil width={16} height={16} /> : <Plus width={16} height={16} />}
-                    {file.type === 'mask' ? 'Update Mask' : 'Create Mask'}
+                    {file.type === 'mask' ? t('updateMask') : t('createMask')}
                   </button>
                 </ContextMenuItem>
                 <ContextMenuItem>
@@ -178,7 +180,7 @@ const DropFileInput: IComponent<{
                     }}
                     className='flex items-center gap-2 h-full w-full'
                   >
-                    <CopyPlus className='w-4 h-4' /> Duplicate
+                    <CopyPlus className='w-4 h-4' /> {t('duplicate')}
                   </button>
                 </ContextMenuItem>
               </ContextMenuContent>
@@ -280,11 +282,7 @@ const DropFileInput: IComponent<{
         )}
       >
         <input {...getInputProps()} />
-        {isHaveDragFiles ? (
-          <p>Drop attachments here...</p>
-        ) : (
-          <p>Drag and drop some files here, or click to select files</p>
-        )}
+        {isHaveDragFiles ? <p>{t('dropHere')}</p> : <p>{t('dragAndDrop')}</p>}
       </div>
       <div className='w-full grid grid-cols-4 gap-2'>{renderFiles}</div>
     </div>
