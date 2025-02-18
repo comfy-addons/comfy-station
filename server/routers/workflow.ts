@@ -133,6 +133,19 @@ export const workflowRouter = router({
         nextCursor: data.endCursor
       }
     }),
+  listPicking: privateProcedure.query(async ({ ctx }) => {
+    const data = await ctx.em.find(
+      Workflow,
+      {
+        status: EWorkflowActiveStatus.Activated
+      },
+      {
+        populate: ['avatar'],
+        fields: ['id', 'name', 'description', 'status']
+      }
+    )
+    return data
+  }),
   attachments: privateProcedure
     .input(
       z.object({

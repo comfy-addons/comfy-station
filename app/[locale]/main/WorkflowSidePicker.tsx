@@ -173,9 +173,10 @@ export const WorkflowSidePicker: IComponent = () => {
   return (
     <div className='w-full h-full flex flex-col items-start py-2'>
       <div className='px-2 w-full'>
-        <Select defaultValue={slug} onValueChange={handlePickWorkflow}>
+        <Select value={slug} onValueChange={handlePickWorkflow}>
           <SelectTrigger>
             <SelectValue placeholder={t('select')} className='w-full' />
+            <code className='ml-auto text-foreground/50'>ctrl+k</code>
           </SelectTrigger>
           <SelectContent>
             {workflowListLoader.data?.map((selection) => (

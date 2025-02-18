@@ -21,7 +21,14 @@ export enum EKeyboardKey {
   Home = 'Home',
   End = 'End',
   PageUp = 'PageUp',
-  PageDown = 'PageDown'
+  PageDown = 'PageDown',
+  // Add letter keys for shortcuts
+  K = 'k',
+  One = '1',
+  Two = '2',
+  Three = '3',
+  Four = '4',
+  Five = '5'
 }
 
 /**
@@ -58,7 +65,7 @@ export const useShortcutKeyEvent = (key: EKeyboardKey, callback: () => void, com
           }[combo]
         : true
 
-      if (e.key === key && comboActivated) {
+      if (e.key.toLowerCase() === key.toLowerCase() && comboActivated) {
         e.preventDefault()
         callback()
       }

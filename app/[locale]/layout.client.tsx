@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 import { LoadingSVG } from '@/components/svg/LoadingSVG'
 import { Card } from '@/components/ui/card'
 import { Toaster } from '@/components/ui/toaster'
+import { FastSwitch } from '@/components/FastSwitch'
 import useDarkMode from '@/hooks/useDarkmode'
 import { useRouter } from '@routing'
 import { ReactFlowProvider } from '@xyflow/react'
@@ -145,6 +146,7 @@ export const ClientLayout: IComponent = ({ children }) => {
           {((wsConnected && isMain) || (!wsConnected && !isMain)) && children}
         </PhotoProvider>
       </ReactFlowProvider>
+      {((wsConnected && isMain) || (!wsConnected && !isMain)) && <FastSwitch />}
       <Toaster />
     </IdleTimerProvider>
   )
