@@ -114,14 +114,17 @@ export const workflowRouter = router({
               exclude: ['rawWorkflow'],
               first: limit,
               after: { endCursor: cursor || null },
-              orderBy: { createdAt: 'DESC' },
+              orderBy: [
+                { status: 'ASC' }, // Active status comes first (Activated = 0, Deactivated = 1, Deleted = 2)
+                { createdAt: 'DESC' }
+              ],
               populate: ['author', 'avatar']
             }
           : {
               exclude: ['rawWorkflow'],
               last: limit,
               before: { startCursor: cursor || null },
-              orderBy: { createdAt: 'DESC' },
+              orderBy: [{ status: 'ASC' }, { createdAt: 'DESC' }],
               populate: ['author', 'avatar']
             }
       )

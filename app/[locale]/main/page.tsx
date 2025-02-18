@@ -38,15 +38,7 @@ export default function Home() {
   const debounce = useActionDebounce(300, true)
 
   const renderCards = useMemo(() => {
-    const items = query.data?.pages
-      .map((v) => v.items)
-      .flat()
-      .sort((a, b) => {
-        // De-active last
-        if (a.status === b.status) return 0
-        if (a.status === EWorkflowActiveStatus.Activated) return -1
-        return 1
-      })
+    const items = query.data?.pages.map((v) => v.items).flat()
     return items?.map((item, i) => <WorkflowCard data={item} key={item.id} />) ?? []
   }, [query.data])
 
