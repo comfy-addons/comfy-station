@@ -15,6 +15,7 @@ import { useWorkflowStore } from '@/states/workflow'
 import { trpc } from '@/utils/trpc'
 import { useRouter } from '@/i18n/routing'
 import { AttachmentImage } from './AttachmentImage'
+import { search as searchFz } from 'fast-fuzzy'
 
 export function FastSwitch() {
   const [search, setSearch] = useState('')
@@ -33,9 +34,13 @@ export function FastSwitch() {
   )
 
   // Filter workflows based on search
-  const filteredWorkflows = workflowLister.data?.filter((workflow) =>
-    workflow.name?.toLowerCase().includes(search.toLowerCase())
-  )
+  const filteredWorkflows = React.useMemo(() => {
+    return search.length
+      ? searchFz(search, workflowLister.data ?? [], {
+          keySelector: (workflow) => workflow.name ?? ''
+        })
+      : workflowLister.data
+  }, [search, workflowLister.data])
 
   const handleSwitchWorkflow = React.useCallback(
     (workflowId: string) => {
@@ -70,7 +75,7 @@ export function FastSwitch() {
   }, [fastSwitchOpen, filteredWorkflows, handleSwitchWorkflow])
 
   return (
-    <CommandDialog open={fastSwitchOpen} onOpenChange={setFastSwitchOpen}>
+    <CommandDialog open={fastSwitchOpen} onOpenChange={setFastSwitchOpen} shouldFilter={false}>
       <CommandInput placeholder='Search workflows...' value={search} onValueChange={setSearch} />
       <CommandList>
         <CommandEmpty>No workflows found.</CommandEmpty>
@@ -87,7 +92,13 @@ export function FastSwitch() {
               <span>{workflow.name}</span>
               {!!workflow.description && <span className='text-xs text-foreground/50'>{workflow.description}</span>}
             </div>
-            {index < 5 && <CommandShortcut>ctrl+{index + 1}</CommandShortcut>}
+            {index < 5 && (
+              <CommandShortcut>
+                <kbd className='pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100'>
+                  ^{index + 1}
+                </kbd>
+              </CommandShortcut>
+            )}
           </CommandItem>
         ))}
       </CommandList>

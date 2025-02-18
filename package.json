@@ -72,6 +72,7 @@
     "dagre": "^0.8.5",
     "elysia": "^1.2.11",
     "embla-carousel-react": "^8.5.2",
+    "fast-fuzzy": "^1.12.0",
     "file-saver": "^2.0.5",
     "framer-motion": "^11.18.2",
     "httpsnippet": "^3.0.9",
