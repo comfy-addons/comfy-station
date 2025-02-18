@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import CreateMasking from '../CreateMasking'
 import { TInputFileType } from '@/states/fileDrag'
+import { useTranslations } from 'next-intl'
 
 interface CreateMaskingDialogProps {
   open: boolean
@@ -12,6 +13,7 @@ interface CreateMaskingDialogProps {
 }
 
 export const CreateMaskingDialog: React.FC<CreateMaskingDialogProps> = ({ open, onOpenChange, file, onSave }) => {
+  const t = useTranslations('components.createMaskingDialog')
   const [brushSize, setBrushSize] = React.useState(20)
   const [currentMask, setCurrentMask] = React.useState<Blob | null>(null)
 
@@ -42,7 +44,7 @@ export const CreateMaskingDialog: React.FC<CreateMaskingDialogProps> = ({ open, 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='max-w-2xl max-h-[95vh] w-full flex flex-col p-0'>
         <DialogHeader className='pt-4 px-4'>
-          <DialogTitle>{file?.type === 'mask' ? 'Edit Mask' : 'Create Mask'}</DialogTitle>
+          <DialogTitle>{file?.type === 'mask' ? t('editMask') : t('createMask')}</DialogTitle>
         </DialogHeader>
 
         <div className='flex flex-col gap-4 flex-grow'>
@@ -57,10 +59,10 @@ export const CreateMaskingDialog: React.FC<CreateMaskingDialogProps> = ({ open, 
 
           <div className='flex justify-end gap-2 pt-0 p-4'>
             <Button variant='outline' onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('cancel')}
             </Button>
             <Button onClick={handleSave} disabled={!currentMask}>
-              Save Mask
+              {t('saveMask')}
             </Button>
           </div>
         </div>

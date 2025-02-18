@@ -303,6 +303,12 @@
       "updateMask": "Cập nhật mặt nạ",
       "createMask": "Tạo mặt nạ",
       "duplicate": "Nhân bản"
+    },
+    "createMaskingDialog": {
+      "editMask": "Chỉnh sửa mặt nạ",
+      "createMask": "Tạo mặt nạ",
+      "cancel": "Hủy",
+      "saveMask": "Lưu mặt nạ"
     }
   },
   "settings": {

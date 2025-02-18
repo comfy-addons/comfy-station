@@ -303,6 +303,12 @@
       "updateMask": "更新蒙版",
       "createMask": "创建蒙版",
       "duplicate": "复制"
+    },
+    "createMaskingDialog": {
+      "editMask": "编辑蒙版",
+      "createMask": "创建蒙版",
+      "cancel": "取消",
+      "saveMask": "保存蒙版"
     }
   },
   "settings": {

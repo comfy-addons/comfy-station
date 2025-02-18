@@ -303,6 +303,12 @@
       "updateMask": "Update Mask",
       "createMask": "Create Mask",
       "duplicate": "Duplicate"
+    },
+    "createMaskingDialog": {
+      "editMask": "Edit Mask",
+      "createMask": "Create Mask", 
+      "cancel": "Cancel",
+      "saveMask": "Save Mask"
     }
   },
   "settings": {
