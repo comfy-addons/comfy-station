@@ -30,7 +30,7 @@ import {
   VariableIcon
 } from '@heroicons/react/24/outline'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ChevronLeft, PlusIcon, Stars, Trash } from 'lucide-react'
+import { ChevronLeft, EyeOff, PlusIcon, Stars, Trash } from 'lucide-react'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -72,6 +72,7 @@ export const CreateInputNode: IComponent<{
       })
       .optional(),
     name: z.string(),
+    hidden: z.boolean().default(false),
     generative: z.boolean().default(false),
     generativeInstruction: z.string().optional(),
     description: z.string().optional()
@@ -88,6 +89,7 @@ export const CreateInputNode: IComponent<{
       max: config?.max,
       name: config?.key,
       slider: config?.slider ?? { enable: false, step: 1 },
+      hidden: config?.hidden,
       generative: config?.generative?.enabled,
       generativeInstruction: config?.generative?.instruction,
       description: config?.description
@@ -527,6 +529,25 @@ export const CreateInputNode: IComponent<{
               </FormItem>
             )}
           />
+          {mappingType !== EValueUtilityType.Prefixer && (
+            <FormField
+              name='hidden'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className='flex gap-2'>
+                    Hidden input <EyeOff width={14} height={14} />
+                  </FormLabel>
+                  <FormDescription>
+                    Hide this input so user can&apos;t see it. This is useful for internal input.
+                  </FormDescription>
+                  <FormControl>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           {mappingType === EValueType.String && (
             <>
               <FormField

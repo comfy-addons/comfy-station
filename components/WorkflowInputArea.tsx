@@ -75,6 +75,7 @@ export const WorkflowInputArea: IComponent<{
       const mainItem = target[0]
       if (!input) return null
       if (input.type === EValueUtilityType.Prefixer) return null
+      if (input.hidden) return null
 
       return (
         <div

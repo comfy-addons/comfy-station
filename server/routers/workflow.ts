@@ -74,6 +74,7 @@ const InputSchema = z.record(
           instruction: z.string().optional()
         })
         .optional(),
+      hidden: z.boolean().optional(),
       default: z.any().optional()
     })
     .and(BaseSchema)

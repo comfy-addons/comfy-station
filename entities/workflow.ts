@@ -49,7 +49,8 @@ export interface IMapperInput extends IMapperBase {
      * Workflow cost = old workflow cost + value * costPerUnit
      */
     costPerUnit: number
-  } /**
+  }
+  /**
    * Only for type = 'Number'
    */
   slider?: {
@@ -73,6 +74,10 @@ export interface IMapperInput extends IMapperBase {
     enabled: boolean
     instruction?: string
   }
+  /**
+   * If true, the input will be hidden on the UI
+   */
+  hidden?: boolean
   default?: string | number | boolean
 }
 

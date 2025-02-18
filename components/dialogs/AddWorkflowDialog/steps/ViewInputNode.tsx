@@ -11,7 +11,8 @@ import {
   Variable,
   CornerDownRight,
   GripVertical,
-  SlidersHorizontal
+  SlidersHorizontal,
+  EyeOff
 } from 'lucide-react'
 import { AddWorkflowDialogContext, EImportStep } from '..'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
@@ -102,6 +103,12 @@ export const ViewInputNode: IComponent<{
           <AlertDescription className='flex flex-col'>
             <p>{input.description?.trim() || 'No description'}</p>
             <div className='flex gap-1 flex-wrap'>
+              {!!input.hidden && (
+                <Badge variant='secondary' className='mt-2'>
+                  <EyeOff width={14} height={14} className='mr-1' />
+                  Hidden
+                </Badge>
+              )}
               <Badge variant='secondary' className='mt-2'>
                 <Variable width={14} height={14} className='mr-1' />
                 {input.type}
