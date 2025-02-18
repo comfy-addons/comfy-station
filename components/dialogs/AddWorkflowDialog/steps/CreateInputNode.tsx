@@ -65,7 +65,12 @@ export const CreateInputNode: IComponent<{
     default: z.union([z.string(), z.number(), z.boolean()]).optional(),
     min: z.coerce.number().optional(),
     max: z.coerce.number().optional(),
-    useSlider: z.boolean().optional(),
+    slider: z
+      .object({
+        enable: z.boolean().default(false),
+        step: z.number({ coerce: true }).optional()
+      })
+      .optional(),
     name: z.string(),
     generative: z.boolean().default(false),
     generativeInstruction: z.string().optional(),
@@ -82,7 +87,7 @@ export const CreateInputNode: IComponent<{
       min: config?.min,
       max: config?.max,
       name: config?.key,
-      useSlider: config?.useSlider ?? false,
+      slider: config?.slider ?? { enable: false, step: 1 },
       generative: config?.generative?.enabled,
       generativeInstruction: config?.generative?.instruction,
       description: config?.description
@@ -381,7 +386,7 @@ export const CreateInputNode: IComponent<{
           {mappingType === EValueType.Number && (
             <>
               <FormField
-                name='useSlider'
+                name='slider.enable'
                 render={({ field }) => (
                   <FormItem>
                     <div className='flex items-center space-x-2'>
@@ -395,6 +400,25 @@ export const CreateInputNode: IComponent<{
                   </FormItem>
                 )}
               />
+              {form.watch('slider.enable') && (
+                <FormField
+                  name='slider.step'
+                  disabled={!form.watch('slider.enable')}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Step of the slider</FormLabel>
+                      <FormControl>
+                        <Input placeholder='1' type='number' {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        This is the step of the slider. Default is 1. If you want to have a slider with step 0.1, you
+                        can set this to 0.1.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 name='costRelated'
                 render={({ field }) => (

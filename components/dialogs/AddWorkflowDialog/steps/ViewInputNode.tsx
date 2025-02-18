@@ -112,7 +112,7 @@ export const ViewInputNode: IComponent<{
                   Selections {input.selections.length}
                 </Badge>
               )}
-              {!!input.useSlider && (
+              {!!input.slider?.enable && (
                 <Badge variant='secondary' className='mt-2'>
                   <SlidersHorizontal width={14} height={14} className='mr-1' />
                   Slider

@@ -49,12 +49,19 @@ export interface IMapperInput extends IMapperBase {
      * Workflow cost = old workflow cost + value * costPerUnit
      */
     costPerUnit: number
-  }
-  /**
+  } /**
    * Only for type = 'Number'
-   * If true, the input will be a slider
    */
-  useSlider?: boolean
+  slider?: {
+    /**
+     * If true, the input will be a slider
+     */
+    enable: boolean
+    /**
+     * Step of the slider
+     */
+    step?: number
+  }
   /**
    * Only for types = Checkpoint | Lora | Sampler | Scheduler
    */

@@ -120,7 +120,7 @@ export const WorkflowInputArea: IComponent<{
           {[EValueType.Number, EValueUtilityType.Seed].includes(input.type as EValueType) && (
             <>
               <div className='w-full gap-2 flex'>
-                {!input.useSlider && (
+                {!input.slider?.enable && (
                   <Input
                     startAdornment={
                       input.type === EValueType.Number ? (
@@ -148,17 +148,18 @@ export const WorkflowInputArea: IComponent<{
                     type='number'
                   />
                 )}
-                {!!input.useSlider && (
+                {!!input.slider?.enable && (
                   <div className='flex w-full items-center gap-2'>
                     <Slider
-                      value={[Number(data)]}
+                      value={[Number(data ?? input.default)]}
                       min={input.min}
                       max={input.max}
                       className='w-full'
                       disabled={disabled}
+                      step={input.slider.step ?? 1}
                       onValueChange={(value) => handleUpdateInput.current(val, value[0])}
                     />
-                    <code className='px-2'>{data}</code>
+                    <code className='px-2 tabular-nums min-w-12 text-center'>{data ?? input.default}</code>
                   </div>
                 )}
                 {input.type === EValueUtilityType.Seed && (
