@@ -4,13 +4,14 @@ export const MonitoringStat: IComponent<{
   icon: ReactNode
   title: string
   value: string
+  valueCls?: string
   minWidth?: number
-}> = ({ icon, title, value, minWidth = 86 }) => {
+}> = ({ icon, title, value, minWidth = 86, valueCls }) => {
   return (
-    <div className='flex gap-1 whitespace-nowrap items-center text-xs font-normal' style={{ minWidth }}>
+    <div className='flex gap-1 whitespace-nowrap items-center text-xs font-normal tabular-nums' style={{ minWidth }}>
       {icon}
-      <div className='flex-auto'>{title}</div>
-      {value}
+      <code className='flex-auto'>{title}</code>
+      <code className={valueCls}>{value}</code>
     </div>
   )
 }

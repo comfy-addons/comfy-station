@@ -22,7 +22,7 @@ import { OverflowText } from './OverflowText'
 import { SimpleTransitionLayout } from './SimpleTranslation'
 import { useToast } from '@/hooks/useToast'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
-import { SquareTerminal, TriangleAlertIcon } from 'lucide-react'
+import { SquareTerminal, Thermometer, TriangleAlertIcon } from 'lucide-react'
 import { WorkflowTask } from '@/entities/workflow_task'
 import { useClientTerminalWindows } from './ClientTerminalWindows'
 
@@ -126,13 +126,23 @@ export const ClientInfoMonitoring: IComponent<{
           return [
             <MonitoringStat
               key={'GPU_UL' + idx}
-              icon={<CpuChipIcon width={12} height={12} />}
+              icon={<CpuChipIcon width={14} height={14} />}
               title={`GPU ${idx + 1}`}
               value={`${gpu.gpu_utilization}%`}
             />,
             <MonitoringStat
+              key={'GPU_TEMP' + idx}
+              icon={<Thermometer width={14} height={14} />}
+              title={`TEMP ${idx + 1}`}
+              value={`${gpu.gpu_temperature}°C`}
+              valueCls={cn({
+                'text-destructive': gpu.gpu_temperature > 80,
+                'text-orange-500': gpu.gpu_temperature > 60 && gpu.gpu_temperature <= 80
+              })}
+            />,
+            <MonitoringStat
               key={'GPU_RAM' + idx}
-              icon={<CircleStackIcon width={12} height={12} />}
+              icon={<CircleStackIcon width={14} height={14} />}
               title={`VRAM ${idx + 1}`}
               value={`${Number(gpu.vram_used_percent).toFixed(2)}%`}
             />
@@ -158,11 +168,17 @@ export const ClientInfoMonitoring: IComponent<{
                   <ArrowPathIcon className='mr-2' width={16} height={16} />
                   <span className='min-w-[100px]'>{t('actions.reboot')}</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handlePressAction(EClientAction.FREE_MEMORY)} className='cursor-pointer'>
+                <DropdownMenuItem
+                  onClick={() => handlePressAction(EClientAction.FREE_MEMORY)}
+                  className='cursor-pointer'
+                >
                   <TrashIcon className='mr-2' width={16} height={16} />
                   <span className='min-w-[100px]'>{t('actions.freeVram')}</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handlePressAction(EClientAction.FORCE_RECONNECT)} className='cursor-pointer'>
+                <DropdownMenuItem
+                  onClick={() => handlePressAction(EClientAction.FORCE_RECONNECT)}
+                  className='cursor-pointer'
+                >
                   <ReloadIcon className='mr-2' width={16} height={16} />
                   <span className='min-w-[100px]'>{t('actions.forceReconnect')}</span>
                 </DropdownMenuItem>
