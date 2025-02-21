@@ -23,6 +23,8 @@ export class UserManagement {
     this.caching = CachingService.getInstance()
     this.orm = MikroORMInstance.getInstance()
 
+    // Pre-check user status
+    this.handleUserOffline()
     // Start watching user status
     this.watchUserStatus()
   }
@@ -100,7 +102,7 @@ export class UserManagement {
   private handleUserOffline = async () => {
     const em = await this.orm.getEM()
     const clients = await em.find(UserClient, {
-      deviceStatus: EDeviceStatus.ONLINE,
+      deviceStatus: { $ne: EDeviceStatus.OFFLINE },
       lastActiveAt: { $lt: new Date(Date.now() - USER_OFFLINE_THRESHOLD) }
     })
     for (const client of clients) {
