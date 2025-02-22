@@ -5,7 +5,7 @@ import { Attachment } from '@/entities/attachment'
 import { cn } from '@/utils/style'
 import { PhotoView } from 'react-photo-view'
 import { Button } from './ui/button'
-import { Download, ImageIcon, MoreHorizontal, Plus, Share, Star } from 'lucide-react'
+import { Download, ImageIcon, ImagePlay, MoreHorizontal, Plus, Share, Star } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
 import LoadableImage from './LoadableImage'
@@ -28,13 +28,14 @@ import { useTouchDevice } from '@/hooks/useTouchDevice'
 import { EKeyboardKey, useShortcutKeyEvent } from '@/hooks/useShortcutKeyEvent'
 import { AttachmentImage } from './AttachmentImage'
 import { useFileDragStore } from '@/states/fileDrag'
+import { LoadableButton } from './LoadableButton'
 
 const AttachmentTooltipPopup: IComponent<{
   taskId?: string
   active: boolean
 }> = ({ taskId, active }) => {
   const t = useTranslations('components.attachmentDetail')
-  const { data: detail } = trpc.workflowTask.detail.useQuery(taskId!, {
+  const { data: detail } = trpc.workflowTask.previewDetail.useQuery(taskId!, {
     enabled: !!taskId && active,
     refetchOnWindowFocus: false
   })
@@ -85,23 +86,13 @@ export const AttachmentReview: IComponent<{
   data?: Attachment | { id: string }
   mode?: 'avatar' | 'image'
   onClick?: () => void
-  onPressFavorite?: (imageId: string) => void
-  isFavorited?: boolean
+  onPressSetAvatar?: (imageId: string) => void
+  isAvatar?: boolean
   loading?: boolean
   className?: string
   taskId?: string
   tryPreview?: boolean
-}> = ({
-  data,
-  mode = 'image',
-  shortName = 'N/A',
-  onClick,
-  className,
-  isFavorited,
-  loading,
-  taskId,
-  onPressFavorite
-}) => {
+}> = ({ data, mode = 'image', shortName = 'N/A', onClick, className, loading, taskId, isAvatar, onPressSetAvatar }) => {
   const t = useTranslations('components.attachmentDetail')
   const enabled = !!data?.id
   const isTouchDevice = useTouchDevice()
@@ -117,6 +108,36 @@ export const AttachmentReview: IComponent<{
   const [showDetail, setShowDetail] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string>()
   const [mouseSync] = useStateSyncDebounce(showDetail, 0)
+
+  const favData = trpc.attachment.isFavorite.useQuery(
+    {
+      id: data?.id!
+    },
+    {
+      enabled
+    }
+  )
+  const tagData = trpc.attachmentTag.getAttachmentTags.useQuery(data!.id, {
+    enabled: !!data?.id
+  })
+  const tagMutFn = trpc.attachmentTag.setAttachmentTags.useMutation()
+  const favoriteMutFn = trpc.attachment.setFavorite.useMutation()
+
+  const handlePressFav = () => {
+    if (enabled) {
+      favoriteMutFn.mutate(
+        {
+          id: data?.id!,
+          favorite: !favData.data
+        },
+        {
+          onSuccess: () => {
+            favData.refetch()
+          }
+        }
+      )
+    }
+  }
 
   const { data: image, isLoading } = trpc.attachment.get.useQuery(
     {
@@ -173,6 +194,9 @@ export const AttachmentReview: IComponent<{
         }}
         className={cn(
           'w-16 h-16 rounded-xl cursor-pointer transition-all bg-secondary overflow-hidden relative group hover:outline',
+          {
+            'outline-yellow-500 outline': isAvatar
+          },
           className
         )}
       >
@@ -216,7 +240,8 @@ export const AttachmentReview: IComponent<{
                     className={cn('w-full h-full object-cover transition-all will-change-transform', {
                       'bg-background': isPop && !previewUrl && (loading || isLoading),
                       'animate-pulse': !isPop && !!previewUrl && (loading || isLoading),
-                      'rounded-lg outline outline-white shadow cursor-pointer': isPop
+                      'rounded-lg outline outline-white shadow cursor-pointer': isPop,
+                      '!outline-yellow-500 border-yellow-500': isAvatar
                     })}
                   />
                   {isPop && (
@@ -261,7 +286,7 @@ export const AttachmentReview: IComponent<{
                       >
                         <AttachmentTooltipPopup taskId={taskId} active={showDetail} />
                       </div>
-                      <div className='w-full mt-2 h-10 flex justify-end gap-2'>
+                      <div className='w-full mt-2 h-10 flex justify-end flex-wrap gap-2'>
                         {isVideo ? (
                           <Button
                             variant='secondary'
@@ -291,22 +316,38 @@ export const AttachmentReview: IComponent<{
                             </DropdownMenuContent>
                           </DropdownMenu>
                         )}
-                        {!!onPressFavorite && (
-                          <Button
-                            onClick={() => onPressFavorite?.(data?.id!)}
+                        <Button
+                          onClick={handlePressFav}
+                          variant='secondary'
+                          className='bg-background/50 backdrop-blur-lg'
+                        >
+                          <code>{t('favorite')}</code>
+                          <Star
+                            width={16}
+                            height={16}
+                            className={cn('ml-2', {
+                              'fill-zinc-200 stroke-zinc-200': !favData.data,
+                              'fill-yellow-500 stroke-yellow-500': !!favData.data,
+                              'animate-pulse': favoriteMutFn.isPending || favData.isLoading
+                            })}
+                          />
+                        </Button>
+                        {!!onPressSetAvatar && (
+                          <LoadableButton
+                            onClick={() => onPressSetAvatar?.(data?.id!)}
                             variant='secondary'
                             className='bg-background/50 backdrop-blur-lg'
                           >
-                            <code>{t('favorite')}</code>
-                            <Star
+                            <code>SET THUMBNAIL</code>
+                            <ImagePlay
                               width={16}
                               height={16}
                               className={cn('ml-2', {
-                                'fill-zinc-200 stroke-zinc-200': !isFavorited,
-                                'fill-yellow-500 stroke-yellow-500': isFavorited
+                                'stroke-zinc-200': !isAvatar,
+                                'stroke-yellow-500': isAvatar
                               })}
                             />
-                          </Button>
+                          </LoadableButton>
                         )}
                       </div>
                     </div>
@@ -373,34 +414,38 @@ export const AttachmentReview: IComponent<{
             )}
           </div>
         )}
-        {!!onPressFavorite && (
-          <div
-            className={cn('z-10 group-hover:block absolute top-1 left-1', {
-              hidden: !isFavorited
-            })}
-          >
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button onClick={() => onPressFavorite?.(data?.id!)} size='icon' variant='ghost'>
-                  <Star
-                    width={24}
-                    height={24}
-                    className={cn({
-                      'fill-zinc-200 stroke-zinc-200': !isFavorited,
-                      'fill-yellow-500 stroke-yellow-500': isFavorited
-                    })}
-                  />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent
-                side='right'
-                className='max-w-[128px] bg-background text-foreground z-10 border p-2 flex flex-col'
+
+        <div
+          className={cn('z-10 group-hover:block absolute top-1 left-1', {
+            hidden: !favData.data
+          })}
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <LoadableButton
+                onClick={handlePressFav}
+                loading={favoriteMutFn.isPending || favData.isLoading}
+                size='icon'
+                variant='ghost'
               >
-                Set as thumbnail for this workflow
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        )}
+                <Star
+                  width={24}
+                  height={24}
+                  className={cn({
+                    'fill-zinc-200 stroke-zinc-200': !favData.data,
+                    'fill-yellow-500 stroke-yellow-500': !!favData.data
+                  })}
+                />
+              </LoadableButton>
+            </TooltipTrigger>
+            <TooltipContent
+              side='right'
+              className='max-w-[128px] bg-background text-foreground z-10 border p-2 flex flex-col'
+            >
+              {t('favorite')}
+            </TooltipContent>
+          </Tooltip>
+        </div>
         {dragIds.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild className='absolute top-1 right-1 flex items-center'>

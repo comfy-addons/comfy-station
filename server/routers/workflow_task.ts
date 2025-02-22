@@ -89,6 +89,32 @@ export const workflowTaskRouter = router({
         nextCursor: data.endCursor
       }
     }),
+  previewDetail: privateProcedure.input(z.string()).query(async ({ input, ctx }) => {
+    const extra =
+      ctx.session.user!.role === EUserRole.Admin // Admin can see all tasks
+        ? {}
+        : {
+            workflow: {
+              status: {
+                $ne: EWorkflowActiveStatus.Deleted
+              }
+            }
+          }
+    const task = await ctx.em.findOneOrFail(
+      WorkflowTask,
+      { id: input, ...extra },
+      {
+        populate: ['workflow']
+      }
+    )
+    if (ctx.session.user?.role && ctx.session.user?.role === EUserRole.Admin) {
+      return task
+    }
+    if (task.trigger.user?.id === ctx.session.user?.id || task.trigger.token?.createdBy?.id === ctx.session.user?.id) {
+      return task
+    }
+    throw new Error('Unauthorized')
+  }),
   detail: privateProcedure.input(z.string()).query(async ({ input, ctx }) => {
     const extra =
       ctx.session.user!.role === EUserRole.Admin // Admin can see all tasks
@@ -104,15 +130,7 @@ export const workflowTaskRouter = router({
       WorkflowTask,
       { id: input, ...extra },
       {
-        populate: [
-          'workflow',
-          'trigger.*',
-          'events',
-          'subTasks',
-          'attachments.*',
-          'subTasks.attachments.*',
-          'subTasks.events.*'
-        ]
+        populate: ['workflow', 'trigger.*', 'events', 'subTasks', 'subTasks.events.*']
       }
     )
     if (ctx.session.user?.role && ctx.session.user?.role === EUserRole.Admin) {

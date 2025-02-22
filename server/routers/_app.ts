@@ -14,11 +14,13 @@ import { snippetRouter } from './snippet'
 import { workflowTaskRouter } from './workflow_task'
 import { generativeRouter } from './generative'
 import { userClientRouter } from './user_client'
+import { attachmentTagRouter } from './attachment_tag'
 
 export const appRouter = router({
   task: taskRouter,
   client: clientRouter,
   attachment: attachmentRouter,
+  attachmentTag: attachmentTagRouter,
   resource: resourceRouter,
   tag: tagRouter,
   extension: extensionRouter,

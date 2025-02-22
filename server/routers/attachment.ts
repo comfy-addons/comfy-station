@@ -50,6 +50,33 @@ export const attachmentRouter = router({
       })
     )
   }),
+  isFavorite: privateProcedure
+    .input(
+      z.object({
+        id: z.string()
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const attachment = await ctx.em.findOneOrFail(Attachment, { id: input.id }, { populate: ['likers'] })
+      return attachment.likers.contains(ctx.session.user!)
+    }),
+  setFavorite: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        favorite: z.boolean()
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const attachment = await ctx.em.findOneOrFail(Attachment, { id: input.id }, { populate: ['likers'] })
+      if (input.favorite) {
+        attachment.likers.add(ctx.session.user!)
+      } else {
+        attachment.likers.remove(ctx.session.user!)
+      }
+      await ctx.em.flush()
+      return true
+    }),
   upload: privateProcedure.input(z.instanceof(FormData)).mutation(async ({ input, ctx }) => {
     const schema = z.object({
       file: z.instanceof(File),

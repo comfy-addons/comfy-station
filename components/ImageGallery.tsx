@@ -17,12 +17,12 @@ export const ImageGallery: IComponent<{
   hasNextPage: boolean
   isFetchingNextPage: boolean
   renderEmpty?: () => ReactNode
-  onPressFavorite?: (imageId: string) => void
+  onPressSetAvatar?: (imageId: string) => void
 }> = ({
   items,
   hasNextPage,
   isFetchingNextPage,
-  onPressFavorite,
+  onPressSetAvatar,
   onFetchMore,
   renderEmpty,
   favoriteIds,
@@ -112,9 +112,9 @@ export const ImageGallery: IComponent<{
                 {!('loading' in item) && (
                   <AttachmentReview
                     key={item.id}
-                    isFavorited={favoriteIds?.includes(item.id)}
+                    isAvatar={favoriteIds?.includes(item.id)}
                     taskId={item.task as any as string}
-                    onPressFavorite={onPressFavorite}
+                    onPressSetAvatar={onPressSetAvatar}
                     className='w-full h-full object-cover'
                     tryPreview
                     data={item}

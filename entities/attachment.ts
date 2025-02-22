@@ -8,6 +8,7 @@ import type { User } from './user'
 import type { Resource } from './client_resource'
 import { BackendENV } from '@/env'
 import { createHash } from 'crypto'
+import { AttachmentTag } from './attachment_tag'
 
 @Entity()
 export class Attachment {
@@ -46,6 +47,12 @@ export class Attachment {
 
   @OneToMany({ entity: 'Resource', mappedBy: 'image', nullable: true })
   resources? = new Collection<Resource>(this)
+
+  @ManyToMany('User', 'favorites', { index: true })
+  likers = new Collection<User>(this)
+
+  @ManyToMany('AttachmentTag', 'attachments', { index: true })
+  tags = new Collection<AttachmentTag>(this)
 
   @Property({ type: 'timestamp' })
   createdAt = new Date()

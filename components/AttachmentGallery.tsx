@@ -83,7 +83,7 @@ export const AttachmentGallery: IComponent<{
     return () => clearInterval(interval)
   }, [infoLoader, pending, runningTask, slug])
 
-  const handlePressFavorite = async (imageId: string) => {
+  const handlePressSetAvatar = async (imageId: string) => {
     if (!!slug) {
       await avatarSetter.mutateAsync({
         workflowId: slug!,
@@ -123,7 +123,7 @@ export const AttachmentGallery: IComponent<{
         imgPerRow={effectiveImgPerRow}
         items={[...pending, ...images]}
         favoriteIds={[taskInfo.data?.avatar?.id ?? '']}
-        onPressFavorite={allowFav ? handlePressFavorite : undefined}
+        onPressSetAvatar={allowFav ? handlePressSetAvatar : undefined}
         hasNextPage={infoLoader.hasNextPage}
         isFetchingNextPage={infoLoader.isFetchingNextPage}
         onFetchMore={infoLoader.fetchNextPage}

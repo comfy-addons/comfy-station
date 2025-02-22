@@ -11,7 +11,6 @@ import { isArray } from 'lodash'
 import LoadableImage from './LoadableImage'
 import { IconPicker } from './IconPicker'
 import { IMapperInput } from '@/entities/workflow'
-import { AttachmentReview } from './AttachmentReview'
 import { AttachmentImage } from './AttachmentImage'
 
 export const AttachmentDetail: IComponent<{

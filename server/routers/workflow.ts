@@ -158,6 +158,8 @@ export const workflowRouter = router({
       z.object({
         workflowId: z.string().optional(),
         search: z.string().optional(),
+        onlyLiked: z.boolean().optional(),
+        tags: z.array(z.string()).optional(),
         limit: z.number().min(1).max(100).nullish(),
         cursor: z.string().nullish(),
         direction: z.enum(['forward', 'backward'])
@@ -202,7 +204,13 @@ export const workflowRouter = router({
         Attachment,
         {
           ...workflow,
-          ...filter
+          ...filter,
+          likers: input.onlyLiked
+            ? {
+                $contains: [ctx.session.user!]
+              }
+            : {},
+          tags: input.tags?.length ? { $in: input.tags } : {}
         },
         direction === 'forward'
           ? {

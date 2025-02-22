@@ -3,6 +3,7 @@ import {
   Collection,
   Entity,
   EntityRepositoryType,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryKey,
@@ -23,6 +24,7 @@ import type { Trigger } from './trigger'
 import { UserRepository } from './repositories/user'
 import { UserNotificationEE } from '@/server/routers/user_notification'
 import { UserClient } from './user_clients'
+import { AttachmentTag } from './attachment_tag'
 
 export interface IMaper {
   key: string
@@ -68,6 +70,14 @@ export class User {
     orphanRemoval: true
   })
   workflows = new Collection<Workflow>(this)
+
+  @OneToMany({
+    entity: 'AttachmentTag',
+    mappedBy: 'owner',
+    cascade: [Cascade.REMOVE],
+    orphanRemoval: true
+  })
+  attachmentTags = new Collection<AttachmentTag>(this)
 
   @OneToMany({
     entity: 'Token',
@@ -122,6 +132,9 @@ export class User {
     cascade: [Cascade.REMOVE]
   })
   clients = new Collection<UserClient>(this)
+
+  @ManyToMany('Attachment', 'likers', { owner: true })
+  favorites = new Collection<Attachment>(this)
 
   constructor(email: string, password: string) {
     this.email = email

@@ -21,6 +21,7 @@ import { Attachment } from './entities/attachment'
 import { Trigger } from './entities/trigger'
 import { Tag } from './entities/tag'
 import { UserClient } from './entities/user_clients'
+import { AttachmentTag } from './entities/attachment_tag'
 
 export default defineConfig({
   entities: [
@@ -45,7 +46,8 @@ export default defineConfig({
     WorkflowTask,
     WorkflowTaskEvent,
     WorkflowEditEvent,
-    Attachment
+    Attachment,
+    AttachmentTag
   ],
   dbName: process.cwd() + '/storage/comfyui.manager.db',
   debug: process.env.NODE_ENV === 'development',
