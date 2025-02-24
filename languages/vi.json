@@ -173,9 +173,14 @@
     "attachmentDetail": {
       "workflow": "Workflow",
       "copyValue": "Đã sao chép giá trị",
+      "tags": "Thẻ",
+      "addTag": "Thêm thẻ",
+      "noTags": "Chưa thêm thẻ nào",
+      "newTag": "Nhập tên thẻ",
       "downloadHigh": "Tải xuống JPG đã nén",
       "downloadRaw": "Tải xuống bản gốc",
       "download": "TẢI XUỐNG",
+      "selectTags": "Chọn thẻ...",
       "favorite": "YÊU THÍCH",
       "detail": "Chi tiết tập tin đính kèm",
       "downloadTitle": "Nhấp đúp để sao chép"

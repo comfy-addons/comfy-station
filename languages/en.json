@@ -173,9 +173,14 @@
     "attachmentDetail": {
       "workflow": "Workflow",
       "copyValue": "Value copied",
+      "tags": "Tags",
+      "addTag": "Add Tag",
+      "noTags": "No tags added",
+      "newTag": "Enter tag name",
       "downloadHigh": "Download compressed JPG",
       "downloadRaw": "Download Raw",
       "download": "DOWNLOAD",
+      "selectTags": "Select tags...",
       "favorite": "FAVORITE",
       "detail": "Attachment Detail",
       "downloadTitle": "Double click to copy"

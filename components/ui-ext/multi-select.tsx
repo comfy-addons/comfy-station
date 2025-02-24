@@ -268,7 +268,12 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className='w-auto p-0' align='start' onEscapeKeyDown={() => setIsPopoverOpen(false)}>
+        <PopoverContent
+          data-is-popover-content
+          className='w-auto p-0'
+          align='start'
+          onEscapeKeyDown={() => setIsPopoverOpen(false)}
+        >
           <Command>
             <CommandInput
               value={crrInputVal}

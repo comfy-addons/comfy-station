@@ -154,9 +154,14 @@
     "attachmentDetail": {
       "workflow": "工作流",
       "copyValue": "已复制",
+      "tags": "标签",
+      "addTag": "添加标签",
+      "noTags": "未添加标签",
+      "newTag": "输入标签名称",
       "downloadHigh": "下载压缩JPG",
       "downloadRaw": "下载原始文件",
       "download": "下载",
+      "selectTags": "选择标签...",
       "favorite": "收藏",
       "detail": "附件详情",
       "downloadTitle": "双击复制"

@@ -2,29 +2,51 @@ import { trpc } from '@/utils/trpc'
 import { Attachment } from '@/entities/attachment'
 import { cn } from '@/utils/style'
 import { Button } from './ui/button'
-import { Download } from 'lucide-react'
+import { Download, Tag } from 'lucide-react'
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'
-import { useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useOnScreen } from '@/hooks/useOnScreen'
 import { EValueType, EValueUtilityType } from '@/entities/enum'
 import { isArray } from 'lodash'
 import LoadableImage from './LoadableImage'
 import { IconPicker } from './IconPicker'
 import { IMapperInput } from '@/entities/workflow'
+import { useTranslations } from 'next-intl'
 import { AttachmentImage } from './AttachmentImage'
+import { MultiSelect } from './ui-ext/multi-select'
 
-export const AttachmentDetail: IComponent<{
+export const AttachmentDetail: React.FC<{
   attachment: Attachment | { id: string }
   imageURL?: string
   onPressDownloadHigh?: () => void
   onPressDownloadRaw?: () => void
 }> = ({ attachment, imageURL, onPressDownloadHigh, onPressDownloadRaw }) => {
+  const [crrTags, setCrrTags] = useState<string[]>([])
+  const t = useTranslations('components.attachmentDetail')
   const viewRef = useRef<HTMLDivElement>(null)
   const isVisible = useOnScreen(viewRef)
+
   const { data: detail, isLoading } = trpc.attachment.taskDetail.useQuery(attachment?.id!, {
     enabled: attachment?.id !== undefined && isVisible,
     staleTime: Infinity
   })
+
+  const { data: allTags, refetch: refetchTags } = trpc.attachmentTag.list.useQuery(undefined, {
+    enabled: !!attachment?.id && isVisible
+  })
+
+  const tagData = trpc.attachmentTag.getAttachmentTags.useQuery(attachment.id, {
+    enabled: !!attachment?.id && isVisible
+  })
+
+  const tagMutFn = trpc.attachmentTag.setAttachmentTags.useMutation({
+    onSuccess: () => tagData.refetch()
+  })
+
+  const createTag = trpc.attachmentTag.create.useMutation({
+    onSuccess: () => refetchTags()
+  })
+
   const configMap = detail?.workflow?.mapInput || {}
   const config = detail?.task?.inputValues || {}
 
@@ -74,6 +96,12 @@ export const AttachmentDetail: IComponent<{
     )
   }, [])
 
+  useEffect(() => {
+    if (tagData.data) {
+      setCrrTags(tagData.data.map((t) => t.id))
+    }
+  }, [tagData.data])
+
   return (
     <div className='w-full h-full'>
       <div ref={viewRef} className='w-full h-full flex flex-col md:flex-row'>
@@ -82,7 +110,11 @@ export const AttachmentDetail: IComponent<{
             <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
               {!!imageURL && (
                 <div className='h-[50vh] md:h-screen w-screen md:w-[calc(100vw-480px)]'>
-                  <LoadableImage className='object-contain w-full h-full' src={imageURL} alt='test' />
+                  <LoadableImage
+                    className='object-contain w-full h-full'
+                    src={imageURL}
+                    alt={detail?.workflow?.name || 'Attachment'}
+                  />
                 </div>
               )}
             </TransformComponent>
@@ -92,7 +124,42 @@ export const AttachmentDetail: IComponent<{
           <div className='w-full h-full overflow-x-hidden overflow-y-auto py-3 md:px-3 pr-0 shadow-inner'>
             <h1 className='text-xl font-bold uppercase px-1'>{detail?.workflow?.name}</h1>
             <h1 className='text-sm uppercase px-1'>{detail?.workflow?.description}</h1>
-            <code className='whitespace-pre-wrap flex flex-col gap-2 mt-2'>
+
+            {/* Tags Section */}
+            <div className='mt-4 px-1'>
+              <div className='flex items-center justify-between mb-2'>
+                <div className='flex items-center gap-2'>
+                  <code className='font-bold'>{t('tags')}</code>
+                </div>
+              </div>
+
+              <div className='relative z-50' onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}>
+                <MultiSelect
+                  options={
+                    allTags?.map((tag) => ({
+                      label: tag.info.name,
+                      value: tag.info.id,
+                      icon: Tag
+                    })) ?? []
+                  }
+                  placeholder={t('tags')}
+                  defaultValue={crrTags}
+                  onValueChange={(tags) => {
+                    if (attachment?.id) {
+                      tagMutFn.mutate({
+                        attachmentId: attachment.id,
+                        tags
+                      })
+                    }
+                  }}
+                  onCreateNew={(tag) => createTag.mutate(tag)}
+                  variant='inverted'
+                  maxCount={5}
+                />
+              </div>
+            </div>
+
+            <code className='whitespace-pre-wrap flex flex-col gap-2 mt-4'>
               {Object.entries(configMap)
                 .filter(([key]) => configMap[key].type !== EValueUtilityType.Prefixer)
                 .map(([key, value], idx) => {

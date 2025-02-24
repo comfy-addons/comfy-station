@@ -5,7 +5,7 @@ import { Attachment } from '@/entities/attachment'
 import { cn } from '@/utils/style'
 import { PhotoView } from 'react-photo-view'
 import { Button } from './ui/button'
-import { Download, ImageIcon, ImagePlay, MoreHorizontal, Plus, Share, Star } from 'lucide-react'
+import { Download, ImageIcon, ImagePlay, MoreHorizontal, Plus, Share, Star, Tag } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
 import LoadableImage from './LoadableImage'
@@ -14,7 +14,7 @@ import { m } from 'framer-motion'
 import { Portal } from './Portal'
 import { useStateSyncDebounce } from '@/hooks/useStateSyncDebounce'
 import { useTranslations } from 'next-intl'
-
+import { MultiSelect } from './ui-ext/multi-select'
 import { AddonDiv } from './AddonDiv'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { AttachmentDetail } from './AttachmentDetail'
@@ -30,21 +30,72 @@ import { AttachmentImage } from './AttachmentImage'
 import { useFileDragStore } from '@/states/fileDrag'
 import { LoadableButton } from './LoadableButton'
 
-const AttachmentTooltipPopup: IComponent<{
+const AttachmentTooltipPopup: React.FC<{
+  attachmentId: string
   taskId?: string
   active: boolean
-}> = ({ taskId, active }) => {
+  data?: Attachment | { id: string }
+}> = ({ attachmentId, taskId, data, active }) => {
+  const [crrTags, setCrrTags] = useState<string[]>([])
+  const { data: allTags, refetch: refetchTags } = trpc.attachmentTag.list.useQuery(undefined, {
+    enabled: active
+  })
   const t = useTranslations('components.attachmentDetail')
   const { data: detail } = trpc.workflowTask.previewDetail.useQuery(taskId!, {
     enabled: !!taskId && active,
     refetchOnWindowFocus: false
   })
+
+  const tagData = trpc.attachmentTag.getAttachmentTags.useQuery(attachmentId)
+
+  const createTag = trpc.attachmentTag.create.useMutation({
+    onSuccess: () => refetchTags()
+  })
+
+  const tagMutFn = trpc.attachmentTag.setAttachmentTags.useMutation()
   const { copyToClipboard } = useCopyAction()
+
+  useEffect(() => {
+    if (tagData.data) {
+      setCrrTags(tagData.data.map((t) => t.id))
+    }
+  }, [tagData.data])
+
   return (
     <div className='py-1 text-foreground'>
       <div className='flex flex-col justify-between max-w-[420px] text-justify p-2'>
         <code className='font-bold'>{t('workflow')}</code>
         <span>{detail?.workflow.name}</span>
+      </div>
+
+      <div className='flex flex-col p-2 border-t'>
+        <div className='flex items-center justify-between mb-2'>
+          <div className='flex items-center gap-2'>
+            <code className='font-bold'>{t('tags')}</code>
+          </div>
+        </div>
+        <MultiSelect
+          options={
+            allTags?.map((tag) => ({
+              label: tag.info.name,
+              value: tag.info.id,
+              icon: Tag
+            })) ?? []
+          }
+          placeholder={t('tags')}
+          defaultValue={crrTags}
+          onValueChange={(tags) => {
+            if (attachmentId) {
+              tagMutFn.mutate({
+                attachmentId,
+                tags
+              })
+            }
+          }}
+          onCreateNew={(tag) => createTag.mutate(tag)}
+          variant='inverted'
+          maxCount={5}
+        />
       </div>
       {!!detail?.inputValues &&
         Object.entries(detail.inputValues).map(([key, value], idx) => {
@@ -81,7 +132,7 @@ const AttachmentTooltipPopup: IComponent<{
   )
 }
 
-export const AttachmentReview: IComponent<{
+export const AttachmentReview: React.FC<{
   shortName?: string
   data?: Attachment | { id: string }
   mode?: 'avatar' | 'image'
@@ -117,10 +168,7 @@ export const AttachmentReview: IComponent<{
       enabled
     }
   )
-  const tagData = trpc.attachmentTag.getAttachmentTags.useQuery(data!.id, {
-    enabled: !!data?.id
-  })
-  const tagMutFn = trpc.attachmentTag.setAttachmentTags.useMutation()
+
   const favoriteMutFn = trpc.attachment.setFavorite.useMutation()
 
   const handlePressFav = () => {
@@ -284,7 +332,12 @@ export const AttachmentReview: IComponent<{
                         style={{ height: (ref.current?.clientHeight ?? 100) * 1.15 }}
                         className='relative w-[340px] overflow-auto min-h-[400px] bg-background/50 backdrop-blur-xl rounded-lg border'
                       >
-                        <AttachmentTooltipPopup taskId={taskId} active={showDetail} />
+                        <AttachmentTooltipPopup
+                          attachmentId={data?.id!}
+                          taskId={taskId}
+                          active={showDetail}
+                          data={data}
+                        />
                       </div>
                       <div className='w-full mt-2 h-10 flex justify-end flex-wrap gap-2'>
                         {isVideo ? (
