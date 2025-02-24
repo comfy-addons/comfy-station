@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
 /**
  * Make dynamic value based on client screen status
@@ -8,19 +8,16 @@ import { useCallback, useEffect, useState, useRef } from 'react'
  * @returns Function that returns appropriate value based on current screen size
  */
 export const useDynamicValue = (
-  breakPoints: [number, number] | [number, number, number] = [720, 960],
+  breakPoints: number[] = [720, 960],
   mode: 'width' | 'height' = 'width',
   ref?: React.RefObject<HTMLDivElement | null>
-): (<T = undefined>(values: T[], fallBack?: T) => T) => {
+): (<T>(values: T[], fallBack?: T) => T) => {
   const [sel, setSel] = useState(-1)
   const resizeObserverRef = useRef<ResizeObserver | null>(null)
 
-  const handleResize = useCallback(() => {
-    const ele = ref?.current ?? document.documentElement
-    const currentSize = mode === 'width' ? ele.offsetWidth : ele.offsetHeight
-
-    // Use binary search to find the appropriate breakpoint index
-    const findBreakpointIndex = (size: number): number => {
+  // Simple linear search since breakpoints are small (≤5 items)
+  const findBreakpointIndex = useCallback(
+    (size: number): number => {
       let index = 0
       for (let i = 0; i < breakPoints.length; i++) {
         if (size > breakPoints[i]) {
@@ -28,19 +25,27 @@ export const useDynamicValue = (
         }
       }
       return index
-    }
+    },
+    [breakPoints]
+  )
 
-    setSel(findBreakpointIndex(currentSize))
-  }, [breakPoints, mode, ref])
+  // Handles element resize efficiently
+  const handleResize = useCallback(() => {
+    const ele = ref?.current ?? document.documentElement
+    const currentSize = mode === 'width' ? ele.offsetWidth : ele.offsetHeight
+
+    const newIndex = findBreakpointIndex(currentSize)
+    setSel((prev) => (prev !== newIndex ? newIndex : prev)) // Avoid unnecessary re-renders
+  }, [findBreakpointIndex, mode, ref])
 
   useEffect(() => {
     const targetElement = ref?.current ?? document.documentElement
 
-    // Use ResizeObserver for more efficient size monitoring
+    // Set up ResizeObserver for efficient size tracking
     resizeObserverRef.current = new ResizeObserver(handleResize)
     resizeObserverRef.current.observe(targetElement)
 
-    // Initial size check
+    // Initial calculation
     handleResize()
 
     return () => {
@@ -53,10 +58,13 @@ export const useDynamicValue = (
    * @param values Array of values for each breakpoint
    * @param fallBack Default value to use if selection is not determined
    */
-  const getValue = useCallback(<T = undefined>(values: T[], fallBack?: T): T => {
-    if (sel === -1) return fallBack ?? values[0]
-    return values[Math.min(sel, values.length - 1)]
-  }, [sel])
+  const getValue = useCallback(
+    <T>(values: T[], fallBack?: T): T => {
+      if (sel === -1) return fallBack ?? values[0]
+      return values[Math.min(sel, values.length - 1)]
+    },
+    [sel]
+  )
 
   return getValue
 }

@@ -1,28 +1,28 @@
-import { useState, useEffect, MouseEvent } from 'react'
+import { MouseEvent, useRef } from 'react'
 
 const useClickEvent = (
   actionSimpleClick?: (e: MouseEvent) => void,
   actionDoubleClick?: (e: MouseEvent) => void,
   delay = 250
 ) => {
-  const [state, setState] = useState<{ click: number; e: MouseEvent | null }>({ click: 0, e: null })
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      // simple click
-      if (state.click === 1) actionSimpleClick?.(state.e!)
-      setState({ e: state.e, click: 0 })
-    }, delay)
-
-    // the duration between this click and the previous one
-    // is less than the value of delay = double-click
-    if (state.click === 2) actionDoubleClick?.(state.e!)
-
-    return () => clearTimeout(timer)
-  }, [state, actionSimpleClick, actionDoubleClick, delay])
+  const clickTimeout = useRef<Timer | null>(null)
+  const clickCount = useRef(0)
 
   return (e: MouseEvent) => {
-    setState({ click: state.click + 1, e })
+    clickCount.current += 1
+
+    if (clickTimeout.current) {
+      clearTimeout(clickTimeout.current)
+    }
+
+    clickTimeout.current = setTimeout(() => {
+      if (clickCount.current === 1) {
+        actionSimpleClick?.(e)
+      } else if (clickCount.current === 2) {
+        actionDoubleClick?.(e)
+      }
+      clickCount.current = 0 // Reset after handling the click event
+    }, delay)
   }
 }
 
