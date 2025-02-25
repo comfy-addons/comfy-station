@@ -4,7 +4,7 @@ import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { CheckIcon, XCircle, ChevronDown, XIcon, WandSparkles, Plus } from 'lucide-react'
 
-import { cn } from '@/utils/style'
+import { cn, checkIsDarkColor } from '@/utils/style'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,6 +18,7 @@ import {
   CommandList,
   CommandSeparator
 } from '@/components/ui/command'
+import { ColorInput } from '@/components/ui/color-input'
 
 /**
  * Variants for the multi-select component to handle different styles.
@@ -58,6 +59,7 @@ interface MultiSelectProps
     /** Optional icon component to display alongside the option. */
     icon?: React.ComponentType<{ className?: string }>
     suffix?: React.ReactNode
+    color?: string // Add color support
   }[]
 
   /**
@@ -112,6 +114,13 @@ interface MultiSelectProps
    * Optional, can be used to add custom styles.
    */
   className?: string
+
+  /**
+   * Callback function triggered when an option is updated.
+   * Receives the value of the option and an object with the updates.
+   * Optional, defaults to undefined.
+   */
+  onOptionUpdate?: (value: string, updates: { color?: string }) => void
 }
 
 export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
@@ -128,6 +137,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
       modalPopover = false,
       asChild = false,
       className,
+      onOptionUpdate,
       ...props
     },
     ref
@@ -192,6 +202,10 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
       }
     }
 
+    const handleColorChange = (value: string, color: string) => {
+      onOptionUpdate?.(value, { color })
+    }
+
     return (
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen} modal={modalPopover}>
         <PopoverTrigger asChild>
@@ -210,16 +224,31 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                   {selectedValues.slice(0, maxCount).map((value) => {
                     const option = options.find((o) => o.value === value)
                     const IconComponent = option?.icon
+                    const badgeStyle = option?.color
+                      ? {
+                          backgroundColor: option.color,
+                          color: checkIsDarkColor(option.color) ? 'white' : 'black',
+                          animationDuration: `${animation}s`
+                        }
+                      : { animationDuration: `${animation}s` }
+
                     return (
                       <Badge
                         key={value}
-                        className={cn(isAnimating ? 'animate-bounce' : '', multiSelectVariants({ variant }))}
-                        style={{ animationDuration: `${animation}s` }}
+                        className={cn(
+                          isAnimating ? 'animate-bounce' : '',
+                          multiSelectVariants({ variant }),
+                          option?.color ? 'border-none' : ''
+                        )}
+                        style={badgeStyle}
                       >
                         {IconComponent && <IconComponent className='h-4 w-4 mr-2' />}
                         {option?.label}
                         <XCircle
-                          className='ml-2 h-4 w-4 cursor-pointer'
+                          className={cn(
+                            'ml-2 h-4 w-4 cursor-pointer',
+                            option?.color && checkIsDarkColor(option.color) ? 'text-white' : 'text-black'
+                          )}
                           onClick={(event) => {
                             event.stopPropagation()
                             toggleOption(value)
@@ -332,7 +361,16 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                         <CheckIcon className='h-4 w-4' />
                       </div>
                       {option.icon && <option.icon className='mr-2 h-4 w-4 text-muted-foreground' />}
-                      <span>{option.label}</span>
+                      <span className='flex-1'>{option.label}</span>
+                      {!!onOptionUpdate && (
+                        <ColorInput
+                          size='sm'
+                          defaultValue={option.color}
+                          className='mr-2'
+                          onColorChange={(color) => handleColorChange(option.value, color)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      )}
                       {option.suffix}
                     </CommandItem>
                   )

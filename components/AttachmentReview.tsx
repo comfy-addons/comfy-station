@@ -29,6 +29,8 @@ import { EKeyboardKey, useShortcutKeyEvent } from '@/hooks/useShortcutKeyEvent'
 import { AttachmentImage } from './AttachmentImage'
 import { useFileDragStore } from '@/states/fileDrag'
 import { LoadableButton } from './LoadableButton'
+import { useActionDebounce } from '@/hooks/useAction'
+import { AttachmentTagColors } from './AttachmentTagColors'
 
 const AttachmentTooltipPopup: React.FC<{
   attachmentId: string
@@ -45,6 +47,7 @@ const AttachmentTooltipPopup: React.FC<{
     enabled: !!taskId && active,
     refetchOnWindowFocus: false
   })
+  const colorDebounce = useActionDebounce(340, true)
 
   const tagData = trpc.attachmentTag.getAttachmentTags.useQuery(attachmentId)
 
@@ -52,7 +55,12 @@ const AttachmentTooltipPopup: React.FC<{
     onSuccess: () => refetchTags()
   })
 
-  const tagMutFn = trpc.attachmentTag.setAttachmentTags.useMutation()
+  const tagMutFn = trpc.attachmentTag.update.useMutation({
+    onSuccess: () => {
+      refetchTags()
+    }
+  })
+  const tagAttachMutFn = trpc.attachmentTag.setAttachmentTags.useMutation()
   const { copyToClipboard } = useCopyAction()
 
   useEffect(() => {
@@ -79,6 +87,7 @@ const AttachmentTooltipPopup: React.FC<{
             allTags?.map((tag) => ({
               label: tag.info.name,
               value: tag.info.id,
+              color: tag.info.color ?? '#000000',
               icon: Tag
             })) ?? []
           }
@@ -86,13 +95,23 @@ const AttachmentTooltipPopup: React.FC<{
           defaultValue={crrTags}
           onValueChange={(tags) => {
             if (attachmentId) {
-              tagMutFn.mutate({
+              tagAttachMutFn.mutate({
                 attachmentId,
                 tags
               })
             }
           }}
-          onCreateNew={(tag) => createTag.mutate(tag)}
+          onOptionUpdate={(tagId, { color }) => {
+            colorDebounce(() =>
+              tagMutFn.mutate({
+                id: tagId,
+                color
+              })
+            )
+          }}
+          onCreateNew={(tag) => {
+            createTag.mutate(tag)
+          }}
           variant='inverted'
           maxCount={5}
         />
@@ -160,6 +179,10 @@ export const AttachmentReview: React.FC<{
   const [previewUrl, setPreviewUrl] = useState<string>()
   const [mouseSync] = useStateSyncDebounce(showDetail, 0)
 
+  const tagData = trpc.attachmentTag.getAttachmentTags.useQuery(data?.id!, {
+    enabled
+  })
+
   const favData = trpc.attachment.isFavorite.useQuery(
     {
       id: data?.id!
@@ -224,6 +247,13 @@ export const AttachmentReview: React.FC<{
 
   const imageLoaded = !loading && (!isLoading || !enabled)
   const isPop = showDetail && !isTouchDevice
+
+  useEffect(() => {
+    if (!isPop && !tagData.isFetching) {
+      tagData.refetch()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPop])
 
   useEffect(() => {
     if (ref.current) {
@@ -467,6 +497,10 @@ export const AttachmentReview: React.FC<{
             )}
           </div>
         )}
+
+        <div className='absolute right-4 bottom-6 z-10 bg-red-500'>
+          <AttachmentTagColors tags={tagData.data || []} />
+        </div>
 
         <div
           className={cn('z-10 group-hover:block absolute top-1 left-1', {

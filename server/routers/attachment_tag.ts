@@ -4,6 +4,7 @@ import { router } from '../trpc'
 import { z } from 'zod'
 import { EUserRole } from '@/entities/enum'
 import { Attachment } from '@/entities/attachment'
+import { generateColorByText } from '@/utils/style'
 
 export const attachmentTagRouter = router({
   list: privateProcedure.query(async ({ ctx }) => {
@@ -18,7 +19,11 @@ export const attachmentTagRouter = router({
     )
   }),
   create: privateProcedure.input(z.string()).mutation(async ({ ctx, input }) => {
-    const tag = ctx.em.create(AttachmentTag, { name: input, owner: ctx.session.user }, { partial: true })
+    const tag = ctx.em.create(
+      AttachmentTag,
+      { name: input, owner: ctx.session.user, color: generateColorByText(input) },
+      { partial: true }
+    )
     await ctx.em.persistAndFlush(tag)
     return tag
   }),
@@ -44,7 +49,8 @@ export const attachmentTagRouter = router({
   }),
   getAttachmentTags: privateProcedure.input(z.string()).query(async ({ ctx, input }) => {
     const attachment = await ctx.em.findOneOrFail(Attachment, { id: input }, { populate: ['tags.*'] })
-    return attachment.tags.toArray()
+    // TODO: Fix this type casting
+    return attachment.tags.toArray() as any as AttachmentTag[]
   }),
   setAttachmentTags: privateProcedure
     .input(
