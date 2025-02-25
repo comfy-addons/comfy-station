@@ -4,7 +4,7 @@ import { router } from '../trpc'
 import { z } from 'zod'
 import { EUserRole } from '@/entities/enum'
 import { Attachment } from '@/entities/attachment'
-import { generateColorByText } from '@/utils/style'
+import { generateColorByText } from '../utils/tools'
 
 export const attachmentTagRouter = router({
   list: privateProcedure.query(async ({ ctx }) => {
