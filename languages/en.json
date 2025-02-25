@@ -160,7 +160,9 @@
       "select": "Select...",
       "isEmpty": {
         "title": "Gallery is empty",
-        "description": "Create your first task to see the results"
+        "description": "Create your first task to see the results",
+        "filteredTitle": "NO IMAGES MATCH FILTERS",
+        "filteredDescription": "Try adjusting your filter criteria"
       },
       "dataStatus": {
         "more": "More data...",
@@ -168,7 +170,11 @@
         "noMore": "No more data"
       },
       "imagePerRow": "Images per row",
-      "resetGrid": "Reset to auto"
+      "resetGrid": "Reset to auto",
+      "favoritesFilter": "Favorites",
+      "tagsFilter": "Filter by tags",
+      "resetFilters": "Reset filters",
+      "resultsFound": "images"
     },
     "attachmentDetail": {
       "workflow": "Workflow",

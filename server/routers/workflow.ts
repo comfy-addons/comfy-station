@@ -205,11 +205,7 @@ export const workflowRouter = router({
         {
           ...workflow,
           ...filter,
-          likers: input.onlyLiked
-            ? {
-                $contains: [ctx.session.user!]
-              }
-            : {},
+          likers: input.onlyLiked ? ctx.session.user : {},
           tags: input.tags?.length ? { $in: input.tags } : {}
         },
         direction === 'forward'

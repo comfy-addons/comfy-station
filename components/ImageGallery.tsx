@@ -16,11 +16,13 @@ export const ImageGallery: IComponent<{
   imgPerRow?: number
   hasNextPage: boolean
   isFetchingNextPage: boolean
+  className?: string
   renderEmpty?: () => ReactNode
   onPressSetAvatar?: (imageId: string) => void
 }> = ({
   items,
   hasNextPage,
+  className,
   isFetchingNextPage,
   onPressSetAvatar,
   onFetchMore,
@@ -70,7 +72,7 @@ export const ImageGallery: IComponent<{
     <>
       <div
         ref={parentRef}
-        className='List group'
+        className={cn('List group', className)}
         style={{
           height: `100%`,
           width: `100%`,

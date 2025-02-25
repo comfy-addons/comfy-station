@@ -12,6 +12,7 @@ import { useSession } from 'next-auth/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useStorageState } from '@/hooks/useStorageState'
+import { GalleryFilterBar, GalleryFilters } from './GalleryFilterBar'
 
 const PASSIVE_WATCH_PENDING_INTERVAL = 3000
 
@@ -21,10 +22,23 @@ export const AttachmentGallery: IComponent<{
   const { router } = useCurrentRoute()
   const { data: session } = useSession()
   const taskInfo = trpc.workflow.get.useQuery(slug!, { enabled: !!slug })
+
+  // Add filter state with storage persistence
+  const [filters, setFilters] = useStorageState<GalleryFilters>('gallery-filters', {
+    onlyFavorites: false,
+    selectedTags: []
+  })
+
+  // Get available tags for filtering
+  const { data: tagsList } = trpc.attachmentTag.list.useQuery()
+
+  // Update query with filters
   const infoLoader = trpc.workflow.attachments.useInfiniteQuery(
     {
       workflowId: slug,
-      limit: 20
+      limit: 20,
+      onlyLiked: filters.onlyFavorites,
+      tags: filters.selectedTags.length > 0 ? filters.selectedTags : undefined
     },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -35,6 +49,7 @@ export const AttachmentGallery: IComponent<{
       }
     }
   )
+
   const containerRef = useRef<HTMLDivElement>(null)
   const dyn = useDynamicValue([720, 1200, 1800], undefined, containerRef)
 
@@ -65,9 +80,17 @@ export const AttachmentGallery: IComponent<{
     enabled: !slug
   })
 
+  // Handle filter changes
+  const handleFilterChange = (newFilters: GalleryFilters) => {
+    setFilters(newFilters)
+    // Reset infoLoader query data when filters change
+    infoLoader.refetch()
+  }
+
   const pending = useMemo(() => {
     return runningTask.data ? runningTask.data.map((d) => ({ ...d, loading: true }) as const) : []
   }, [runningTask.data])
+
   const images = infoLoader.data ? infoLoader.data.pages.flatMap((d) => d.items) : []
   const allowFav = !!session?.user.role && session.user.role > EUserRole.User && !!slug
 
@@ -98,6 +121,9 @@ export const AttachmentGallery: IComponent<{
 
   const effectiveImgPerRow = manualImgPerRow ?? dyn([2, 3, 4, 5])
 
+  // Calculate total items for display
+  const totalItems = infoLoader.data?.pages.reduce((sum, page) => sum + page.items.length, 0) ?? 0
+
   return (
     <div ref={containerRef} className='absolute top-0 left-0 w-full h-full flex flex-col shadow-inner'>
       {!!slug && (
@@ -119,7 +145,19 @@ export const AttachmentGallery: IComponent<{
           </Select>
         </div>
       )}
+
+      {/* Add filter bar */}
+      <div className='px-3 pt-2 absolute w-full z-[999] bg-background/90 backdrop-blur'>
+        <GalleryFilterBar
+          filters={filters}
+          onChange={handleFilterChange}
+          availableTags={tagsList?.map((t) => t.info) || []}
+          totalItems={totalItems}
+        />
+      </div>
+
       <ImageGallery
+        className='md:pt-14'
         imgPerRow={effectiveImgPerRow}
         items={[...pending, ...images]}
         favoriteIds={[taskInfo.data?.avatar?.id ?? '']}
@@ -131,8 +169,16 @@ export const AttachmentGallery: IComponent<{
           return (
             <div className='flex flex-col text-center text-foreground/50'>
               <ExclamationTriangleIcon className='w-6 h-6 mx-auto my-2' />
-              <span className='uppercase'>{t('isEmpty.title')}</span>
-              <p className='text-xs'>{t('isEmpty.description')}</p>
+              <span className='uppercase'>
+                {filters.onlyFavorites || filters.selectedTags.length > 0
+                  ? t('isEmpty.filteredTitle')
+                  : t('isEmpty.title')}
+              </span>
+              <p className='text-xs'>
+                {filters.onlyFavorites || filters.selectedTags.length > 0
+                  ? t('isEmpty.filteredDescription')
+                  : t('isEmpty.description')}
+              </p>
             </div>
           )
         }}

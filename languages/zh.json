@@ -175,7 +175,9 @@
       "select": "选择...",
       "isEmpty": {
         "title": "相册为空",
-        "description": "创建您的第一个任务以查看结果"
+        "description": "创建您的第一个任务以查看结果",
+        "filteredTitle": "没有找到结果",
+        "filteredDescription": "请调整过滤条件"
       },
       "dataStatus": {
         "more": "更多数据...",
@@ -183,7 +185,11 @@
         "noMore": "没有更多数据"
       },
       "imagePerRow": "每行图片数",
-      "resetGrid": "重置为自动"
+      "resetGrid": "重置为自动",
+      "favoritesFilter": "收藏",
+      "tagsFilter": "按标签过滤",
+      "resetFilters": "重置过滤器",
+      "resultsFound": "找到的图片"
     },
     "taskItem": {
       "id": "ID：#{id}",

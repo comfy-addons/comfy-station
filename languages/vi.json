@@ -160,7 +160,9 @@
       "select": "Chọn...",
       "isEmpty": {
         "title": "Thư viện trống",
-        "description": "Tạo tác vụ đầu tiên để xem kết quả"
+        "description": "Tạo tác vụ đầu tiên để xem kết quả",
+        "filteredTitle": "KHÔNG TÌM THẤY HÌNH ẢNH PHÙ HỢP",
+        "filteredDescription": "Thử điều chỉnh tiêu chí lọc của bạn"
       },
       "dataStatus": {
         "more": "Thêm dữ liệu...",
@@ -168,7 +170,11 @@
         "noMore": "Không còn dữ liệu"
       },
       "imagePerRow": "Số hình ảnh mỗi hàng",
-      "resetGrid": "Đặt lại tự động"
+      "resetGrid": "Đặt lại tự động",
+      "favoritesFilter": "Yêu thích",
+      "tagsFilter": "Lọc theo thẻ",
+      "resetFilters": "Đặt lại bộ lọc",
+      "resultsFound": "hình ảnh"
     },
     "attachmentDetail": {
       "workflow": "Workflow",
