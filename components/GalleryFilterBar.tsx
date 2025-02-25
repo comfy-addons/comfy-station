@@ -4,8 +4,8 @@ import { Tag, Star, X } from 'lucide-react'
 import { Button } from './ui/button'
 import { MultiSelect } from './ui-ext/multi-select'
 import { useTranslations } from 'next-intl'
-import { Badge } from './ui/badge'
 import { cn } from '@/utils/style'
+import useMobile from '@/hooks/useMobile'
 
 export type GalleryFilters = {
   onlyFavorites: boolean
@@ -19,6 +19,7 @@ export const GalleryFilterBar: IComponent<{
   totalItems?: number
   className?: string
 }> = ({ filters, onChange, availableTags, totalItems, className }) => {
+  const isMobile = useMobile()
   const t = useTranslations('components.gallery')
 
   return (
@@ -31,13 +32,13 @@ export const GalleryFilterBar: IComponent<{
             onlyFavorites: !filters.onlyFavorites
           })
         }
-        className='flex items-center gap-1 h-10'
+        className='flex items-center gap-1 h-10 order-2 md:order-1'
       >
         <Star className={filters.onlyFavorites ? 'fill-yellow-500 stroke-yellow-500' : ''} size={16} />
         <span>{t('favoritesFilter')}</span>
       </Button>
 
-      <div className='flex-grow min-w-[200px]'>
+      <div className='md:flex-grow min-w-[200px] w-full md:w-auto order-1 md:order-2'>
         <MultiSelect
           options={
             availableTags?.map((tag) => ({
@@ -56,7 +57,7 @@ export const GalleryFilterBar: IComponent<{
             })
           }}
           variant='inverted'
-          maxCount={5}
+          maxCount={isMobile ? 3 : 5}
         />
       </div>
 
@@ -70,7 +71,7 @@ export const GalleryFilterBar: IComponent<{
               selectedTags: []
             })
           }
-          className='flex items-center gap-1 h-9'
+          className='flex items-center gap-1 h-9 order-2 md:order-3'
         >
           <X size={14} />
           <span>{t('resetFilters')}</span>
@@ -78,7 +79,7 @@ export const GalleryFilterBar: IComponent<{
       )}
 
       {typeof totalItems === 'number' && (
-        <code className='text-xs text-muted-foreground px-2'>
+        <code className='text-xs text-muted-foreground px-2 order-2 md:order-4'>
           {totalItems} {t('resultsFound')}
         </code>
       )}

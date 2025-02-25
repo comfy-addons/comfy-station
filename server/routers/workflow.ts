@@ -222,6 +222,7 @@ export const workflowRouter = router({
       )
       return {
         items: data.items,
+        total: data.totalCount,
         nextCursor: data.endCursor
       }
     }),

@@ -498,7 +498,7 @@ export const AttachmentReview: React.FC<{
           </div>
         )}
 
-        <div className='absolute right-4 bottom-6 z-10 bg-red-500'>
+        <div className='absolute right-2 md:right-4 -top-2 md:top-[unset] md:bottom-6 z-10 bg-red-500'>
           <AttachmentTagColors tags={tagData.data || []} />
         </div>
 
