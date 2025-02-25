@@ -104,10 +104,10 @@ export const workflowTaskRouter = router({
       WorkflowTask,
       { id: input, ...extra },
       {
-        populate: ['workflow']
+        populate: ['workflow', 'trigger.*']
       }
     )
-    if (ctx.session.user?.role && ctx.session.user?.role === EUserRole.Admin) {
+    if (ctx.session.user.role === EUserRole.Admin) {
       return task
     }
     if (task.trigger.user?.id === ctx.session.user?.id || task.trigger.token?.createdBy?.id === ctx.session.user?.id) {

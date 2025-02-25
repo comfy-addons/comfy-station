@@ -46,8 +46,7 @@ export const TaskHistory: IComponent = () => {
         position: 'absolute',
         top: 0,
         width: '100%',
-        height: '100%',
-        boxShadow: 'inset 0 0 10px 0 rgba(0, 0, 0, 0.1)'
+        height: '100%'
       }}
       renderEmpty={() => {
         return (

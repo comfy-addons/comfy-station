@@ -1,14 +1,15 @@
-import { Collection, Entity, PrimaryKey, Property, ManyToMany, ManyToOne } from '@mikro-orm/core'
+import { Collection, Entity, PrimaryKey, Property, ManyToMany, ManyToOne, Unique } from '@mikro-orm/core'
 import { v4 } from 'uuid'
 import { Attachment } from './attachment'
 import { User } from './user'
 
 @Entity()
+@Unique({ properties: ['name', 'owner'] })
 export class AttachmentTag {
   @PrimaryKey({ type: 'string' })
   id = v4()
 
-  @Property({ type: 'string', unique: true })
+  @Property({ type: 'string' })
   name: string
 
   @Property({ type: 'timestamp' })

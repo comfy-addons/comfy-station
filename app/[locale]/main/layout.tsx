@@ -41,17 +41,17 @@ const Layout: IComponent = ({ children }) => {
           const conf = Object.values(RouteConf).find((v) => v.group === value)
           if (conf) router.push(conf.path)
         }}
-        className='w-full h-full flex flex-col md:flex-row space-x-2 overflow-hidden'
+        className='w-full h-full flex flex-col md:flex-row space-x-2'
       >
         {isExecutePage && (
-          <div className='w-full md:w-1/4 min-w-[290px] md:max-w-[360px] min-h-full bg-background border rounded-lg'>
+          <div className='w-full md:w-1/4 min-w-[290px] md:max-w-[360px] min-h-full bg-background border rounded-lg shadow-xl'>
             <WorkflowSidePicker />
           </div>
         )}
         <div
           ref={ref}
           id='main-content'
-          className='flex-1 hidden md:flex flex-col h-full overflow-hidden bg-background border rounded-lg transition-all duration-300 relative'
+          className='flex-1 hidden md:flex flex-col h-full overflow-hidden bg-background border rounded-lg transition-all duration-300 relative shadow-xl'
         >
           <TopBar />
           <SimpleTransitionLayout deps={[routeConf?.group || '']} className='flex-1 relative border-t'>
@@ -75,7 +75,7 @@ const Layout: IComponent = ({ children }) => {
           )}
         </div>
         {isAdmin && (
-          <div className='w-1/4 max-w-[360px] min-w-max h-full bg-background border rounded-lg'>
+          <div className='w-1/4 max-w-[360px] min-w-max h-full bg-background border rounded-lg shadow-xl'>
             <AdminSideInfo />
           </div>
         )}
@@ -177,7 +177,7 @@ const Layout: IComponent = ({ children }) => {
   if (!session.data) return null
 
   return (
-    <div className='w-full h-full bg-background md:bg-white/10 md:dark:bg-black/10 md:backdrop-blur-sm md:border md:rounded-xl md:p-2'>
+    <div className='w-full h-full bg-background md:bg-white/90 md:dark:bg-black/10 md:backdrop-blur-sm md:border md:rounded-xl md:p-2'>
       <TooltipProvider>{dyn([renderMobileView, renderDesktopView, renderDesktopView], null)}</TooltipProvider>
       <TooltipPopupContainer />
       <ClientTerminalWindows />
