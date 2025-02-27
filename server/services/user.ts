@@ -69,7 +69,7 @@ export class UserManagement {
         }
       }
 
-      const client = await em.findOne(UserClient, { user, userAgent })
+      const client = await em.findOne(UserClient, { user: { id: user.id }, userAgent })
       if (client) {
         client.lastActiveAt = new Date()
         client.ipAddress = userIp ?? undefined
@@ -78,7 +78,7 @@ export class UserManagement {
         const client = em.create(
           UserClient,
           {
-            user,
+            user: user.id,
             userAgent,
             ipAddress: userIp,
             deviceType,

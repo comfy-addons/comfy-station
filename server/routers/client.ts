@@ -3,8 +3,7 @@ import { adminProcedure } from '../procedure'
 import { router } from '../trpc'
 import { Client } from '@/entities/client'
 import { ComfyPoolInstance } from '@/server/services/comfyui'
-import { observable } from '@trpc/server/observable'
-import { ComfyApi, TMonitorEvent } from '@saintno/comfyui-sdk'
+import { ComfyApi } from '@saintno/comfyui-sdk'
 import { EAuthMode, EClientAction, EClientStatus, EResourceType, ETriggerBy } from '@/entities/enum'
 import { ClientStatusEvent } from '@/entities/client_status_event'
 import { ClientActionEvent } from '@/entities/client_action_event'
@@ -89,11 +88,15 @@ export const clientRouter = router({
       if (!client) {
         throw new Error('Client not found in db')
       }
-      const trigger = ctx.em.create(Trigger, {
-        type: ETriggerBy.User,
-        user: ctx.session.user,
-        createdAt: new Date()
-      })
+      const trigger = ctx.em.create(
+        Trigger,
+        {
+          type: ETriggerBy.User,
+          user: ctx.session.user.id,
+          createdAt: new Date()
+        },
+        { partial: true }
+      )
       const action = ctx.em.create(ClientActionEvent, {
         client,
         trigger,

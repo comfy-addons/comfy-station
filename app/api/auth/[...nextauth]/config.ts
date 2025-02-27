@@ -1,9 +1,11 @@
-import jwt from 'jsonwebtoken'
 import { AuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import type { User } from '@/entities/user'
 import { BackendENV } from '@/env'
 import { getBaseUrl } from '@/utils/trpc'
+import { JWTService } from '@/server/services/jwt'
+
+const jwtService = JWTService.getInstance()
 
 const getUserInformationByCredentials = async (email: string, password: string): Promise<User | false> => {
   return fetch(`${getBaseUrl()}/api/user/credential`, {
@@ -58,6 +60,7 @@ export const NextAuthOptions: AuthOptions = {
         if (credentials) {
           const user = await getUserInformationByCredentials(credentials.email, credentials.password)
           if (user) {
+            // Store email in NextAuth token for session lookup, but it won't be in JWT tokens
             return { id: user.id, email: user.email }
           }
         }
@@ -66,15 +69,21 @@ export const NextAuthOptions: AuthOptions = {
     })
   ],
   secret: BackendENV.NEXTAUTH_SECRET ?? 'secret',
+  session: {
+    strategy: 'jwt',
+    updateAge: 60 * 60 * 23 // 23 hours
+  },
   callbacks: {
     async session({ session, token }) {
       if (token.email) {
-        const user = await getUserInformationByEmail(token.email)
+        const user = await getUserInformationByEmail(token.email as string)
         if (user) {
+          // Store full user in session for frontend use
           session.user = user
+          // Generate tokens without email for API authentication
           session.accessToken = {
-            token: jwt.sign({ email: user.email, isWs: false }, BackendENV.NEXTAUTH_SECRET),
-            wsToken: jwt.sign({ email: user.email, isWs: true }, BackendENV.NEXTAUTH_SECRET)
+            token: jwtService.generateToken(user, false),
+            wsToken: jwtService.generateToken(user, true)
           }
         } else {
           throw new Error('User not found')

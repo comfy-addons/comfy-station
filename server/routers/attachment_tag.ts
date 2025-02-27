@@ -8,7 +8,8 @@ import { generateColorByText } from '../utils/tools'
 
 export const attachmentTagRouter = router({
   list: privateProcedure.query(async ({ ctx }) => {
-    const list = await ctx.em.find(AttachmentTag, { owner: ctx.session.user })
+    const filter = ctx.session.user.role !== EUserRole.Admin ? { owner: ctx.session.user } : {}
+    const list = await ctx.em.find(AttachmentTag, filter)
     return Promise.all(
       list.map(async (tag) => {
         return {

@@ -137,7 +137,7 @@ export const userRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const user = ctx.session.user!
+      const user = await ctx.session.getFullUser()
       if (input.avatarId !== undefined) {
         const avatar = await ctx.em.findOneOrFail(Attachment, input.avatarId)
         user.avatar = avatar

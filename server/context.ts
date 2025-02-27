@@ -1,39 +1,90 @@
 import { MikroORMInstance } from '@/server/services/mikro-orm'
-import { verify } from 'jsonwebtoken'
-import { User } from '@/entities/user'
+import { JWTService, TokenExpiredError } from './services/jwt'
 import { BackendENV } from '@/env'
 import { UserManagement } from '@/server/services/user'
 import { Logger } from '@saintno/needed-tools'
 import { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch'
+import { Context } from '@/types/context'
+import { JWTContext } from '@/types/jwt'
+import { TRPCError } from '@trpc/server'
+import type { TRPCAuthError } from '@/types/error'
 
 const logger = new Logger('tRPC')
+const jwtService = JWTService.getInstance()
 
 /**
  * Creates context for an incoming request
  * @link https://trpc.io/docs/v11/context
  */
-export const createContext = async (opts: FetchCreateContextFnOptions) => {
+export const createContext = async (opts: FetchCreateContextFnOptions): Promise<Context> => {
   const orm = await MikroORMInstance.getInstance().getORM()
   const em = orm.em.fork()
   const url = new URL(opts.req.url || '', BackendENV.BACKEND_URL)
   const queries = url.searchParams
 
   // Handle authorization
-  let user: User | null = null
+  let user: JWTContext | null = null
   const headers = opts.req.headers
   const rawAuthorization =
     headers.get('authorization') || opts.info?.connectionParams?.Authorization || queries.get('auth')
   const accessToken = rawAuthorization?.replace('Bearer', '').trim()
   try {
     if (accessToken && accessToken.length > 0) {
-      const tokenInfo = verify(accessToken, BackendENV.NEXTAUTH_SECRET) as { email: string; isWs: boolean }
-      if (tokenInfo.isWs && !url.pathname.startsWith('/ws')) {
-        throw new Error('Invalid access token')
+      try {
+        const tokenInfo = jwtService.verifyToken(accessToken)
+        if (tokenInfo.isWs && !url.pathname.startsWith('/ws')) {
+          throw new TRPCError({
+            code: 'UNAUTHORIZED',
+            message: 'Invalid token type'
+          })
+        }
+        user = {
+          id: tokenInfo.id,
+          role: tokenInfo.role,
+          balance: tokenInfo.balance,
+          weightOffset: tokenInfo.weightOffset,
+          createdAt: new Date(tokenInfo.createdAt),
+          updateAt: new Date(tokenInfo.updateAt)
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error instanceof TokenExpiredError) {
+            throw new TRPCError({
+              code: 'UNAUTHORIZED',
+              message: 'Token has expired',
+              cause: {
+                code: 'TOKEN_EXPIRED',
+                status: 401
+              }
+            })
+          }
+        }
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'Invalid or malformed token',
+          cause: {
+            code: 'INVALID_TOKEN',
+            status: 401
+          }
+        })
       }
-      user = await em.findOne(User, { email: tokenInfo.email })
     }
   } catch (e) {
-    throw new Error('Invalid access token')
+    if (e instanceof TRPCError) {
+      const authError = e as TRPCAuthError
+      if (authError.cause?.code === 'TOKEN_EXPIRED') {
+        opts.req.headers.set('X-Token-Expired', 'true')
+      }
+      throw e
+    }
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'Authentication failed',
+      cause: {
+        code: 'AUTH_FAILED',
+        status: 401
+      }
+    })
   }
 
   // Get user IP and user agent
@@ -49,7 +100,7 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
   }
 
   // Make the output to be passed to the context
-  const output = {
+  const output: Context = {
     session: { user },
     log: logger,
     em,
@@ -65,11 +116,9 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
   if (user) {
     void UserManagement.getInstance().handleUserEvent({ ...output, em: orm.em.fork() })
   }
-  logger.i(opts.req.method || 'WS', user ? `User ${user.email} requested` : 'Processed request', {
+  logger.i(opts.req.method || 'WS', user ? `User ${user.id} requested` : 'Processed request', {
     queries: opts.info?.calls?.map((v) => v.path) || 'ws'
   })
 
   return output
 }
-
-export type Context = Awaited<ReturnType<typeof createContext>>

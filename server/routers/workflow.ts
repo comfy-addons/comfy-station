@@ -437,7 +437,7 @@ export const workflowRouter = router({
         { partial: true }
       )
       const action = ctx.em.create(WorkflowEditEvent, { workflow, user: ctx.session.user! }, { partial: true })
-      workflow.author = ctx.session.user!
+      workflow.author = await ctx.session.getFullUser()
       workflow.editedActions.add(action)
       await ctx.em.persist(action).persist(workflow).flush()
       return workflow

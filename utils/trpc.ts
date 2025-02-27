@@ -7,10 +7,13 @@ import {
   isNonJsonSerializable,
   splitLink,
   unstable_httpBatchStreamLink,
-  wsLink
+  TRPCClientError,
+  wsLink,
+  retryLink
 } from '@trpc/client'
 import { createTRPCNext } from '@trpc/next'
 import { ssrPrepass } from '@trpc/next/ssrPrepass'
+import { signOut } from 'next-auth/react'
 import type { AppRouter } from '@/server/routers/_app'
 import { BackendENV } from '@/env'
 
@@ -75,6 +78,37 @@ const wsClient = createWSClient({
   url: () => `${getBaseWsUrl()}/ws?auth=${encodeURIComponent(wsAuthToken)}`
 })
 
+// Custom event for token expiration
+const TOKEN_EXPIRED_EVENT = 'token:expired'
+export const emitTokenExpired = () => {
+  if (typeof window !== 'undefined') {
+    // Emit token expired event
+    window.dispatchEvent(new CustomEvent(TOKEN_EXPIRED_EVENT))
+    // Clear auth tokens
+    AuthToken = ''
+    wsAuthToken = ''
+    if (wsClient.connection?.state === 'open') {
+      wsClient.close()
+    }
+    // Redirect to login page using NextAuth
+    signOut({ callbackUrl: '/auth/basic' })
+  }
+}
+
+// Error handler for tRPC
+const errorHandler = (error: unknown, attempts = 1) => {
+  // Check if it's a tRPC error
+  if (error instanceof TRPCClientError) {
+    const cause = error.data
+    // Handle token expiration
+    if (cause?.code === 'TOKEN_EXPIRED' || error.message === 'Token has expired') {
+      emitTokenExpired()
+      return false // Don't retry on token expiration
+    }
+  }
+  return attempts <= 3 // Retry other errors
+}
+
 const trpc = createTRPCNext<AppRouter>({
   transformer: superjson,
   config(opts) {
@@ -83,10 +117,11 @@ const trpc = createTRPCNext<AppRouter>({
       // during client requests
       return {
         links: [
-          // loggerLink({
-          //   enabled: (opts) =>
-          //     process.env.NODE_ENV === 'development' || (opts.direction === 'down' && opts.result instanceof Error)
-          // }),
+          retryLink({
+            retry(opts) {
+              return errorHandler(opts.error, opts.attempts)
+            }
+          }),
           splitLink({
             condition: (op) => op.type === 'subscription',
             true: wsLink({
@@ -152,6 +187,7 @@ const trpc = createTRPCNext<AppRouter>({
            * @link https://trpc.io/docs/v11/ssr
            **/
           url: `${getBaseUrl()}/api/trpc`,
+          transformer: superjson,
           // You can pass any HTTP headers you wish here
           async headers() {
             if (!ctx?.req?.headers) {
@@ -162,8 +198,7 @@ const trpc = createTRPCNext<AppRouter>({
             return {
               cookie: ctx.req.headers.cookie
             }
-          },
-          transformer: superjson
+          }
         })
       ]
     }
@@ -175,4 +210,4 @@ const trpc = createTRPCNext<AppRouter>({
   ssrPrepass
 })
 
-export { wsClient, trpc }
+export { wsClient, trpc, TOKEN_EXPIRED_EVENT }

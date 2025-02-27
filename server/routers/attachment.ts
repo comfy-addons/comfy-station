@@ -58,7 +58,7 @@ export const attachmentRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const attachment = await ctx.em.findOneOrFail(Attachment, { id: input.id }, { populate: ['likers'] })
-      return attachment.likers.contains(ctx.session.user!)
+      return attachment.likers.exists((liker) => liker.id === ctx.session.user.id)
     }),
   setFavorite: privateProcedure
     .input(
@@ -69,10 +69,11 @@ export const attachmentRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const attachment = await ctx.em.findOneOrFail(Attachment, { id: input.id }, { populate: ['likers'] })
+      const user = await ctx.session.getFullUser()
       if (input.favorite) {
-        attachment.likers.add(ctx.session.user!)
+        attachment.likers.add(user)
       } else {
-        attachment.likers.remove(ctx.session.user!)
+        attachment.likers.remove(user)
       }
       await ctx.em.flush()
       return true
@@ -170,6 +171,7 @@ export const attachmentRouter = router({
     }
   }),
   taskDetail: privateProcedure.input(z.string()).query(async ({ ctx, input }) => {
+    const user = ctx.session.user
     const permFilter =
       ctx.session.user!.role === EUserRole.Admin
         ? {}
@@ -177,10 +179,10 @@ export const attachmentRouter = router({
             task: {
               trigger: {
                 $or: [
-                  { user: ctx.session.user },
+                  { user: { id: user.id } },
                   {
                     token: {
-                      createdBy: ctx.session.user
+                      createdBy: { id: user.id }
                     }
                   }
                 ]
