@@ -18,7 +18,7 @@
     "@mikro-orm/core": "^6.4.5",
     "@mikro-orm/libsql": "^6.4.5",
     "@mikro-orm/reflection": "^6.4.5",
-    "@saintno/comfyui-sdk": "^0.2.43",
+    "@saintno/comfyui-sdk": "^0.2.45",
     "@saintno/needed-tools": "^0.3.5",
     "@trpc/react-query": "^11.0.0-rc.730",
     "@trpc/server": "^11.0.0-rc.730",

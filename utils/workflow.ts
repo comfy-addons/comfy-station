@@ -62,75 +62,105 @@ export const getBuilder = (workflow: Workflow) => {
   return builder
 }
 
-export const parseOutput = async (api: ComfyApi, workflow: Workflow, data: any) => {
+export const parseOutput = async (
+  api: ComfyApi,
+  workflow: Workflow,
+  data: Record<string, any> & {
+    _raw?: Record<string, any>
+  }
+) => {
   const mapOutput = workflow.mapOutput
   const dataOut: Record<string, number | boolean | string | Array<Blob>> = {}
-  for (const key in mapOutput) {
-    let tmp: any
-    const outputConf = mapOutput[key]
-    const output = data[key]
-    if (outputConf.target.keyName) {
-      if (output[outputConf.target.keyName]) {
-        tmp = output[outputConf.target.keyName]
-      }
-    }
-    switch (outputConf.type) {
-      case EValueType.Boolean:
-        tmp = Boolean(tmp)
-        break
-      case EValueType.Number:
-        tmp = Number(tmp)
-        break
-      case EValueType.String:
-        if (!tmp && 'text' in output) {
-          tmp = output.text
-        }
-        if (Array.isArray(tmp)) {
-          tmp = tmp.join('')
-        } else {
-          tmp = String(tmp)
-        }
-        break
-      case EValueType.Image:
-        if (tmp) {
-          if (Array.isArray(tmp)) {
-            tmp = await Promise.all(tmp.map((img: any) => api.getImage(img)))
-          } else {
-            tmp = await api.getImage(tmp)
+  if (mapOutput) {
+    await Promise.allSettled(
+      Object.keys(mapOutput).map(async (key) => {
+        let tmp: any
+        const outputConf = mapOutput[key]
+        const output = data[key]
+        if (outputConf.target.keyName) {
+          if (output[outputConf.target.keyName]) {
+            tmp = output[outputConf.target.keyName]
           }
-        } else {
-          if ('images' in output) {
-            const { images } = output
-            tmp = await Promise.all(images.map((img: any) => api.getImage(img)))
+        }
+        switch (outputConf.type) {
+          case EValueType.Boolean:
+            tmp = Boolean(tmp)
             break
-          }
-        }
-      case EValueType.Video:
-        if (tmp) {
-          if (Array.isArray(tmp)) {
-            tmp = await Promise.all(tmp.map((img: any) => api.getImage(img)))
-          } else {
-            tmp = await api.getImage(tmp)
-          }
-        } else {
-          if ('gifs' in output) {
-            const { gifs } = output
-            tmp = await Promise.all(gifs.map((img: any) => api.getImage(img)))
+          case EValueType.Number:
+            tmp = Number(tmp)
             break
-          }
+          case EValueType.String:
+            if (!tmp && 'text' in output) {
+              tmp = output.text
+            }
+            if (Array.isArray(tmp)) {
+              tmp = tmp.join('')
+            } else {
+              tmp = String(tmp)
+            }
+            break
+          case EValueType.Image:
+            if (tmp) {
+              if (Array.isArray(tmp)) {
+                tmp = await Promise.all(tmp.map((img: any) => api.getImage(img)))
+              } else {
+                tmp = await api.getImage(tmp)
+              }
+            } else {
+              if ('images' in output) {
+                const { images } = output
+                tmp = await Promise.all(images.map((img: any) => api.getImage(img)))
+                break
+              }
+            }
+          case EValueType.Video:
+            if (tmp) {
+              if (Array.isArray(tmp)) {
+                tmp = await Promise.all(tmp.map((img: any) => api.getImage(img)))
+              } else {
+                tmp = await api.getImage(tmp)
+              }
+            } else {
+              if ('gifs' in output) {
+                const { gifs } = output
+                tmp = await Promise.all(gifs.map((img: any) => api.getImage(img)))
+                break
+              }
+            }
+          case EValueType.File:
+            if (tmp) {
+              if (Array.isArray(tmp)) {
+                tmp = await Promise.all(tmp.map((media: any) => api.getImage(media)))
+              } else {
+                tmp = [await api.getImage(tmp)]
+              }
+            }
         }
-      case EValueType.File:
         if (tmp) {
-          if (Array.isArray(tmp)) {
+          dataOut[key] = tmp
+        }
+      })
+    )
+  }
+  // Only parse raw data if mapOutput is empty
+  // This is for executing raw workflow through API
+  if (data._raw && Object.keys(mapOutput ?? {}).length === 0) {
+    await Promise.allSettled(
+      Object.keys(data._raw).map(async (nodeId) => {
+        const nodeData = data._raw![nodeId] as Record<string, any>
+        for (const key in nodeData) {
+          let tmp = nodeData[key]
+          if (Array.isArray(tmp) && tmp.every((i) => 'filename' in i)) {
             tmp = await Promise.all(tmp.map((media: any) => api.getImage(media)))
-          } else {
+          } else if ('filename' in tmp) {
             tmp = [await api.getImage(tmp)]
           }
+          if (tmp) {
+            dataOut[`raw.${key}`] = tmp
+          }
         }
-    }
-    if (tmp) {
-      dataOut[key] = tmp
-    }
+      })
+    )
   }
   return dataOut
 }
