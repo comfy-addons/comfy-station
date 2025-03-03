@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/comfy-addons/comfy-station/compare/v0.1.1...v0.2.0) (2025-03-03)
+
+
+### Features
+
+* **github/workflow/build:** only run after merge release-please pull ([5f41a0f](https://github.com/comfy-addons/comfy-station/commit/5f41a0fda2835941688f949f69ff52fdb2f98787))
+
 ## [0.1.1](https://github.com/comfy-addons/comfy-station/compare/v0.1.0...v0.1.1) (2025-03-03)
 
 
