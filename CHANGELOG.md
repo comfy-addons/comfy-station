@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/comfy-addons/comfy-station/compare/v0.2.0...v0.2.1) (2025-03-04)
+
+
+### Bug Fixes
+
+* **router/workflow_task:** fix jwt user not enough info, make normal user can execute task ([193c729](https://github.com/comfy-addons/comfy-station/commit/193c729e8f4ef65eaaed04778f902697f54a69fa))
+
 ## [0.2.0](https://github.com/comfy-addons/comfy-station/compare/v0.1.1...v0.2.0) (2025-03-03)
 
 

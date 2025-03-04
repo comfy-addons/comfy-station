@@ -1,6 +1,6 @@
 {
   "name": "next-golden-template",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "scripts": {
     "cli": "bunx tsx ./cli.ts",
