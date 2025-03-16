@@ -70,6 +70,7 @@ Bun.serve({
   async fetch(req, server) {
     const url = new URL(req.url, 'http://localhost:3001')
     const pathName = url.pathname
+    // TODO: Verify this origin is allowed
     const clientOrigin = req.headers.get('origin') || 'http://localhost:3000'
     if (pathName.startsWith('/ws')) {
       if (server.upgrade(req, { data: { req: req } })) {

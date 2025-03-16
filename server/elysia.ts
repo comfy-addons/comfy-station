@@ -9,6 +9,7 @@ import { WorkflowPlugin } from './handlers/workflow'
 import { CleanUpJobPlugin } from './plugins/cleanup-jobs.plugin'
 import { EnsureLogPlugin } from './plugins/ensure-log-plugin'
 import { SystemPlugin } from './handlers/system'
+import { EnsureCorsPlugin } from './plugins/ensure-cors-plugin'
 
 export const ElysiaHandler = new Elysia()
   .use(EnsureLogPlugin)
@@ -75,6 +76,8 @@ export const ElysiaHandler = new Elysia()
         },
         (app) =>
           app
+            // Ensure CORS
+            .use(EnsureCorsPlugin)
             // Token Plugin
             .use(TokenPlugin)
             // Bind Workflow Plugin
