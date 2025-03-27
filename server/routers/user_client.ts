@@ -16,7 +16,7 @@ export const userClientRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const client = await ctx.em.findOneOrFail(UserClient, {
-        user: ctx.session.user!,
+        user: { id: ctx.session.user.id },
         userAgent: ctx.extra.userAgent
       })
       client.deviceStatus = input.status

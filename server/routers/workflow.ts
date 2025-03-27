@@ -188,11 +188,11 @@ export const workflowRouter = router({
                 trigger: {
                   $or: [
                     {
-                      user: ctx.session.user
+                      user: { id: ctx.session.user.id }
                     },
                     {
                       token: {
-                        createdBy: ctx.session.user
+                        createdBy: { id: ctx.session.user.id }
                       }
                     }
                   ]
@@ -205,7 +205,7 @@ export const workflowRouter = router({
         {
           ...workflow,
           ...filter,
-          likers: input.onlyLiked ? ctx.session.user : {},
+          likers: input.onlyLiked ? { id: ctx.session.user.id } : {},
           tags: input.tags?.length ? { $in: input.tags } : {}
         },
         direction === 'forward'
@@ -436,7 +436,11 @@ export const workflowRouter = router({
         },
         { partial: true }
       )
-      const action = ctx.em.create(WorkflowEditEvent, { workflow, user: ctx.session.user! }, { partial: true })
+      const action = ctx.em.create(
+        WorkflowEditEvent,
+        { workflow, user: { id: ctx.session.user.id } },
+        { partial: true }
+      )
       workflow.author = await ctx.session.getFullUser()
       workflow.editedActions.add(action)
       await ctx.em.persist(action).persist(workflow).flush()
@@ -476,7 +480,7 @@ export const workflowRouter = router({
 
       const action = ctx.em.create(
         WorkflowEditEvent,
-        { workflow, user: ctx.session.user!, type: EWorkflowEditType.Update, info: diff },
+        { workflow, user: { id: ctx.session.user.id }, type: EWorkflowEditType.Update, info: diff },
         { partial: true }
       )
       workflow.editedActions.add(action)
@@ -510,7 +514,7 @@ export const workflowRouter = router({
         cost: originalWorkflow.cost,
         baseWeight: originalWorkflow.baseWeight,
         status: EWorkflowActiveStatus.Deactivated, // Start as Deactivated
-        author: ctx.session.user!
+        author: { id: ctx.session.user.id }
       },
       { partial: true }
     )
@@ -520,7 +524,7 @@ export const workflowRouter = router({
       WorkflowEditEvent,
       {
         workflow: duplicatedWorkflow,
-        user: ctx.session.user!,
+        user: { id: ctx.session.user.id },
         type: EWorkflowEditType.Create,
         info: { duplicatedFrom: originalWorkflow.id }
       },

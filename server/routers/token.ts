@@ -19,13 +19,13 @@ export const tokenRouter = router({
     }
     const ownedTokens = await ctx.em.find(
       Token,
-      { createdBy: ctx.session.user },
+      { createdBy: { id: ctx.session.user.id } },
       { populate: ['sharedUsers', 'createdBy', 'grantedWorkflows.workflow.name'] }
     )
     const sharedTokens = await ctx.em.find(
       Token,
       {
-        sharedUsers: { user: ctx.session.user }
+        sharedUsers: { user: { id: ctx.session.user.id } }
       },
       { populate: ['sharedUsers', 'createdBy', 'grantedWorkflows.workflow.name'] }
     )
@@ -42,7 +42,7 @@ export const tokenRouter = router({
     }
     return await ctx.em.findOneOrFail(
       Token,
-      { id: input.tokenId, createdBy: ctx.session.user },
+      { id: input.tokenId, createdBy: { id: ctx.session.user.id } },
       { populate: ['sharedUsers', 'createdBy', 'grantedWorkflows.workflow'] }
     )
   }),
@@ -57,7 +57,9 @@ export const tokenRouter = router({
       const filter =
         ctx.session.user?.role === EUserRole.Admin
           ? {}
-          : { $or: [{ createdBy: ctx.session.user }, { sharedUsers: { user: ctx.session.user } }] }
+          : {
+              $or: [{ createdBy: { id: ctx.session.user.id } }, { sharedUsers: { user: { id: ctx.session.user.id } } }]
+            }
       // Find tokens created by user
       const tokens = await ctx.em.find(
         Token,
@@ -102,7 +104,7 @@ export const tokenRouter = router({
       const token = ctx.em.create(
         Token,
         {
-          createdBy: ctx.session.user!,
+          createdBy: { id: ctx.session.user.id },
           type: input.type,
           expireAt: input.expiredAt,
           balance: input.balance ?? -1,
@@ -221,7 +223,7 @@ export const tokenRouter = router({
     .mutation(async ({ ctx, input }) => {
       const token = await ctx.em.findOneOrFail(
         Token,
-        { id: input.tokenId, createdBy: ctx.session.user! },
+        { id: input.tokenId, createdBy: { id: ctx.session.user.id } },
         { populate: ['sharedUsers.*'] }
       )
       if (token.sharedUsers.find((u) => u.user.id === user.id)) {

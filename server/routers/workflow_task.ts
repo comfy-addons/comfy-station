@@ -366,7 +366,7 @@ export const workflowTaskRouter = router({
           Trigger,
           {
             type: ETriggerBy.User,
-            user: ctx.session.user
+            user: { id: ctx.session.user.id }
           },
           { partial: true }
         )

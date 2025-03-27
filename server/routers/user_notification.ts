@@ -23,7 +23,7 @@ export const userNotificationRouter = router({
       const data = await ctx.em.findByCursor(
         UserNotification,
         {
-          user: ctx.session.user!
+          user: { id: ctx.session.user.id }
         },
         direction === 'forward'
           ? {
@@ -45,7 +45,7 @@ export const userNotificationRouter = router({
   markAsRead: privateProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
     const notification = await ctx.em.findOneOrFail(UserNotification, {
       id: input.id,
-      user: ctx.session.user!
+      user: { id: ctx.session.user.id }
     })
     notification.read = true
     await ctx.em.flush()
@@ -58,13 +58,13 @@ export const userNotificationRouter = router({
   delete: privateProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
     const noti = await ctx.em.findOneOrFail(UserNotification, {
       id: input.id,
-      user: ctx.session.user!
+      user: { id: ctx.session.user.id }
     })
     await ctx.em.removeAndFlush(noti)
   }),
   deleteAll: privateProcedure.mutation(async ({ ctx }) => {
     await ctx.em.nativeDelete(UserNotification, {
-      user: ctx.session.user!
+      user: { id: ctx.session.user.id }
     })
     await CachingService.getInstance().set('USER_NOTIFICATION', ctx.session.user!.id, Date.now())
   }),
