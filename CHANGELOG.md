@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/comfy-addons/comfy-station/compare/v0.3.0...v0.3.1) (2025-03-27)
+
+
+### Bug Fixes
+
+* **tprc/context:** correct use of new user's object for other apis ([d921023](https://github.com/comfy-addons/comfy-station/commit/d921023b242d290e778f8ccef1b08b09bec62efe))
+
 ## [0.3.0](https://github.com/comfy-addons/comfy-station/compare/v0.2.1...v0.3.0) (2025-03-16)
 
 
