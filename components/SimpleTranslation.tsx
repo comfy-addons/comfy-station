@@ -2,7 +2,9 @@
 import { domAnimation, LazyMotion, m } from 'framer-motion'
 import { twMerge } from 'tailwind-merge'
 
-export const SimpleTransitionLayout: IComponent<{ deps: (string | number)[]; className?: string }> = ({
+type TTranslateKey = number | string
+
+export const SimpleTransitionLayout: IComponent<{ deps: TTranslateKey | Array<TTranslateKey>; className?: string }> = ({
   deps,
   children,
   className
@@ -10,7 +12,7 @@ export const SimpleTransitionLayout: IComponent<{ deps: (string | number)[]; cla
   return (
     <LazyMotion features={domAnimation}>
       <m.div
-        key={deps.join('_')}
+        key={Array.isArray(deps) ? deps.join('_') : deps}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}

@@ -27,14 +27,12 @@ export const InputClientInfoStep: IComponent = () => {
         message: t('invalidHost') // Use translation for error message
       }),
     auth: z.boolean().default(false),
-    username: z
-      .string()
-      .min(2, { message: t('usernameMinLength') })
-      .optional(), // Use translation for error message
-    password: z
-      .string()
-      .min(6, { message: t('passwordMinLength') })
-      .optional() // Use translation for error message
+    username: z.string().refine((val) => val === '' || val.length > 6, {
+      message: t('usernameMinLength')
+    }),
+    password: z.string().refine((val) => val === '' || val.length > 6, {
+      message: t('passwordMinLength')
+    })
   })
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,8 +58,8 @@ export const InputClientInfoStep: IComponent = () => {
         setClientInfo?.({
           host: data.host,
           auth: data.auth,
-          username: data.username,
-          password: data.password,
+          username: data.username ?? '',
+          password: data.password ?? '',
           result
         })
         setStep?.(EImportStep.FEATURE_CHECKING)

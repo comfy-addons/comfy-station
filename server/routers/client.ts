@@ -18,8 +18,8 @@ const cacher = CachingService.getInstance()
 const ClientSchema = z.object({
   host: z.string(),
   auth: z.boolean().default(false).optional(),
-  username: z.string().optional(),
-  password: z.string().optional()
+  username: z.string().nullable().optional(),
+  password: z.string().nullable().optional()
 })
 
 export const clientRouter = router({
