@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/comfy-addons/comfy-station/compare/v0.3.1...v0.4.0) (2025-06-07)
+
+
+### Features
+
+* **packages:** update sdk to latest ([44c3228](https://github.com/comfy-addons/comfy-station/commit/44c3228a0d69bcc127f7e0ba6d5c9858b6986d92))
+
 ## [0.3.1](https://github.com/comfy-addons/comfy-station/compare/v0.3.0...v0.3.1) (2025-03-27)
 
 
